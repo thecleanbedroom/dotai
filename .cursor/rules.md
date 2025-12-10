@@ -1,0 +1,1 @@
+This workspace uses a unified AI policy index located at .ai/index.md. Before generating output, you MUST load that file and all files listed inside it.
