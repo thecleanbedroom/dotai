@@ -11,13 +11,6 @@ This is a WordPress multisite project with custom plugins and themes. The projec
 - **Database**: MySQL
 - **Web Server**: Nginx
 
-## Coding Standards
-
-- **PHP**: PSR-12 coding standards (via PHPCS)
-- **JavaScript**: WordPress JavaScript coding standards
-- **CSS**: WordPress CSS coding standards
-- **Testing**: PHPUnit for unit testing /tests at the root and in each plugin folder ./tests
-
 ## Key Directories
 
 - `web/wp-content/plugins/wordpress-extras/` - Custom plugin with main functionality
