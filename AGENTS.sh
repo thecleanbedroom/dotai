@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install: bash -c "$(curl -fsSL https://raw.githubusercontent.com/midweste/dotai/main/AGENTS.sh)"
+# Install: bash -c "$(curl -fsSL https://raw.githubusercontent.com/thecleanbedroom/dotai/main/AGENTS.sh)"
 # Update: bash ./AGENTS.sh
 set -euo pipefail
 
@@ -9,7 +9,7 @@ command -v rsync >/dev/null 2>&1 || { echo "Error: rsync not found." >&2; exit 1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="$SCRIPT_DIR"
 
-REPO_URL="git@github.com:midweste/dotai.git"
+REPO_URL="git@github.com:thecleanbedroom/dotai.git"
 REFERENCE="main"
 
 temp_dir="$(mktemp -d)"
