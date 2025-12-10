@@ -8,6 +8,14 @@ DotAI centralizes AI usage rules for every VS Code extension in this workspace. 
 - Keep Visual Studio Code extensions (Copilot, Cursor, Windsurf, Continue, etc.) aligned so their autofixes and suggestions stay consistent.
 - Make it easy to audit or update requirements without editing each plugin’s settings.
 
+### Installation
+
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/midweste/dotai/main/AGENTS.sh)
+
+### Updating
+
+bash ./AGENTS.sh
+
 ### How Extensions Use It
 
 1. On activation, an extension loads the policy manifest and then ingests each referenced rule in order.
