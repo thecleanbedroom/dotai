@@ -1,4 +1,4 @@
 {
   "systemPrompt": "Load and follow all project rules and context from .ai/index.md. Treat that file as the authoritative source of truth for this workspace.",
-  "rulesFiles": ["/.ai/index.md"]
+  "rulesFiles": [".ai/index.md"]
 }
