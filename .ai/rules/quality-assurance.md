@@ -1,5 +1,9 @@
 # Quality Assurance
 
+## Initiation
+
+- Ignore all the rules in this file until the user asks to "prepare for production" or "review for production"
+
 ## Cleanup
 
 - Review the code for unused code and remove if not referenced or used
