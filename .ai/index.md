@@ -26,4 +26,4 @@ Any AI orchestrator or extension must load and obey **every** document reference
 
 ## Project
 
-- /PROJECT.md - Project specific ruleset and information.  These instructions would override any previous conflicting instructions.
+- /PROJECT.md - (if present) - /PROJECT.md - Project specific ruleset and environment information. These instructions would override any previous conflicting instructions. Any changes to the project information should ALWAYS be updated in this file.  This file needs to reflect the state of the project environment at all times!
