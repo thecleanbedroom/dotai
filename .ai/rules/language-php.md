@@ -5,7 +5,7 @@
 ## General PHP Standards
 
 - Follow PSR-12 coding style
-- Use strict types: `declare(strict_types=1);`
+- Always use strict types: `declare(strict_types=1);`
 - Use type hints for all method parameters and return types
 - Use `?` for nullable types
 - Use constructor property promotion where applicable
