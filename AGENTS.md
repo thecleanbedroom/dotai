@@ -1,1 +1,1 @@
-This workspace uses a unified AI policy index located at .ai/index.md. At the start of EVERY new conversion, always load all project rules by reading `.ai/index.md` first. If .ai/index.md has not been loaded in this session, do so now before responding.
+All AI tools/plugins must load and obey `.ai/index.md` at the start of every session (and after any rule change); if it can’t be loaded, stop and ask before acting.
