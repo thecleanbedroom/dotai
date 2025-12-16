@@ -17,6 +17,7 @@
 ## Language-Specific Checks
 
 - PHP: run the project’s configured PHPUnit and static analysis (PHPStan/Psalm) commands—use repo scripts/config, not hard-coded defaults.
+- PHP: never commit PHPStan stub content into production source files; keep stubs in dedicated stub files/paths defined by the project config.
 - JS/CSS: run the project’s configured test and lint commands; use the repo’s package scripts and configs.
 
 ## Code & Design
