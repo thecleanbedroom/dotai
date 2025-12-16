@@ -14,6 +14,11 @@
 - All tests green; new behavior covered by integration-first tests plus targeted unit tests where they add confidence.
 - Lint/format clean with project-standard tools (PHPStan/Psalm, ESLint, stylelint, etc.).
 
+## Language-Specific Checks
+
+- PHP: run the project’s configured PHPUnit and static analysis (PHPStan/Psalm) commands—use repo scripts/config, not hard-coded defaults.
+- JS/CSS: run the project’s configured test and lint commands; use the repo’s package scripts and configs.
+
 ## Code & Design
 
 - Single-responsibility classes/functions; no feature logic parked in UI layers.
