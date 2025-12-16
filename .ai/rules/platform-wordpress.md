@@ -56,3 +56,5 @@
 - Use `WP_UnitTestCase`/integration harnesses for hooks, filters, and REST/AJAX routes.
 - Reset globals, options, and hooks between tests; isolate filesystem/network calls unless under test.
 - Rely on the site-level testing framework: plugins should not ship their own PHPUnit bootstrap, `phpunit.xml`, or test environment setup—reuse the central harness and configuration.
+- Root level testing harness exists in /tests
+- Coverage report exists at /tests/reports/coverage/index.html
