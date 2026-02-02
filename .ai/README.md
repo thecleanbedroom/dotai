@@ -10,7 +10,7 @@ DotAI centralizes AI usage rules for every VS Code extension in this workspace. 
 
 ### Installation
 
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/midweste/dotai/main/AGENTS.sh)
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/thecleanbedroom/dotai/main/AGENTS.sh)
 
 ### Updating
 
