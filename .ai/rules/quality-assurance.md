@@ -38,6 +38,12 @@
 - Keep external calls wrapped with timeouts/retries; avoid blocking the main request when not required.
 - Ensure deterministic tests and predictable time/clock usage (injected clocks).
 
+## Refactoring
+
+- When refactoring, always update the tests to match the new code.
+- When refactoring, always update the documentation to match the new code.
+- When refactoring, always ask if existing functions need a wrapper or can be replaced.
+
 ## Performance Review
 
 - Capture baselines: measure key flows (page render, REST/AJAX endpoints, cron/queue jobs) for time, queries, and memory before/after changes.

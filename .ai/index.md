@@ -8,6 +8,10 @@ Any AI orchestrator or extension must load and obey **every** document reference
 
 - .ai/rules/prompt-aliases.md - Shortcuts for common multi-step requests (e.g., code sweep, QA review, TDD cycle).
 
+## Workflow
+
+- .ai/rules/workflow.md - Workflow orchestration rules.
+
 ## Security
 
 - .ai/rules/security.md – Data handling, privacy, and escalation guidance.
