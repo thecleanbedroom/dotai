@@ -26,6 +26,7 @@ Any AI orchestrator or extension must load and obey **every** document reference
 
 ## Languages
 
+- .ai/rules/language-default.md - Language agnostic rules and best practices.
 - .ai/rules/language-php.md – PHP style rules and best practices.
 - .ai/rules/language-js.md – Browser/WordPress JavaScript rules (no Node APIs).
 - .ai/rules/language-css.md – CSS naming, organization, tokens, and accessibility standards (vanilla CSS only).
