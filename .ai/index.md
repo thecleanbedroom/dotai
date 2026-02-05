@@ -12,6 +12,10 @@ Any AI orchestrator or extension must load and obey **every** document reference
 
 # Rule Files (all located under `.ai/rules/`)
 
+## Skills
+
+- (if exists) .agent/config/bundles/project-bundle.md - Project specific skills and tools.
+
 ## Prompt Aliases
 
 - .ai/rules/prompt-aliases.md - Shortcuts for common multi-step requests (e.g., code sweep, QA review, TDD cycle).
