@@ -22,7 +22,7 @@ This workflow analyzes your codebase and available skills to create a project-sp
 
 3. **Match skills to project needs** by reading SKILL.md files in relevant skill directories to understand their purpose.
 
-4. **Create bundle file** at `.agent/config/bundles/project-bundle.md` with format:
+4. **Create bundle file** at `.agent/rules/project-bundle.md` with format:
 
    ```markdown
    # <Bundle Name>

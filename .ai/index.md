@@ -47,4 +47,4 @@ Any AI orchestrator or extension must load and obey **every** document reference
 
 # Skill Files (all located under `.agent/`)
 
-- .agent/config/bundles/project-bundle.md - (if exists) - Project specific skills and tools.
+- .agent/rules/project-bundle.md - (if exists) - Project specific skills and tools.
