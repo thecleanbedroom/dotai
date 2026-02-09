@@ -94,8 +94,75 @@ Avoid fully-qualified class names (FQCN) in the body of the code (e.g., `\Except
 
 Aliases are **only** permitted when two imported classes share the same short name, or when an imported class shares the same name as the class being defined.
 
-- **Permitted**:
-  ```php
-  use GuzzleHttp\Client as GuzzleClient;
-  use RetailRocket\Http\Client; // Internal client takes precedence or is aliased if needed
-  ```
+use GuzzleHttp\Client as GuzzleClient;
+use RetailRocket\Http\Client; // Internal client takes precedence or is aliased if needed
+
+````
+
+## Constructor Parameter Rules
+
+### Strict Null Handling
+
+- **Never allow nullable constructor parameters** unless the parameter is genuinely optional.
+- If a class dependency is required for the object to function, make it required (no `?` or `= null`).
+- Nullable parameters signal "this is optional" - use them only when the class can legitimately operate without the dependency.
+
+### Bad
+
+```php
+public function __construct(?Logger $logger = null) // Wrong: if logging is required, require it
+````
+
+### Good
+
+```php
+public function __construct(Logger $logger) // Correct: required dependency is required
+```
+
+### Exception
+
+Nullable is acceptable when:
+
+- The dependency enables optional functionality (e.g., optional caching layer)
+- The class has explicit null-handling logic that provides a meaningful fallback
+
+## Dependency Injection Policy
+
+### Prefer Constructor Injection
+
+- **Always use dependency injection** - pass dependencies through constructors, not via service locators or factories mid-method.
+- Avoid calling `app()`, `Container::make()`, or similar service locators in the middle of methods. This is a code smell.
+- If a dependency is needed, inject it through the constructor or method signature.
+
+### Bad
+
+```php
+public function processOrder(): void
+{
+    $validator = app(OrderValidator::class); // Code smell: hidden dependency
+    $mailer = app()->make(Mailer::class);    // Code smell: untraceable dependency
+}
+```
+
+### Good
+
+```php
+public function __construct(
+    private OrderValidator $validator,
+    private Mailer $mailer
+) {}
+
+public function processOrder(): void
+{
+    $this->validator->validate($order);
+    $this->mailer->send($confirmation);
+}
+```
+
+### Exception
+
+Service locator patterns may be acceptable when:
+
+- In framework bootstrapping or entry points (controllers, commands, event handlers)
+- Injecting the dependency would create excessive complexity (rare)
+- Document the reason if using `app()` outside constructors

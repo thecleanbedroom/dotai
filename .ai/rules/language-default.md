@@ -15,3 +15,18 @@
 
 - **Match TargetContent exactly** - The TargetContent must match the file exactly, including all whitespace and indentation. View the target lines immediately before editing to capture exact content.
 - **Preserve surrounding structure** - When replacing code inside a block, ensure the replacement maintains all enclosing braces: if the target includes `}`, the replacement must include it too.
+
+## Code Preservation Rules
+
+### Comment Preservation
+
+- **Never remove commented-out code** unless explicitly asked. Commented code often represents intentional placeholders, debugging aids, or future work.
+- **Preserve all existing comments** including inline comments, block comments, and documentation comments.
+- If refactoring moves code, move its associated comments with it.
+
+### Logic Stability
+
+- **Never arbitrarily change logic** - Only modify logic when explicitly required to complete the requested task.
+- Do not "improve" working code unless the improvement is directly requested.
+- When fixing a bug, change only the minimum code necessary to resolve the issue.
+- If you believe logic should be changed but it wasn't requested, ask first before modifying.
