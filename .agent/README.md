@@ -7,7 +7,7 @@ This directory contains AI agent skills and project-specific bundle configuratio
 ```
 .agent/
 ├── config/bundles/     # Project-specific skill bundles (source controlled)
-├── skills/             # Skills library (symlinked from vendor, gitignored)
+├── skills/             # Skills library
 ├── workflows/          # Workflow definitions
 └── rules/              # Agent rules
 ```
