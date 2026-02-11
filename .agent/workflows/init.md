@@ -4,7 +4,7 @@ description: Initialize agent by loading all AI policy rules from .ai/index.md
 
 # Initialize AI Policy Context
 
-Load all AI governance rules at the start of a session.
+Load all AI governance rules at the start of a session. No real response needed
 
 ## Steps
 
