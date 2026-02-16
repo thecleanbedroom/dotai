@@ -48,7 +48,8 @@ rsync -av \
     --exclude '.gitmodules' \
     --exclude 'PROJECT.md' \
     --exclude '.agent/skills' \
+    --exclude '.agent/dotai' \
     "$temp_dir/policy/" "$TARGET_DIR/"
 
 echo 'Policy files synchronized. Review changes and commit as needed.'
-echo 'Run /build-skills to install project-specific skills.'
+echo 'Run /add-skills to install project-specific skills.'
