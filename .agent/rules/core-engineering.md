@@ -5,10 +5,11 @@ Complement workflow rules. Apply to all code changes.
 ## API / Interface Discipline
 
 - Stable interfaces at boundaries (functions, modules, components). Optional params over duplicated paths. Consistent error semantics.
+- When a method returns a collection that can be full or subset (filtered, paginated), use explicit naming (`getAllX()` vs `getFilteredX()`). Never leave the default ambiguous. When adding a filter to a data source, audit all consumers to verify they use the correct variant.
 
 ## Testing Strategy
 
-- Smallest test that catches the bug. Unit for pure logic, integration for boundaries, E2E for critical flows only. Avoid brittle implementation-detail tests.
+→ See `core-testing.md` for full testing rules.
 
 ## Type Safety
 
@@ -18,9 +19,20 @@ Complement workflow rules. Apply to all code changes.
 
 - No new deps unless existing stack can't solve it cleanly. Prefer stdlib/existing utilities.
 
+## Configuration
+
+- When adding env vars, scan the config file for an existing section header that matches. Place the new var under that section, grouped with related vars. Never create a duplicate section header.
+- When a value is already defined in config (database connections, queue names, cache stores), derive it dynamically. Never duplicate infrastructure definitions as hardcoded constants.
+- Before overriding framework config defaults, read the upstream vendor/source default first. Only override values that genuinely differ from upstream.
+- When customizing shared config, merge only the keys you own — don't replace the entire namespace. Keep a minimal config with just your additions.
+
+## CLI Commands
+
+- When creating a new CLI command, register it in the appropriate framework registry (service provider, plugin bootstrap, etc.) in the same edit batch. Don't leave commands unregistered.
+
 ## Security & Privacy
 
-- No secrets in code, logs, or output. User input is untrusted — validate, sanitize, constrain. Least privilege.
+→ See `core-quality-assurance.md` § Security & Privacy for full rules.
 
 ## Performance
 

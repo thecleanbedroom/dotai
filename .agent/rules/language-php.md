@@ -3,6 +3,7 @@
 ## Standards
 
 - PSR-12 style, SOLID principles, `declare(strict_types=1)`.
+- CRITICAL: Always start with the most restrictive visibility (`private` or `protected`). Only widen to `public` when external access is explicitly required.
 - Type hints on all parameters/returns; `?` only for genuinely optional types.
 - Constructor property promotion where applicable.
 - Group `use` statements by type (classes, functions, constants).

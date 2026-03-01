@@ -14,7 +14,7 @@ Lightweight workflow for reactive work: bug fixes, hotfixes, and small follow-up
 ## SDLC Pipeline
 
 **Full path**: `/plan` → `/implement` → `/close`
-**Lightweight**: **`/capture`** (self-contained — for ad-hoc fixes)
+**Lightweight**: **`/capture`** (self-contained) | `/hotfix` (fast-track)
 
 **You are here**: `/capture` — documenting and filing ad-hoc work
 

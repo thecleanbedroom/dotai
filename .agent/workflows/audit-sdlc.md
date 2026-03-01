@@ -28,6 +28,7 @@ Read every file in `.agent/workflows/`. Identify which are SDLC workflows (have 
 - `implement.md` (Step 2/3)
 - `close.md` (Step 3/3)
 - `capture.md` (Shortcut)
+- `hotfix.md` (Shortcut)
 
 ### 2. Run consistency checks
 

@@ -12,7 +12,7 @@ Finalize a completed planning document: append walkthrough, create debt doc for 
 ## SDLC Pipeline
 
 **Full path**: `/plan` → `/implement` → **`/close`**
-**Lightweight**: `/capture` (self-contained — for ad-hoc fixes)
+**Lightweight**: `/capture` (self-contained) | `/hotfix` (fast-track)
 
 **You are here**: `/close` — finalizing and filing the completed work
 
@@ -23,79 +23,100 @@ Finalize a completed planning document: append walkthrough, create debt doc for 
 Read the target document. Check the frontmatter `> Status:` line:
 
 - **`In Progress`**: Proceed with closing
-- **`Done` but not in `finished/`**: Proceed — just needs filing (skip to step 4)
+- **`Done` but not in `finished/`**: Proceed — just needs filing (skip to step 5)
 - **`Draft` or `Planned`**: Tell user: "This doc needs planning. Run `/plan`."
 - **`Approved`**: Tell user: "This doc hasn't been implemented yet. Run `/implement`."
 - **Anything else**: Tell user which step to run based on the status.
 
 #### Verify Progress table
 
-If the document has a `## Progress` table (created by `/implement`), check that **every item** has a terminal status (`✅ Done`, `🚫 Blocked`, or `🗑️ Debt`).
+If the document has a `## Progress` table, check that **every item** has a terminal status (`✅ Done`, `🚫 Blocked`, or `🗑️ Debt`).
 
-If any items are `⬜ Ready` or `🔧 In Progress`, list them and ask the user to resolve each one:
+If any items are `⬜ Ready` or `🔧 In Progress`, list them and ask the user to resolve each: **✅ Done** | **🗑️ Debt** | **🚫 Blocked**. Update table, then proceed.
 
-> These items aren't marked complete:
->
-> - Phase 3: `🔧 In Progress`
-> - Phase 4: `⬜ Ready`
->
-> For each, choose: **✅ Done** | **🗑️ Debt** | **🚫 Blocked**
-
-Update the Progress table with their answers, then proceed. Items marked as debt/blocked will flow into the debt doc (step 2).
-
-If no Progress table exists (older docs), infer completion from the document content and confirm with the user.
+If no Progress table exists (older docs), infer completion and confirm with user.
 
 ### 2. Run tests (mandatory gate)
 
-Before closing, verify all tests pass. This is a **hard gate** — do not proceed to walkthrough or filing until tests are green.
+**Hard gate** — do not proceed until tests are green.
+
+> [!TIP]
+> **Skip if already green**: If the full test suite passed earlier in this conversation **and no code changes since**, skip re-running. Note prior result in walkthrough.
 
 #### Discover how to run tests
 
 // turbo
 
-Check for test infrastructure in this order:
-
-1. **Makefile**: Look for `test`, `artisan-test`, or similar targets (`grep -i test Makefile`)
-2. **docker-compose.yml / lando.yml**: If tests fail locally due to PHP version or missing deps, look for containerized commands:
-   - **Lando**: `lando php artisan test`, `lando phpunit`
-   - **Docker Compose**: `docker compose exec app php artisan test`
-   - **Make targets**: `make artisan-test`, `make test`
-3. **package.json**: `npm test`, `npx vitest`, etc.
-4. **Direct**: `php artisan test`, `phpunit`, `pytest`, etc.
+Check in order: Makefile targets → Docker/Lando commands → package.json scripts → direct commands (`php artisan test`, `phpunit`, etc.).
 
 > [!IMPORTANT]
-> If you see a PHP version mismatch error (e.g., "requires >= 8.2.0, running 8.1"), **do not skip tests**. Find the containerized command (Makefile, Lando, Docker) that runs tests in the correct environment.
+> PHP version mismatch? Find the containerized command — do not skip tests.
 
 #### Run the tests
 
 // turbo
 
-Run the full test suite (or the relevant subset if the project is very large). Capture the output.
+Run full test suite and capture output.
 
 #### Handle failures
 
-- **Failures caused by your changes**: Fix them inline. This is expected — refactors often break mocks, assertions, or constructor signatures in tests you didn't directly modify. After fixing, re-run tests.
-- **Pre-existing failures** unrelated to changes: Note them in the walkthrough but don't block closing.
-- **Cannot determine**: If unsure whether a failure is yours, check `git diff` to see if the failing test's dependencies were modified.
+- **Your changes**: Fix inline, re-run.
+- **Pre-existing**: Fix inline, re-run. All failures must be resolved.
+- **Unsure**: Check `git diff` for modified dependencies.
 
-**Repeat until all tests pass** (or only pre-existing failures remain). Then proceed.
+Repeat until green — zero failures required.
 
-### 3. Create the debt document (if needed)
+### 3. Run PHPStan (mandatory gate)
 
-When any items were parked:
+**Hard gate** — do not proceed until clean.
+
+> [!TIP]
+> **Skip if already green**: If `make phpstan` passed during `/implement` (step 8) **and no code changes since**, skip. Note in walkthrough.
 
 // turbo
 
-Create a sister document with the same slug but `-debt` suffix:
-
-```
-Original:  docs/2026-02-12T0744--shopify-auditor.md
-Debt doc:  docs/2026-02-12T0744--shopify-auditor-debt.md
+```bash
+make phpstan
 ```
 
-The datetime prefix matches the **original** document (not the current time).
+- **Your changes**: Fix inline, re-run.
+- **Pre-existing**: Fix inline, re-run. All errors must be resolved.
 
-Structure the debt doc as a **planning doc with status `Draft`** — it flows directly into `/plan`:
+Repeat until zero errors.
+
+### 4. Test new code
+
+Check whether new files/methods created during implementation lack test coverage. **Quality gate** — new code should not be closed without tests.
+
+1. Identify new files from Progress table / walkthrough
+2. Check for existing test files matching new classes
+3. Write focused tests (happy path, edge cases, boundaries) for uncovered new code
+4. Re-run test suite after adding tests
+
+> [!TIP]
+> **Skip if already covered**: If tests were written during implementation, verify they exist and move on.
+
+> [!NOTE]
+> New code only — extending coverage for pre-existing code is out of scope. File as debt if needed.
+
+### 5. Code smell sweep
+
+Quick scan of touched files and neighbors for smells: duplicated logic, dead code, wrong abstraction, magic values, missing interface methods.
+
+For each smell: create a **separate debt doc** in `docs/` with `> Status: Debt`. One doc per issue.
+
+> [!IMPORTANT]
+> **Do NOT fix smells inline during close** — that's scope creep. File as debt, announce to user, move on.
+
+If none found, skip.
+
+### 6. Create the debt document (if needed)
+
+When items were parked (Progress table) or smells filed (step 5):
+
+// turbo
+
+Create a sister doc with same slug + `-debt` suffix. Datetime prefix uses the **current time** (when debt is filed), not the parent doc's timestamp.
 
 ```markdown
 # <Original Title> — Remaining Debt
@@ -106,25 +127,21 @@ Structure the debt doc as a **planning doc with status `Draft`** — it flows di
 
 ## Requirement
 
-The following items from the parent plan were parked during implementation.
-
 ### <Item Name>
 
-- **What it is**: <what was originally planned>
-- **Why parked**: <reason it couldn't be completed>
-- **What's needed**: <what must happen before this can proceed>
+- **What**: <originally planned>
+- **Why parked**: <reason>
+- **Needed**: <what must happen>
 - **Priority**: High | Medium | Low
 ```
 
-Debt docs stay in the **active** `docs/` directory — they represent open work ready for `/plan`.
+Debt docs stay in active `docs/` — ready for `/plan`.
 
-Tell the user: `Debt doc created. Run /plan docs/<debt-filename>.md when ready.`
-
-### 4. Append walkthrough to the source document
+### 7. Append walkthrough to the source document
 
 // turbo
 
-Append a `## Walkthrough` section to the **original planning document**. This is the permanent record of what happened.
+Append a `## Walkthrough` section — the permanent record of what happened:
 
 ```markdown
 ## Walkthrough
@@ -133,88 +150,72 @@ Append a `## Walkthrough` section to the **original planning document**. This is
 
 ### Plan vs Reality
 
-| Phase | Planned                  | Outcome                | Notes                                |
-| ----- | ------------------------ | ---------------------- | ------------------------------------ |
-| 1a    | Validators + AuditEngine | ✅ Done (pre-existing) | Already implemented before this plan |
-| 2a    | Migration + model        | ✅ Done                | Created product_audits table         |
-| 2b    | Queue job                | ❌ Removed             | Decision: run inline, no job needed  |
-| 3a    | Admin panel extension    | 🚫 Debt                | Parked: requires separate session    |
+| Phase | Planned     | Outcome | Notes |
+| ----- | ----------- | ------- | ----- |
+| 1     | Description | ✅ Done | Notes |
 
-### Files Created
+### Files Created / Modified
 
-| File                         | Purpose     |
-| ---------------------------- | ----------- |
-| [filename.php](file:///path) | Description |
-
-### Files Modified
-
-| File                         | Change           |
-| ---------------------------- | ---------------- |
-| [filename.php](file:///path) | What was changed |
+| File                | Purpose/Change |
+| ------------------- | -------------- |
+| [file.php](../path) | Description    |
 
 ### Decisions Made
 
-1. **<Topic>**: <answer> — Rationale: <why>
+1. **Topic**: answer — Rationale
 
 ### Open Debt
 
-List of parked items with link to debt doc (if created).
+Items + link to debt doc (if created).
 ```
 
-### 5. Finalize the original document
+### 8. Finalize the original document
 
 // turbo
 
-Update the original document frontmatter:
+- Set status to `Done`
+- Add `> Finished: YYYY-MM-DD HH:MM (local)` line
+- If debt doc created, add `> Debt: <link>` line
 
-- Set status to `Done` (whether or not debt exists — the plan's work is finished)
-- Add a `> Finished: YYYY-MM-DD HH:MM (local)` line (current datetime)
-- If a debt doc was created, add a `> Debt: <link to debt doc>` line
-- Update the Changelog table
-
-### 6. Move to finished
+### 9. Move to finished
 
 // turbo
 
-Rename the file's datetime prefix to the **current finish time**, then move to `finished/`:
+Rename datetime prefix to **current finish time**, move to `finished/`:
 
 ```bash
-# Example: created at 07:44, finished at 13:48
-mv docs/2026-02-12T0744--shopify-auditor.md docs/finished/2026-02-12T1348--shopify-auditor.md
+mv docs/2026-02-12T0744--slug.md docs/finished/2026-02-12T1348--slug.md
 ```
 
-The filename reflects **when the work was completed**, not when the doc was created. This keeps `finished/` in chronological completion order.
+Filename reflects completion time. For module docs, use module's `docs/finished/`.
 
-For module-specific docs, move to the module's `docs/finished/` directory.
+#### Rebase relative links
 
-### 7. Report
+// turbo
 
-Summarize to the user:
+Moving adds one directory level — prefix each relative path with `../`:
 
-- Items completed (count and key highlights)
-- Items parked as debt (count and reasons)
-- Decisions recorded
-- File paths created/moved
-- Test results (pass count, assertion count)
-- Any follow-up actions needed
+```bash
+sed -i 's|(\.\.\/|(../../|g; s|(\.\./|(../../|g' docs/finished/<filename>.md
+```
+
+Spot-check links. Update any docs referencing the moved file.
+
+### 10. Report
+
+Summarize: items completed, items as debt, decisions, file paths, test results, follow-ups.
 
 #### Git commit message
 
-Provide a **copy-paste ready** commit message following conventional commits format. Use the doc slug as the scope:
+Copy-paste ready conventional commit. Derive scope from doc slug:
 
 ```
-feat(wp-plugin-api): fix auth bypass, refactor findProductByUrl
+feat(scope): summary
 
-- Remove `return true;` permission bypass on 5 REST endpoints
-- Refactor findProductByUrl → findProductIdByUrl (uses rr/products/meta)
-- Update 7 test methods for new mock expectations
+- One line per logical change
+- Prefixed with -
 
-Closes: docs/2026-02-13T2119--wp-plugin-api-reconciliation.md
+Closes: docs/finished/YYYY-MM-DDTHHMM--slug.md
 ```
 
-Rules:
-
-- **Type**: `feat` for features, `fix` for bugs, `refactor` for restructuring, `security` for security fixes
-- **Scope**: Derive from the doc slug (e.g., `wp-plugin-api` from `--wp-plugin-api-reconciliation.md`)
-- **Body**: One line per logical change, prefixed with `-`
-- **Footer**: Reference the planning doc
+Types: `feat` | `fix` | `refactor` | `security`. Body: `-` per change. Footer: reference planning doc.

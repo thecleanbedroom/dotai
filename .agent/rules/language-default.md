@@ -17,3 +17,4 @@
 ## Error Handling
 
 - Prefer exceptions over silent fallbacks — fail loud, not quiet.
+- When an error message contains multiple identifiers (advisory IDs, error codes, CVEs), extract and address all of them. Re-read the full error message before implementing the fix.

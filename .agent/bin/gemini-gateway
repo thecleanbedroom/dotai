@@ -32,23 +32,37 @@ import time
 # Edit these values to tune the gateway. Every parameter is commented.
 CONFIG = {
     # Model name mapping (intent label → full Gemini model string)
-    # Use intent labels with --model flag: --model quick, --model fast, --model think, --model deep
+    # Use intent labels with --model flag: --model lite, --model quick, --model fast, --model think, --model deep
     # To swap underlying models, change here only.
     # Direct model names (e.g. "gemini-2.5-flash") also work as --model values.
+    # 5 tiers = 5 concurrent cross-model slots for true parallelism.
     "models": {
-        "quick": "gemini-2.5-flash",         # Lightest — trivial edits, config changes, one-liners
+        "lite":  "gemini-2.5-flash-lite",     # Cheapest — spot checks, config reads, single greps
+        "quick": "gemini-2.5-flash",          # Light — trivial edits, config changes, one-liners
         "fast":  "gemini-3-flash-preview",    # Smarter flash — simple methods, renames, refactors
         "think": "gemini-2.5-pro",            # Proven pro — multi-file refactors, new classes
-        "deep":  "gemini-3-pro-preview",      # Deepest reasoning — architecture, complex logic
+        "deep":  "gemini-3.1-pro-preview",    # Deepest reasoning — architecture, complex logic
     },
 
+    # Model buckets — which models can substitute for each other in batch parallel dispatch.
+    # Within a batch, if the requested model's slot is busy, the gateway tries other models
+    # in the same bucket. Any model in the bucket can handle the work; the orchestrator
+    # reviews all output anyway. Upgrade (left→right) and downgrade are both allowed.
+    "model_buckets": [
+        ["lite", "quick", "fast"],   # Flash bucket — speed-optimized
+        ["think", "deep"],           # Pro bucket — reasoning-optimized
+    ],
+
     # Max concurrent execution slots per model (how many run simultaneously)
-    # This is the throttle — keeps RPM within quota
+    # IMPORTANT: gemini CLI cannot run 2 sandboxes on the same model concurrently.
+    # Concurrent same-model jobs fail with exit code -2 (sandbox conflict).
+    # Keep at 1 per model. Cross-model parallelism (fast + think) still works.
     "max_concurrent": {
-        "quick": 2,
-        "fast":  2,
-        "think": 2,
-        "deep":  2,
+        "lite":  1,
+        "quick": 1,
+        "fast":  1,
+        "think": 1,
+        "deep":  1,
     },
 
     # Max total pending jobs per model (waiting + running + retrying)
@@ -56,6 +70,7 @@ CONFIG = {
     # Jobs beyond max_queue are rejected immediately with exit 2 (QUEUE_FULL).
     # Set high — the workflow decides batch size, not the gateway.
     "max_queue": {
+        "lite":  50,
         "quick": 50,
         "fast":  50,
         "think": 50,
@@ -69,6 +84,7 @@ CONFIG = {
     # Higher = safer cold start, lower = faster but riskier
     # The adaptive algorithm will tune this automatically over time
     "initial_gap_ms": {
+        "lite":  1500,
         "quick": 2000,
         "fast":  2000,
         "think": 3000,
@@ -81,6 +97,7 @@ CONFIG = {
     # 3 concurrent sessions, peak launch rate is ~75/min — manageable because
     # the adaptive learning backs off if sessions start failing.
     "floor_ms": {
+        "lite":  1000,
         "quick": 1500,
         "fast":  1500,
         "think": 2000,
@@ -123,10 +140,10 @@ CONFIG = {
     # Maximum retry attempts for rate-limited requests before giving up
     "max_retries": 3,  # Tuned from 5 — fail fast and let me do it, 5 retries wasted ~30s
 
-    # Default subprocess timeout (seconds) — overridable via --timeout flag
-    # Pro tasks averaged 30s with p95 at 63s in testing. 90s gives headroom.
-    # Use --timeout 30 for quick tasks you want to fail fast.
-    "timeout_s": 90,
+    # Default subprocess timeout (seconds)
+    # With writable mode, models read source + write files — needs generous timeout.
+    # Killing a working process is the worst outcome (wasted work, must redo).
+    "timeout_s": 420,
 
     # Strings in stdout/stderr that indicate a rate-limit (any match triggers retry)
     "rate_limit_signals": [
@@ -144,7 +161,23 @@ CONFIG = {
     "cleanup_days": 7,
 
     # Database path (resolved relative to this script's directory)
-    "db_path": "../data/gateway.sqlite",
+    "db_path": "data/gateway.sqlite",
+
+    # System instruction prefix — prepended to every user prompt.
+    # Mirrors Antigravity's own prompt structure: identity → tool guidance → output format.
+    "system_prefix": (
+        "You are a code generation subagent dispatched by an orchestrating agent. "
+        "The orchestrator will review your work via `git diff` after you finish.\n\n"
+        "Tool usage:\n"
+        "- Read source code, existing tests, interfaces, and project conventions before writing.\n"
+        "- Write files directly using your file-writing tools. Create or modify files as needed.\n"
+        "- CRITICAL: Only write files within the current working directory. Do NOT write outside the codebase.\n\n"
+        "Output format:\n"
+        "- Write code directly to the target file paths.\n"
+        "- Include all necessary imports, namespace declarations, and use statements.\n"
+        "- Do NOT add explanations or commentary — just write the files.\n"
+        "---\n"
+    ),
 }
 
 
@@ -157,6 +190,7 @@ CREATE TABLE IF NOT EXISTS requests (
     status TEXT NOT NULL,
     label TEXT,
     prompt_hash TEXT NOT NULL,
+    prompt_text TEXT,
     pid INTEGER,
     cwd TEXT NOT NULL,
     created_at REAL NOT NULL,
@@ -164,7 +198,14 @@ CREATE TABLE IF NOT EXISTS requests (
     finished_at REAL,
     exit_code INTEGER,
     retry_count INTEGER NOT NULL DEFAULT 0,
-    error TEXT
+    error TEXT,
+    tokens_in INTEGER,
+    tokens_out INTEGER,
+    tokens_cached INTEGER,
+    tokens_thoughts INTEGER,
+    tool_calls INTEGER,
+    api_latency_ms INTEGER,
+    batch_id TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_requests_active
@@ -182,70 +223,105 @@ CREATE TABLE IF NOT EXISTS pacing (
 );
 """
 
+# ── Database ──────────────────────────────────────────
+
+class GatewayDB:
+    """SQLite database for gateway state: requests and pacing."""
+
+    SCHEMA_SQL = SCHEMA_SQL  # Reference the module-level constant
+
+    def __init__(self, config, db_path=None):
+        self.config = config
+        if db_path == ":memory:":
+            self._db_path = ":memory:"
+        else:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            self._db_path = db_path or os.path.normpath(
+                os.path.join(script_dir, config["db_path"])
+            )
+            os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
+
+        self.conn = sqlite3.connect(self._db_path)
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("PRAGMA journal_mode=WAL")
+        self.conn.execute("PRAGMA busy_timeout=10000")
+        self.conn.execute("PRAGMA synchronous=NORMAL")
+        self.conn.executescript(self.SCHEMA_SQL)
+        self._run_migrations()
+        self._ensure_output_dir()
+        self._seed_pacing()
+
+    def _run_migrations(self):
+        """Apply schema migrations for existing databases."""
+        try:
+            self.conn.execute("SELECT prompt_text FROM requests LIMIT 0")
+        except sqlite3.OperationalError:
+            self.conn.execute("ALTER TABLE requests ADD COLUMN prompt_text TEXT")
+            self.conn.commit()
+
+        try:
+            self.conn.execute("SELECT tokens_in FROM requests LIMIT 0")
+        except sqlite3.OperationalError:
+            for col in ["tokens_in INTEGER", "tokens_out INTEGER", "tokens_cached INTEGER",
+                         "tokens_thoughts INTEGER", "tool_calls INTEGER", "api_latency_ms INTEGER"]:
+                self.conn.execute(f"ALTER TABLE requests ADD COLUMN {col}")
+            self.conn.commit()
+
+        try:
+            self.conn.execute("SELECT batch_id FROM requests LIMIT 0")
+        except sqlite3.OperationalError:
+            self.conn.execute("ALTER TABLE requests ADD COLUMN batch_id TEXT")
+            self.conn.commit()
+
+    def _ensure_output_dir(self):
+        """Create output directory for response files."""
+        if self._db_path != ":memory:":
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            output_dir = os.path.join(script_dir, "data", "gateway-output")
+            os.makedirs(os.path.normpath(output_dir), exist_ok=True)
+
+    def _seed_pacing(self):
+        """Ensure pacing rows exist for all configured models."""
+        for alias, full_name in self.config["models"].items():
+            initial_gap = self.config["initial_gap_ms"].get(alias, 1200)
+            self.conn.execute(
+                "INSERT OR IGNORE INTO pacing (model, min_gap_ms) VALUES (?, ?)",
+                (full_name, initial_gap)
+            )
+        self.conn.commit()
+
+    def clean_stale_pids(self):
+        """Check running/waiting/retrying requests for dead PIDs. Mark as failed."""
+        rows = self.conn.execute(
+            "SELECT id, pid FROM requests WHERE status IN ('waiting', 'running', 'retrying') AND pid IS NOT NULL"
+        ).fetchall()
+        for row in rows:
+            try:
+                os.kill(row["pid"], 0)
+            except (ProcessLookupError, PermissionError):
+                self.conn.execute(
+                    "UPDATE requests SET status='failed', error='process died (stale PID)', finished_at=? WHERE id=?",
+                    (time.time(), row["id"])
+                )
+        self.conn.commit()
+
+    def cleanup_old_requests(self):
+        """Delete completed/failed requests older than cleanup_days."""
+        cutoff = time.time() - self.config["cleanup_days"] * 86400
+        self.conn.execute(
+            "DELETE FROM requests WHERE status IN ('done', 'failed') AND finished_at < ?",
+            (cutoff,)
+        )
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+
 
 def get_script_dir():
     """Get the directory containing this script."""
     return os.path.dirname(os.path.abspath(__file__))
 
-
-def get_db_path():
-    """Resolve the database path relative to the script location."""
-    return os.path.normpath(os.path.join(get_script_dir(), CONFIG["db_path"]))
-
-
-def get_db():
-    """Open SQLite connection with required pragmas, ensure schema exists."""
-    db_path = get_db_path()
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-
-    # Required pragmas for concurrent access
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA busy_timeout=10000")
-    conn.execute("PRAGMA synchronous=NORMAL")
-
-    # Create tables if first run
-    conn.executescript(SCHEMA_SQL)
-
-    # Ensure pacing rows exist for all configured models
-    for alias, full_name in CONFIG["models"].items():
-        initial_gap = CONFIG["initial_gap_ms"].get(alias, 1200)
-        conn.execute(
-            "INSERT OR IGNORE INTO pacing (model, min_gap_ms) VALUES (?, ?)",
-            (full_name, initial_gap)
-        )
-    conn.commit()
-
-    return conn
-
-
-def clean_stale_pids(conn):
-    """Check running/waiting/retrying requests for dead PIDs. Mark as failed."""
-    rows = conn.execute(
-        "SELECT id, pid FROM requests WHERE status IN ('waiting', 'running', 'retrying') AND pid IS NOT NULL"
-    ).fetchall()
-
-    for row in rows:
-        try:
-            os.kill(row["pid"], 0)  # Check if process is alive
-        except (ProcessLookupError, PermissionError):
-            conn.execute(
-                "UPDATE requests SET status='failed', error='process died (stale PID)', finished_at=? WHERE id=?",
-                (time.time(), row["id"])
-            )
-    conn.commit()
-
-
-def cleanup_old_requests(conn):
-    """Delete completed/failed requests older than cleanup_days."""
-    cutoff = time.time() - CONFIG["cleanup_days"] * 86400
-    conn.execute(
-        "DELETE FROM requests WHERE status IN ('done', 'failed') AND finished_at < ?",
-        (cutoff,)
-    )
-    conn.commit()
 
 
 def resolve_model(alias):
@@ -285,20 +361,34 @@ def build_parser():
     parser.add_argument("--prompt", "-p", help="Prompt string to pass to Gemini")
     parser.add_argument("--prompt-file", "-f", help="Read prompt from file (for large prompts that exceed CLI arg limits)")
     parser.add_argument("--label", "-l", help="Short job description for observability")
-    parser.add_argument("--timeout", "-t", type=int, default=None,
-                        help=f"Subprocess timeout in seconds (default: {CONFIG['timeout_s']})")
     parser.add_argument("--cwd", default=None, help="Working directory for Gemini (default: $PWD)")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Text-only mode (--sandbox false): no tool use, no file access. "
+                             "Default is agentic (--yolo) for better code quality.")
+    parser.add_argument("--batch", action="store_true",
+                        help="Batch dispatch mode: read JSON array of jobs from stdin. "
+                             "Each entry: {model, prompt, label?, timeout?, cwd?, sandbox?}")
 
     # Observability commands
     parser.add_argument("--status", action="store_true", help="Show queue status per model (JSON)")
     parser.add_argument("--jobs", action="store_true", help="List active jobs (JSON)")
     parser.add_argument("--pacing", action="store_true", help="Show adaptive pacing state (JSON)")
     parser.add_argument("--stats", action="store_true", help="Show historical performance stats (JSON)")
-    parser.add_argument("--last", default=None, help="Time window for --stats (e.g. 1h, 24h)")
+    parser.add_argument("--last", default=None, help="Time window for --stats/--errors (e.g. 1h, 24h)")
+    parser.add_argument("--errors", action="store_true", help="Show recent failed jobs with error details")
+
+    # Retry command
+    parser.add_argument("--retry", type=int, default=None, metavar="ID",
+                        help="Retry a failed job by ID using its stored prompt")
+
+    # Tail (monitoring) command
+    parser.add_argument("--tail", action="store_true",
+                        help="Live-monitor gateway activity (Ctrl+C to stop)")
 
     # Cancel command
     parser.add_argument("--cancel", nargs="?", const="ALL", default=None,
-                        help="Cancel a job by ID, or all jobs for a model (with --model)")
+                        help="Cancel a job by ID, batch ID, or all jobs for a model (with --model)")
+    parser.add_argument("--batch-id", default=None, help="Internal: batch ID assigned by --batch dispatcher")
 
     return parser
 
@@ -309,9 +399,10 @@ def main():
     args = parser.parse_args()
 
     # Open DB, clean stale PIDs and old records
-    conn = get_db()
-    clean_stale_pids(conn)
-    cleanup_old_requests(conn)
+    db = GatewayDB(CONFIG)
+    conn = db.conn
+    db.clean_stale_pids()
+    db.cleanup_old_requests()
 
     try:
         if args.status:
@@ -326,9 +417,19 @@ def main():
         elif args.stats:
             result = cmd_stats(conn, args.last)
             print(json.dumps(result, indent=2))
+        elif args.errors:
+            result = cmd_errors(conn, args.last)
+            print(json.dumps(result, indent=2))
+        elif args.retry is not None:
+            sys.exit(cmd_retry(conn, args.retry))
+        elif args.tail:
+            cmd_tail(conn)
         elif args.cancel is not None:
             result = cmd_cancel(conn, args.cancel, args.model)
             print(json.dumps(result, indent=2))
+        elif args.batch:
+            # Batch dispatch: read JSON array from stdin
+            sys.exit(cmd_batch(conn, args))
         elif args.model and (args.prompt or args.prompt_file or not sys.stdin.isatty()):
             # Resolve prompt: --prompt > --prompt-file > stdin
             if not args.prompt and args.prompt_file:
@@ -348,64 +449,64 @@ def main():
             parser.print_help()
             sys.exit(1)
     finally:
-        conn.close()
+        db.close()
 
 
-# ── Pacing helpers ─────────────────────────────────────
+# ── Pacing ─────────────────────────────────────────────
 
-def update_pacing_success(conn, model):
-    """Update pacing after a successful request — speed up."""
-    row = conn.execute("SELECT * FROM pacing WHERE model=?", (model,)).fetchone()
-    if not row:
-        return
+class PacingManager:
+    """Adaptive rate-limit manager: speeds up on success, slows down on rate-limit."""
 
-    # Look up model alias for floor config
-    alias = None
-    for a, m in CONFIG["models"].items():
-        if m == model:
-            alias = a
-            break
-    floor = CONFIG["floor_ms"].get(alias, 800) if alias else 800
+    def __init__(self, conn, config):
+        self.conn = conn
+        self.config = config
 
-    consecutive = row["consecutive_ok"] + 1
-    gap = row["min_gap_ms"]
+    def _alias_for(self, model):
+        """Reverse-map full model name to alias."""
+        for a, m in self.config["models"].items():
+            if m == model:
+                return a
+        return None
 
-    if consecutive >= CONFIG["streak_threshold"]:
-        # Streak bonus: stronger speedup after sustained success
-        gap = max(floor, int(gap * CONFIG["streak_speedup"]))
-    else:
-        # Normal speedup after each success
-        gap = max(floor, int(gap * CONFIG["speedup_factor"]))
+    def on_success(self, model):
+        """Speed up gap after a successful request."""
+        row = self.conn.execute("SELECT * FROM pacing WHERE model=?", (model,)).fetchone()
+        if not row:
+            return
+        alias = self._alias_for(model)
+        floor = self.config["floor_ms"].get(alias, 800) if alias else 800
+        consecutive = row["consecutive_ok"] + 1
+        gap = row["min_gap_ms"]
+        if consecutive >= self.config["streak_threshold"]:
+            gap = max(floor, int(gap * self.config["streak_speedup"]))
+        else:
+            gap = max(floor, int(gap * self.config["speedup_factor"]))
+        backoff = max(0, row["backoff_ms"] - 500)
+        self.conn.execute("""
+            UPDATE pacing SET
+                min_gap_ms=?, backoff_ms=?,
+                consecutive_ok=?, total_ok=total_ok+1
+            WHERE model=?
+        """, (gap, backoff, consecutive, model))
 
-    # Drain backoff gradually
-    backoff = max(0, row["backoff_ms"] - 500)
+    def on_rate_limit(self, model):
+        """Slow down gap after a rate-limit."""
+        row = self.conn.execute("SELECT * FROM pacing WHERE model=?", (model,)).fetchone()
+        if not row:
+            return
+        gap = min(int(row["min_gap_ms"] * self.config["slowdown_factor"]), self.config["ceiling_ms"])
+        backoff = min(
+            max(row["backoff_ms"] * 2, self.config["backoff_initial_ms"]),
+            self.config["backoff_max_ms"]
+        )
+        self.conn.execute("""
+            UPDATE pacing SET
+                min_gap_ms=?, backoff_ms=?,
+                consecutive_ok=0, total_rate_limited=total_rate_limited+1
+            WHERE model=?
+        """, (gap, backoff, model))
 
-    conn.execute("""
-        UPDATE pacing SET
-            min_gap_ms=?, backoff_ms=?,
-            consecutive_ok=?, total_ok=total_ok+1
-        WHERE model=?
-    """, (gap, backoff, consecutive, model))
 
-
-def update_pacing_rate_limit(conn, model):
-    """Update pacing after a rate-limit — slow down."""
-    row = conn.execute("SELECT * FROM pacing WHERE model=?", (model,)).fetchone()
-    if not row:
-        return
-
-    gap = min(int(row["min_gap_ms"] * CONFIG["slowdown_factor"]), CONFIG["ceiling_ms"])
-    backoff = min(
-        max(row["backoff_ms"] * 2, CONFIG["backoff_initial_ms"]),
-        CONFIG["backoff_max_ms"]
-    )
-
-    conn.execute("""
-        UPDATE pacing SET
-            min_gap_ms=?, backoff_ms=?,
-            consecutive_ok=0, total_rate_limited=total_rate_limited+1
-        WHERE model=?
-    """, (gap, backoff, model))
 
 
 # ── Core dispatch ──────────────────────────────────────
@@ -418,12 +519,16 @@ def dispatch(conn, args):
     model = resolve_model(args.model)
     prompt = args.prompt
     label = args.label or ""
-    timeout = args.timeout or CONFIG["timeout_s"]
+    timeout = CONFIG["timeout_s"]
     cwd = args.cwd or os.getcwd()
     phash = prompt_hash(prompt)
     alias = args.model
-    max_concurrent = CONFIG["max_concurrent"].get(alias, 2)
+    max_concurrent = CONFIG["max_concurrent"].get(alias, 1)
     max_queue = CONFIG["max_queue"].get(alias, 4)
+
+    # Phase 1: Auto-generate batch_id for single dispatch (batch of 1)
+    import uuid as _uuid
+    batch_id = getattr(args, 'batch_id', None) or _uuid.uuid4().hex[:8]
 
     request_id = None
 
@@ -448,30 +553,65 @@ def dispatch(conn, args):
                 print(f"QUEUE_FULL: {alias} has {total_pending}/{max_queue} jobs pending. Execute on main thread.", file=sys.stderr)
                 return 2
 
-            # Concurrency check — if no execution slot, enqueue and poll-wait
+            # Concurrency check — if no execution slot, try bucket alternatives first
             if attempt == 0 and running >= max_concurrent:
-                # Insert as 'queued' (not yet paced)
-                cursor = conn.execute(
-                    """INSERT INTO requests (model, status, label, prompt_hash, pid, cwd, created_at, retry_count)
-                       VALUES (?, 'queued', ?, ?, ?, ?, ?, 0)""",
-                    (model, label, phash, os.getpid(), cwd, time.time())
-                )
-                request_id = cursor.lastrowid
-                conn.execute("COMMIT")
-                print(f"QUEUED: {alias} has {running}/{max_concurrent} running. Waiting for slot...", file=sys.stderr)
+                # Phase 3: Try other models in the same bucket before queuing
+                bucket = _find_bucket_for_model(alias)
+                if bucket:
+                    running_models = _get_running_models(conn)
+                    req_idx = bucket.index(alias)
+                    # Smarter first (higher index), then lesser (lower index)
+                    smarter = [m for m in bucket if bucket.index(m) > req_idx and m not in running_models]
+                    lesser = [m for m in bucket if bucket.index(m) < req_idx and m not in running_models]
+                    alternatives = smarter + lesser
+                    if alternatives:
+                        alt = alternatives[0]
+                        conn.execute("COMMIT")
+                        print(f"SPREAD: {alias} busy → {alt} (bucket rebalance)", file=sys.stderr)
+                        alias = alt
+                        model = resolve_model(alt)
+                        max_concurrent = CONFIG["max_concurrent"].get(alt, 1)
+                        max_queue = CONFIG["max_queue"].get(alt, 4)
+                        conn.execute("BEGIN EXCLUSIVE")
+                        running = conn.execute(
+                            "SELECT COUNT(*) FROM requests WHERE model=? AND status='running'",
+                            (model,)
+                        ).fetchone()[0]
+                        # Fall through to normal pacing below
+                        if running >= max_concurrent:
+                            # Even the alternative is busy — queue on original
+                            pass
+                        else:
+                            # Alternative is free — skip the queue-wait, go to pacing
+                            pass  # fall through naturally
 
-                # Poll-wait for a concurrency slot
-                while True:
-                    time.sleep(CONFIG["queue_poll_interval_s"])
-                    running = conn.execute(
-                        "SELECT COUNT(*) FROM requests WHERE model=? AND status='running'",
-                        (model,)
-                    ).fetchone()[0]
-                    if running < max_concurrent:
-                        break
+                # Still busy after spread attempt — enqueue and poll-wait
+                running = conn.execute(
+                    "SELECT COUNT(*) FROM requests WHERE model=? AND status='running'",
+                    (model,)
+                ).fetchone()[0]
+                if running >= max_concurrent:
+                    cursor = conn.execute(
+                        """INSERT INTO requests (model, status, label, prompt_hash, prompt_text, pid, cwd, created_at, retry_count, batch_id)
+                           VALUES (?, 'queued', ?, ?, ?, ?, ?, ?, 0, ?)""",
+                        (model, label, phash, prompt, os.getpid(), cwd, time.time(), batch_id)
+                    )
+                    request_id = cursor.lastrowid
+                    conn.execute("COMMIT")
+                    print(f"QUEUED: {alias} has {running}/{max_concurrent} running. Waiting for slot...", file=sys.stderr)
 
-                # Got a slot — re-enter the exclusive transaction for pacing
-                conn.execute("BEGIN EXCLUSIVE")
+                    # Poll-wait for a concurrency slot
+                    while True:
+                        time.sleep(CONFIG["queue_poll_interval_s"])
+                        running = conn.execute(
+                            "SELECT COUNT(*) FROM requests WHERE model=? AND status='running'",
+                            (model,)
+                        ).fetchone()[0]
+                        if running < max_concurrent:
+                            break
+
+                    # Got a slot — re-enter the exclusive transaction for pacing
+                    conn.execute("BEGIN EXCLUSIVE")
 
             # Read pacing data
             pacing = conn.execute("SELECT * FROM pacing WHERE model=?", (model,)).fetchone()
@@ -492,11 +632,11 @@ def dispatch(conn, args):
 
             # Insert or update request row
             if request_id is None:
-                # First attempt: insert new request
+                # First attempt: insert new request (batch_id set at top of dispatch)
                 cursor = conn.execute(
-                    """INSERT INTO requests (model, status, label, prompt_hash, pid, cwd, created_at, retry_count)
-                       VALUES (?, 'waiting', ?, ?, ?, ?, ?, 0)""",
-                    (model, label, phash, os.getpid(), cwd, now)
+                    """INSERT INTO requests (model, status, label, prompt_hash, prompt_text, pid, cwd, created_at, retry_count, batch_id)
+                       VALUES (?, 'waiting', ?, ?, ?, ?, ?, ?, 0, ?)""",
+                    (model, label, phash, prompt, os.getpid(), cwd, now, batch_id)
                 )
                 request_id = cursor.lastrowid
             else:
@@ -532,7 +672,12 @@ def dispatch(conn, args):
         # Ignore SIGINT so Gemini CLI's self-cancellation (exit 130) doesn't
         # kill the gateway wrapper. We handle rate-limits via exit code inspection.
         old_sigint = signal.signal(signal.SIGINT, signal.SIG_IGN)
-        cmd = ["gemini", "-m", model, "-p", "", "--yolo"]
+        # Default: --yolo (agentic mode — reads codebase for context, better output quality)
+        # With --sandbox: text-only mode (no tools, no file access — faster for simple prompts)
+        if getattr(args, 'sandbox', False):
+            cmd = ["gemini", "-m", model, "--sandbox", "false", "-o", "json"]
+        else:
+            cmd = ["gemini", "-m", model, "--yolo", "-o", "json"]
         try:
             proc = subprocess.Popen(
                 cmd,
@@ -550,7 +695,9 @@ def dispatch(conn, args):
             )
             conn.commit()
 
-            stdout, stderr = proc.communicate(input=prompt, timeout=timeout)
+            # Wrap prompt with system prefix to prevent file writes
+            full_prompt = CONFIG["system_prefix"] + prompt
+            stdout, stderr = proc.communicate(input=full_prompt, timeout=timeout)
             exit_code = proc.returncode
 
         except subprocess.TimeoutExpired:
@@ -571,7 +718,7 @@ def dispatch(conn, args):
 
         # ── Step 8: Rate-limited → back off and retry ──
         if detect_rate_limit(exit_code, stdout, stderr):
-            update_pacing_rate_limit(conn, model)
+            PacingManager(conn, CONFIG).on_rate_limit(model)
             conn.commit()
 
             if attempt < CONFIG["max_retries"]:
@@ -595,15 +742,89 @@ def dispatch(conn, args):
 
         # ── Step 9: Success ──
         if exit_code == 0:
-            update_pacing_success(conn, model)
+            PacingManager(conn, CONFIG).on_success(model)
+
+            # Parse JSON output from gemini -o json
+            response_text = stdout
+            tokens_in = tokens_out = tokens_cached = tokens_thoughts = None
+            tool_calls_count = api_latency = None
+            try:
+                data = json.loads(stdout)
+                response_text = data.get("response", "")
+                stats = data.get("stats", {})
+                # Extract token stats from first model entry
+                for model_stats in stats.get("models", {}).values():
+                    tok = model_stats.get("tokens", {})
+                    tokens_in = tok.get("input")
+                    tokens_out = tok.get("candidates")
+                    tokens_cached = tok.get("cached")
+                    tokens_thoughts = tok.get("thoughts")
+                    api_latency = model_stats.get("api", {}).get("totalLatencyMs")
+                    break  # Only first model
+                tool_stats = stats.get("tools", {})
+                tool_calls_count = tool_stats.get("totalCalls")
+            except (json.JSONDecodeError, TypeError, KeyError):
+                # Fallback: treat raw stdout as the response
+                response_text = stdout
+
             conn.execute(
-                "UPDATE requests SET status='done', finished_at=?, exit_code=0 WHERE id=?",
-                (time.time(), request_id)
+                """UPDATE requests SET status='done', finished_at=?, exit_code=0,
+                   tokens_in=?, tokens_out=?, tokens_cached=?, tokens_thoughts=?,
+                   tool_calls=?, api_latency_ms=?
+                   WHERE id=?""",
+                (time.time(), tokens_in, tokens_out, tokens_cached, tokens_thoughts,
+                 tool_calls_count, api_latency, request_id)
             )
             conn.commit()
-            if stdout:
-                print(stdout, end="")
+            if response_text and response_text.strip():
+                # Save clean response to file
+                output_dir = os.path.normpath(os.path.join(get_script_dir(), "data", "gateway-output"))
+                output_path = os.path.join(output_dir, f"{request_id}.out")
+                try:
+                    with open(output_path, 'w') as f:
+                        f.write(response_text)
+                except (IOError, OSError) as e:
+                    print(f"WARN: failed to save output: {e}", file=sys.stderr)
+                print(response_text, end="")
+            else:
+                # ── Diagnostic logging for empty responses ──
+                print(f"WARN: exit 0 but empty response for '{label}'", file=sys.stderr)
+                print(f"  tokens_in={tokens_in} tokens_out={tokens_out} tool_calls={tool_calls_count}", file=sys.stderr)
+                try:
+                    raw_preview = stdout[:500] if stdout else "(no stdout)"
+                    print(f"  raw_json_preview: {raw_preview}", file=sys.stderr)
+                except Exception:
+                    pass
+
+                # ── Auto-retry once for empty responses ──
+                if attempt < CONFIG["max_retries"]:
+                    conn.execute(
+                        "UPDATE requests SET status='retrying', retry_count=retry_count+1, error='empty response, auto-retrying' WHERE id=?",
+                        (request_id,)
+                    )
+                    conn.commit()
+                    print(f"EMPTY_RETRY: auto-retrying (attempt {attempt + 1}/{CONFIG['max_retries'] + 1})...", file=sys.stderr)
+                    continue  # Back to top of retry loop
+
+                # Exhausted retries — mark as empty
+                conn.execute(
+                    "UPDATE requests SET status='empty', error='exit 0 but empty response after retry' WHERE id=?",
+                    (request_id,)
+                )
+                conn.commit()
             return 0
+
+        # ── Step 10: Sandbox conflict (exit -2) → back off and retry ──
+        if exit_code == -2 and attempt < CONFIG["max_retries"]:
+            backoff_s = [3, 6, 12][min(attempt, 2)]
+            conn.execute(
+                "UPDATE requests SET status='retrying', error=? WHERE id=?",
+                (f"sandbox conflict (exit -2), retry after {backoff_s}s", request_id)
+            )
+            conn.commit()
+            print(f"SANDBOX_CONFLICT: exit -2, retrying in {backoff_s}s (attempt {attempt + 1}/{CONFIG['max_retries'] + 1})...", file=sys.stderr)
+            time.sleep(backoff_s)
+            continue  # Back to top of retry loop
 
         # ── Step 11: Other failure — propagate immediately ──
         conn.execute(
@@ -620,14 +841,13 @@ def dispatch(conn, args):
     # Should not reach here, but safety net
     return 1
 
-
 # ── Observability commands ─────────────────────────────
 
 def cmd_status(conn):
     """Show queue status per model with available slots and health indicator."""
     result = {}
     for alias, model in CONFIG["models"].items():
-        max_c = CONFIG["max_concurrent"].get(alias, 2)
+        max_c = CONFIG["max_concurrent"].get(alias, 1)
         max_q = CONFIG["max_queue"].get(alias, 4)
 
         running = conn.execute(
@@ -825,18 +1045,199 @@ def cmd_stats(conn, last):
     return result
 
 
+# ── Errors command ─────────────────────────────────────
+
+def cmd_errors(conn, last):
+    """Show recent failed jobs with error details for debugging."""
+    window_s = _parse_last(last)
+    cutoff = (time.time() - window_s) if window_s else 0
+
+    rows = conn.execute(
+        """SELECT id, model, status, label, exit_code, error, retry_count,
+                  created_at, started_at, finished_at
+           FROM requests
+           WHERE status='failed' AND finished_at IS NOT NULL AND finished_at > ?
+           ORDER BY finished_at DESC
+           LIMIT 20""",
+        (cutoff,)
+    ).fetchall()
+
+    errors = []
+    for row in rows:
+        # Reverse-lookup alias
+        alias = row["model"]
+        for a, m in CONFIG["models"].items():
+            if m == row["model"]:
+                alias = a
+                break
+
+        exec_s = None
+        if row["started_at"] and row["finished_at"]:
+            exec_s = round(row["finished_at"] - row["started_at"], 1)
+
+        errors.append({
+            "id": row["id"],
+            "label": row["label"] or "",
+            "model": alias,
+            "exit_code": row["exit_code"],
+            "error": row["error"] or "",
+            "retries": row["retry_count"],
+            "exec_s": exec_s,
+            "finished": time.strftime("%H:%M:%S", time.localtime(row["finished_at"])),
+        })
+
+    return {"count": len(errors), "errors": errors}
+
+
+# ── Retry command ──────────────────────────────────────
+
+def cmd_retry(conn, job_id, timeout_override=None):
+    """Retry a failed/empty job by ID using its stored prompt."""
+    row = conn.execute(
+        "SELECT id, model, label, prompt_text, cwd FROM requests WHERE id=?",
+        (job_id,)
+    ).fetchone()
+
+    if not row:
+        print(f"Job {job_id} not found", file=sys.stderr)
+        return 1
+
+    if not row["prompt_text"]:
+        print(f"Job {job_id} has no stored prompt (pre-enhancement job)", file=sys.stderr)
+        return 1
+
+    # Reverse-lookup alias
+    alias = row["model"]
+    for a, m in CONFIG["models"].items():
+        if m == row["model"]:
+            alias = a
+            break
+
+    label = f"{row['label']}-retry" if row["label"] else f"retry-{job_id}"
+    timeout = timeout_override or CONFIG["timeout_s"]
+    cwd = row["cwd"]
+
+    print(f"Retrying job #{job_id} ({label}) on {alias}...", file=sys.stderr)
+
+    # Build a minimal args namespace for dispatch()
+    class RetryArgs:
+        pass
+    args = RetryArgs()
+    args.model = alias
+    args.prompt = row["prompt_text"]
+    args.label = label
+    args.timeout = timeout
+    args.cwd = cwd
+
+    return dispatch(conn, args)
+
+
+# ── Tail (live monitoring) command ─────────────────────
+
+def cmd_tail(conn):
+    """Live-monitor gateway activity. Press Ctrl+C to stop."""
+    seen_ids = set()
+    seen_states = {}  # id -> last_status
+
+    def alias_for(model_name):
+        for a, m in CONFIG["models"].items():
+            if m == model_name:
+                return a
+        return model_name
+
+    print("Gateway tail — watching for activity (Ctrl+C to stop)...", file=sys.stderr)
+
+    try:
+        while True:
+            rows = conn.execute(
+                """SELECT id, model, status, label, exit_code, error,
+                          created_at, started_at, finished_at
+                   FROM requests
+                   WHERE created_at > ?
+                   ORDER BY id""",
+                (time.time() - 3600,)  # last hour
+            ).fetchall()
+
+            for row in rows:
+                rid = row["id"]
+                status = row["status"]
+                prev_status = seen_states.get(rid)
+
+                if prev_status == status:
+                    continue  # no change
+
+                seen_states[rid] = status
+                alias = alias_for(row["model"])
+                label = row["label"] or f"#{rid}"
+                ts = time.strftime("%H:%M:%S", time.localtime(
+                    row["finished_at"] or row["started_at"] or row["created_at"]
+                ))
+
+                if status == "running":
+                    print(f"[{ts}] STARTED  #{rid} {label} ({alias})")
+                elif status == "done":
+                    exec_s = ""
+                    if row["started_at"] and row["finished_at"]:
+                        exec_s = f" in {row['finished_at'] - row['started_at']:.1f}s"
+                    # Check if output file exists
+                    output_dir = os.path.normpath(os.path.join(get_script_dir(), "data", "gateway-output"))
+                    output_path = os.path.join(output_dir, f"{rid}.out")
+                    size = ""
+                    if os.path.exists(output_path):
+                        sz = os.path.getsize(output_path)
+                        size = f" ({sz:,} bytes)" if sz > 0 else " (empty)"
+                    print(f"[{ts}] SUCCESS  #{rid} {label}{exec_s}{size}")
+                elif status == "empty":
+                    print(f"[{ts}] EMPTY    #{rid} {label} — exit 0, no output")
+                elif status == "failed":
+                    exit_c = row["exit_code"]
+                    err = (row["error"] or "")[:80].replace("\n", " ")
+                    print(f"[{ts}] FAILED   #{rid} {label} (exit {exit_c}) {err}")
+                elif status == "queued":
+                    print(f"[{ts}] QUEUED   #{rid} {label} ({alias})")
+                elif status == "retrying":
+                    print(f"[{ts}] RETRYING #{rid} {label}")
+                elif status == "cancelled":
+                    print(f"[{ts}] CANCEL   #{rid} {label}")
+
+            sys.stdout.flush()
+            time.sleep(2)
+
+    except KeyboardInterrupt:
+        print("\nTail stopped.", file=sys.stderr)
+
+
 # ── Cancel command ─────────────────────────────────────
 
 def cmd_cancel(conn, job_id, model_alias):
-    """Cancel jobs by ID or by model. Kills running processes."""
+    """Cancel jobs by ID, batch ID, or by model. Kills running processes."""
     cancelled = []
 
     if job_id and job_id != "ALL":
-        # Cancel specific job by ID
+        # Try as numeric job ID first, then as batch ID
         try:
             jid = int(job_id)
         except ValueError:
-            return {"error": f"Invalid job ID: {job_id}"}
+            # Not numeric — treat as batch ID
+            rows = conn.execute(
+                "SELECT id, status, pid FROM requests WHERE batch_id=? AND status IN ('waiting', 'running', 'retrying')",
+                (job_id,)
+            ).fetchall()
+            if not rows:
+                return {"error": f"No active jobs found for batch ID: {job_id}"}
+            for row in rows:
+                if row["status"] == "running" and row["pid"]:
+                    try:
+                        os.kill(row["pid"], signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
+                conn.execute(
+                    "UPDATE requests SET status='failed', error='cancelled', finished_at=?, exit_code=-2 WHERE id=?",
+                    (time.time(), row["id"])
+                )
+                cancelled.append(row["id"])
+            conn.commit()
+            return {"cancelled": cancelled, "count": len(cancelled), "batch_id": job_id}
         rows = conn.execute(
             "SELECT id, status, pid FROM requests WHERE id=? AND status IN ('waiting', 'running', 'retrying')",
             (jid,)
@@ -876,6 +1277,267 @@ def cmd_cancel(conn, job_id, model_alias):
 
     conn.commit()
     return {"cancelled": cancelled, "count": len(cancelled)}
+
+# ── Batch dispatch command ─────────────────────────────
+
+def _find_bucket_for_model(alias):
+    """Return the bucket (list of model aliases) containing the given alias, or None."""
+    for bucket in CONFIG["model_buckets"]:
+        if alias in bucket:
+            return bucket
+    return None
+
+
+def _get_running_models(conn):
+    """Return set of model aliases that currently have a running job."""
+    rows = conn.execute(
+        "SELECT model FROM requests WHERE status='running'"
+    ).fetchall()
+    running = set()
+    for r in rows:
+        # Reverse-map full model name back to alias
+        for alias, full in CONFIG["models"].items():
+            if full == r["model"] or alias == r["model"]:
+                running.add(alias)
+    return running
+
+
+def _assign_models_for_batch(conn, jobs):
+    """Assign concrete model aliases to batch jobs for maximum parallelism.
+
+    Strategy:
+    1. Group jobs by their requested model's bucket
+    2. For each job, try the requested model first
+    3. If taken, try other models in the same bucket (either direction)
+    4. If all bucket slots taken, keep the original model (will queue serially)
+
+    Returns list of (job_index, assigned_alias) tuples.
+    """
+    running = _get_running_models(conn)
+    assigned = set(running)  # Track models we've already assigned in this batch
+    result = []
+
+    for i, job in enumerate(jobs):
+        requested = job.get("model", "fast")
+        bucket = _find_bucket_for_model(requested)
+
+        if bucket and requested not in assigned:
+            # Preferred model is free
+            assigned.add(requested)
+            result.append((i, requested))
+        elif bucket:
+            # Phase 2: Try other models — smarter first (higher index), then lesser
+            req_idx = bucket.index(requested)
+            smarter = [m for m in bucket if bucket.index(m) > req_idx]
+            lesser = [m for m in bucket if bucket.index(m) < req_idx]
+            alternatives = smarter + lesser  # smarter first, then lesser
+            found = False
+            for alt in alternatives:
+                if alt not in assigned:
+                    assigned.add(alt)
+                    result.append((i, alt))
+                    found = True
+                    break
+            if not found:
+                # All slots in bucket taken — will queue on original model
+                result.append((i, requested))
+        else:
+            # Unknown bucket — use as-is
+            result.append((i, requested))
+
+    return result
+
+
+def cmd_batch(conn, base_args):
+    """Dispatch multiple jobs from JSON stdin — in parallel when possible.
+
+    Input format (JSON array on stdin):
+    [
+        {"model": "fast", "prompt": "Write tests for X", "label": "X-test"},
+        {"model": "fast", "prompt": "Write tests for Y", "label": "Y-test"}
+    ]
+
+    Each entry supports: model (required), prompt (required), label, cwd, sandbox.
+
+    Parallelism: jobs are assigned to free model slots within their bucket
+    (see model_buckets config). Jobs that CAN run on different models are
+    dispatched as parallel subprocesses. Jobs that must share a model run serially.
+    """
+    if sys.stdin.isatty():
+        print("--batch requires JSON input on stdin", file=sys.stderr)
+        return 1
+
+    raw = sys.stdin.read()
+    try:
+        jobs = json.loads(raw)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON input: {e}", file=sys.stderr)
+        return 1
+
+    if not isinstance(jobs, list) or not jobs:
+        print("--batch requires a non-empty JSON array", file=sys.stderr)
+        return 1
+
+    # Assign models for parallelism
+    assignments = _assign_models_for_batch(conn, jobs)
+
+    # Group by assigned model to find what can run in parallel
+    model_groups = {}  # model → [(job_index, job)]
+    for i, assigned_model in assignments:
+        model_groups.setdefault(assigned_model, []).append((i, jobs[i]))
+
+    # Count how many distinct models = how many parallel lanes
+    parallel_count = len(model_groups)
+    total = len(jobs)
+
+    # Generate batch ID for tracking
+    import uuid
+    batch_id = uuid.uuid4().hex[:8]
+
+    if parallel_count > 1:
+        print(f"BATCH [{batch_id}]: {total} jobs across {parallel_count} parallel model slots", file=sys.stderr)
+    else:
+        print(f"BATCH [{batch_id}]: {total} jobs (serial — same model slot)", file=sys.stderr)
+
+    # Log any model reassignments
+    for i, assigned_model in assignments:
+        requested = jobs[i].get("model", "fast")
+        label = jobs[i].get("label", f"batch-{i+1}")
+        if assigned_model != requested:
+            print(f"  ↳ '{label}': {requested} → {assigned_model} (slot rebalance)", file=sys.stderr)
+
+    # Dispatch: spawn parallel subprocesses for different models,
+    # serial within same model
+    gateway_bin = os.path.abspath(__file__)
+    cwd = base_args.cwd or os.getcwd()
+    processes = []  # (label, assigned_model, subprocess.Popen)
+
+    # Signal handler: kill all child processes on SIGTERM/SIGINT
+    def _cleanup_children(signum, frame):
+        for _, _, p in processes:
+            try:
+                p.terminate()
+            except OSError:
+                pass
+        import time as _t
+        _t.sleep(0.5)
+        for _, _, p in processes:
+            try:
+                p.kill()
+            except OSError:
+                pass
+        sys.exit(128 + signum)
+
+    import signal
+    prev_sigterm = signal.signal(signal.SIGTERM, _cleanup_children)
+    prev_sigint = signal.signal(signal.SIGINT, _cleanup_children)
+
+    try:
+        for assigned_model, group in model_groups.items():
+            # For each model slot, chain jobs serially but different slots run in parallel
+            for job_idx, job in group:
+                label = job.get("label", f"batch-{job_idx+1}")
+                prompt = job.get("prompt", "")
+                job_cwd = job.get("cwd", cwd)
+                sandbox_flag = ["--sandbox"] if job.get("sandbox", False) else []
+
+                cmd = [
+                    sys.executable, gateway_bin,
+                    "--model", assigned_model,
+                    "--batch-id", batch_id,
+                    "--label", label,
+                    "--cwd", job_cwd,
+                    "--prompt-file", "/dev/stdin",
+                ] + sandbox_flag
+
+                print(f"  DISPATCH [{job_idx+1}/{total}]: '{label}' on {assigned_model}", file=sys.stderr)
+
+                proc = subprocess.Popen(
+                    cmd,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=job_cwd,
+                )
+                # Send prompt via stdin and close
+                proc.stdin.write(prompt.encode())
+                proc.stdin.close()
+
+                processes.append((label, assigned_model, proc))
+
+                # If next job in this group uses same model, wait for current to finish first
+                # (can't run two same-model jobs concurrently)
+                if len(group) > 1 and (job_idx, job) != group[-1]:
+                    proc.wait()
+                    stdout_data = proc.stdout.read().decode()
+                    stderr_data = proc.stderr.read().decode()
+                    if stdout_data.strip():
+                        print(stdout_data, end="")
+                    if stderr_data.strip():
+                        print(stderr_data, end="", file=sys.stderr)
+
+        # Wait for all remaining parallel processes
+        results = []
+        any_failed = False
+
+        for label, assigned_model, proc in processes:
+            proc.wait()
+            stdout_data = proc.stdout.read().decode()
+            stderr_data = proc.stderr.read().decode()
+
+            exit_code = proc.returncode
+            status = "ok" if exit_code == 0 else f"exit={exit_code}"
+            if exit_code != 0:
+                any_failed = True
+
+            # Pass through subprocess output
+            if stdout_data.strip():
+                print(stdout_data, end="")
+            if stderr_data.strip():
+                print(stderr_data, end="", file=sys.stderr)
+
+            results.append({"label": label, "model": assigned_model, "status": status, "exit_code": exit_code})
+
+        # Print summary
+        print(f"\n── Batch Summary ({len(results)} jobs) ──", file=sys.stderr)
+        for r in results:
+            icon = "✅" if r.get("exit_code", 1) == 0 else "❌"
+            model_note = r['model']
+            print(f"  {icon} {r['label']}: {r['status']} ({model_note})", file=sys.stderr)
+
+        # Show file changes so orchestrator knows what agents did
+        try:
+            diff_out = subprocess.run(
+                ["git", "diff", "--stat", "HEAD"],
+                cwd=cwd, capture_output=True, text=True, timeout=5
+            )
+            untracked_out = subprocess.run(
+                ["git", "ls-files", "--others", "--exclude-standard"],
+                cwd=cwd, capture_output=True, text=True, timeout=5
+            )
+            parts = []
+            if diff_out.stdout.strip():
+                parts.append(diff_out.stdout.strip())
+            if untracked_out.stdout.strip():
+                new = untracked_out.stdout.strip().splitlines()
+                summary = ", ".join(new[:5])
+                if len(new) > 5:
+                    summary += f" (+{len(new) - 5} more)"
+                parts.append(f"{len(new)} new file(s): {summary}")
+            if parts:
+                print("\n── File Changes ──", file=sys.stderr)
+                for p in parts:
+                    print(f"  {p}", file=sys.stderr)
+            else:
+                print("\n── File Changes: none ──", file=sys.stderr)
+        except Exception:
+            pass  # git not available — skip
+
+        return 1 if any_failed else 0
+
+    finally:
+        signal.signal(signal.SIGTERM, prev_sigterm)
+        signal.signal(signal.SIGINT, prev_sigint)
 
 
 if __name__ == "__main__":

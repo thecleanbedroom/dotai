@@ -15,7 +15,11 @@ This applies to **all work** — implementation, edits, analysis, research, test
 `run_command` dispatching to `.agent/bin/gemini-gateway` is the ONLY parallel mechanism.
 
 ```bash
-run_command("echo '...' | .agent/bin/gemini-gateway --model <quick|fast|think|deep> --label 'description' --timeout <30|45|90>")
+# Single dispatch — agent reads source and writes files directly
+run_command("echo '...' | .agent/bin/gemini-gateway --model <lite|quick|fast|think|deep> --label 'description'")
+
+# Batch dispatch — multiple jobs from JSON stdin
+run_command("echo '[{\"model\":\"fast\",\"prompt\":\"...\",\"label\":\"job-A\"},{\"model\":\"fast\",\"prompt\":\"...\",\"label\":\"job-B\"}]' | .agent/bin/gemini-gateway --batch")
 ```
 
 ## Parallelism Decision
@@ -39,17 +43,56 @@ run_command("echo '...' | .agent/bin/gemini-gateway --model <quick|fast|think|de
 1. **Evaluate** parallelism graph before work starts
 2. **Dispatch** independent tasks to gateway
 3. **Work** on your own tasks (never idle-wait)
-4. **Validate** agent output for correctness
-5. **Fix** minor issues inline; **retry** wrong approaches (max 2, then do it yourself)
+4. **Review** agent output via `git diff` and `git status` — agents write files directly
+5. **Fix** minor issues inline; on retry, **improve the prompt or gateway first** (max 2 retries, then do it yourself)
+6. **Never cancel** a running job — the model may still be working. Wait for completion.
+
+> [!IMPORTANT]
+> Agents write files directly to the codebase. Review via `git diff`, not by parsing stdout.
 
 ## Model Selection
 
-| Tier    | Use for                                  | Timeout |
-| ------- | ---------------------------------------- | ------- |
-| `quick` | Config, spot-checks, single reads        | 30s     |
-| `fast`  | Log analysis, data sampling, small impls | 45s     |
-| `think` | Multi-file refactors, complex validation | 90s     |
-| `deep`  | Architecture review, complex reasoning   | 90s     |
+| Tier    | Use for                                           |
+| ------- | ------------------------------------------------- |
+| `lite`  | Spot-checks, single reads, config lookups         |
+| `quick` | Config edits, one-liners, small analysis          |
+| `fast`  | Code generation, tests, refactoring, log analysis |
+| `think` | Multi-file refactors, complex validation          |
+| `deep`  | Architecture review, complex reasoning            |
+
+> 5 tiers = capability selection. Jobs run serially (one at a time).
+
+## Dispatch Modes
+
+### Single dispatch
+
+```bash
+echo 'Write tests for MyService.php' | \
+  .agent/bin/gemini-gateway --model fast --label 'MyService-tests'
+```
+
+### Batch dispatch
+
+Multiple independent jobs in one call. Each job runs through the queue sequentially.
+
+```bash
+echo '[
+  {"model":"fast", "prompt":"Extract MetafieldWriter from ShopifyService.php", "label":"extract-metafields"},
+  {"model":"fast", "prompt":"Extract InventoryManager from ShopifyService.php", "label":"extract-inventory"}
+]' | .agent/bin/gemini-gateway --batch --cwd /path/to/codebase
+```
+
+### Prompt tips
+
+- Tell the agent which files to read first (exact paths)
+- Tell the agent which files to write (exact paths)
+- Be specific about namespace, conventions, and what NOT to modify
+- Agents write files directly — no need for "output to stdout" instructions
+- For convention-sensitive work (tests, configs, extensions), tell the agent to
+  **read existing examples first** to discover project conventions (directory structure,
+  base classes, naming, patterns) rather than describing them in the prompt. The agent
+  learns better from real files than from prompt descriptions, and conventions you
+  forget to mention won't be missed.
 
 ## Health Check
 
@@ -59,9 +102,13 @@ run_command("echo '...' | .agent/bin/gemini-gateway --model <quick|fast|think|de
 
 `ok` → dispatch freely · `slow` → 1 at a time · `saturated` → do it yourself
 
-## Dispatch Flow
+## Timeout Discipline
 
-Dispatch as background `run_command` → work on own tasks → check `--jobs` after ~30s → cancel if over timeout threshold → validate on completion.
+- Never manage gateway timeouts from the orchestrator. The gateway handles its own timeout (killing a working model is worse than waiting). Just dispatch and check status.
+
+## New-File Dispatch Default
+
+- During parallelism triage, any phase that creates a **new file** with no dependency on a prior phase's output is a gateway candidate. The "quick enough" instinct is a trap — small tasks are ideal for dispatch precisely because they complete quickly and free you to focus on modification phases that require sequential reasoning. Default to dispatching, not inlining.
 
 ## When NOT to Split
 
@@ -73,5 +120,5 @@ Same file edits, output dependencies, singular tasks (one grep/one edit), gatewa
 > Always report parallel usage to user.
 
 - **On dispatch**: count, task descriptions, model tier, what you're doing meanwhile
-- **On complete**: each result (pass/fail), issues resolved, time saved
+- **On complete**: each result (pass/fail), `git diff` review summary
 - **On skip**: why (shared files, dependencies, <30s task, saturated)
