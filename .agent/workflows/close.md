@@ -35,10 +35,11 @@ For each skill, decide: **relevant** or **not relevant** to this specific task. 
 Read the target document. Check the frontmatter `> Status:` line:
 
 - **`In Progress`**: Proceed with closing
-- **`Done` but not in `finished/`**: Proceed — just needs filing (skip to step 5)
+- **`Done` but not in `finished/`**: Proceed — just needs filing (skip to step 9)
 - **`Draft` or `Planned`**: Tell user: "This doc needs planning. Run `/plan`."
 - **`Approved`**: Tell user: "This doc hasn't been implemented yet. Run `/implement`."
-- **Anything else**: Tell user which step to run based on the status.
+- **`Debt`**: Tell user: "This is a debt doc. Run `/plan` to plan the work."
+- **Anything else**: Tell user: "Unknown status. Check the `> Status:` line."
 
 #### Verify Progress table
 
@@ -115,7 +116,7 @@ Check whether new files/methods created during implementation lack test coverage
 
 Quick scan of touched files and neighbors for smells: duplicated logic, dead code, wrong abstraction, magic values, missing interface methods.
 
-For each smell: create a **separate debt doc** in `docs/` with `> Status: Debt`. One doc per issue.
+For each smell: create a **separate debt doc** in `docs/` with `> Status: Draft`. One doc per issue.
 
 > [!IMPORTANT]
 > **Do NOT fix smells inline during close** — that's scope creep. File as debt, announce to user, move on.

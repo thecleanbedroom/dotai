@@ -63,6 +63,7 @@ Read what the user provided (description, existing doc, or debt doc). For existi
 | Status              | Action                                    |
 | ------------------- | ----------------------------------------- |
 | No status / `Draft` | Continue — needs planning                 |
+| `Debt`              | Continue — needs planning                 |
 | `Planned`           | Skip to step 5                            |
 | `Approved`          | Redirect → `/implement`                   |
 | `In Progress`       | Redirect → `/implement` to resume         |

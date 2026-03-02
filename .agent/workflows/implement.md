@@ -37,19 +37,20 @@ For each skill, decide: **relevant** or **not relevant** to this specific task. 
 - **`Approved`**: Fresh start — set status to `In Progress` and begin
 - **`In Progress`**: Resuming — scan the `## Progress` section (see step 2) to identify what's already done vs remaining
 - **`Draft` or `Planned`**: Tell user: "This doc needs planning. Run `/plan`."
+- **`Debt`**: Tell user: "This is a debt doc. Run `/plan` to plan the work."
 - **`Done`**: Tell user: "This doc is already done. Run `/close` to file it."
-- **Anything else**: Tell user which step to run based on the status.
+- **Anything else**: Tell user: "Unknown status. Check the `> Status:` line."
 
 **If no source doc was provided** (e.g., `/implement` invoked from conversation after an in-chat `/plan`):
 
 1. Check if an implementation plan artifact exists in the brain directory
-2. If it does, **create the source doc first** using the same structure as `/plan` step 7 — this is the permanent record in `docs/`. Use datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`. Populate it from the implementation plan artifact. Set status to `Approved`.
+2. If it does, **create the source doc first** using the same structure as `/plan` step 8 — this is the permanent record in `docs/`. Use datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`. Populate it from the implementation plan artifact. Set status to `Approved`.
 3. If no artifact exists either, tell user: "No plan found. Run `/plan` first."
 
 > [!IMPORTANT]
 > **The source doc must exist before any code is touched.** If planning happened in conversation without writing the doc, `/implement` writes it as its first action.
 
-If an implementation plan artifact exists in the brain directory, load it to understand the reconciliation and work plan. If not, create one using the same structure as `/plan` step 4.
+If an implementation plan artifact exists in the brain directory, load it to understand the reconciliation and work plan. If not, create one using the same structure as `/plan` step 5.
 
 // turbo
 
@@ -133,7 +134,7 @@ When an item cannot be completed (missing dependency, undecided architecture, ou
 
 Encountered code that looks wrong but is unrelated to your task:
 
-1. Create a debt doc in `docs/` with `> Status: Debt` and datetime-prefixed naming
+1. Create a debt doc in `docs/` with `> Status: Draft` and datetime-prefixed naming
 2. Describe problem, impact, suggested fix. Link to parent doc if applicable.
 3. Continue current work — do NOT fix inline.
 
