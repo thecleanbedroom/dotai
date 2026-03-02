@@ -166,4 +166,13 @@ make phpstan
 
 Summarize: items completed, items parked as debt, follow-up actions.
 
-Tell the user: `Implementation complete. Run /close docs/<filename>.md to finalize.`
+Tell the user: `Implementation complete. Review the changes — if anything needs adjusting, describe it here and I'll apply it. When satisfied, run /close docs/<filename>.md to finalize.`
+
+#### Handling review feedback
+
+If the user requests changes after this point:
+
+- Apply the changes as continuation of the current implementation
+- Add a `Review` row to the Progress table: `🔧 In Progress` → `✅ Done` with a brief note of what was adjusted
+- Re-run tests and PHPStan (steps 8) if the changes are non-trivial
+- Status stays `In Progress` throughout
