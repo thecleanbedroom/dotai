@@ -39,13 +39,7 @@ This is the most common mode — you fixed something quickly and want to capture
 
 // turbo
 
-Scan installed skills and identify which ones are relevant to the task at hand:
-
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
+Follow `/plan`'s _Evaluate skills_ step.
 
 ### 1. Create the doc
 
@@ -99,52 +93,11 @@ If the fix hasn't been applied yet, do it now:
 - Add results to the Verification section
 - Record any decisions made
 
-### 3. Append walkthrough and close
+### 3. Close
 
 // turbo
 
-Append the standard walkthrough section (same format as `/close`'s "Append walkthrough" step):
-
-```markdown
-## Walkthrough
-
-> Executed: YYYY-MM-DD HH:MM (local)
-
-### Files Created
-
-| File | Purpose |
-| ---- | ------- |
-
-### Files Modified
-
-| File | Change |
-| ---- | ------ |
-
-### Decisions Made
-
-1. **<Topic>**: <answer> — Rationale: <why>
-```
-
-Then finalize and move to `finished/`:
-
-- Set status to `Done`
-- Add `> Finished: YYYY-MM-DD HH:MM (local)`
-- Update Changelog if present
-- Move to `finished/` with current time prefix:
-
-```bash
-mv docs/YYYY-MM-DDTHHMM--<slug>.md docs/finished/YYYY-MM-DDTHHMM--<slug>.md
-```
-
-Report to the user what was documented and where it was filed, along with a **copy-paste ready** git commit message:
-
-```
-fix(slug): brief description of what was fixed
-
-- Change 1
-- Change 2
-
-Closes: docs/<filename>.md
-```
-
-Use `fix` for bug fixes, `feat` for features, `refactor` for restructuring. Derive the scope from the doc slug.
+- **Walkthrough**: Follow `/close`'s _Append walkthrough_ step
+- **Finalize**: Follow `/close`'s _Finalize the original document_ step
+- **Move + rebase**: Follow `/close`'s _Move to finished_ step
+- **Report**: Follow `/close`'s _Report_ step — include a copy-paste commit message

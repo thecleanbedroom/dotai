@@ -60,16 +60,16 @@ If only one doc (or a chat description) is provided, skip this step.
 
 Read what the user provided (description, existing doc, or debt doc). For existing docs, check frontmatter `> Status:`:
 
-| Status              | Action                                    |
-| ------------------- | ----------------------------------------- |
-| No status / `Draft` | Continue — needs planning                 |
-| `Debt`              | Continue — needs planning                 |
-| `Planned`           | Skip to step 5                            |
-| `Approved`          | Redirect → `/implement`                   |
-| `In Progress`       | Redirect → `/implement` to resume         |
-| `Done`              | Redirect → `/close` if not in `finished/` |
+| Status              | Action                                            |
+| ------------------- | ------------------------------------------------- |
+| No status / `Draft` | Continue — needs planning                         |
+| `Debt`              | Continue — needs planning                         |
+| `Planned`           | Skip to _Create the implementation plan artifact_ |
+| `Approved`          | Redirect → `/implement`                           |
+| `In Progress`       | Redirect → `/implement` to resume                 |
+| `Done`              | Redirect → `/close` if not in `finished/`         |
 
-**Do NOT augment the source doc yet** — read for context only. Source doc is written in step 8. For small fixes already done, use `/capture` instead.
+**Do NOT augment the source doc yet** — read for context only. Source doc is written in _Write the source document_. For small fixes already done, use `/capture` instead.
 
 Identify: **Goal**, **Scope**, **Constraints**, **Referenced code**. If intent is unclear, batch all questions into one ask.
 
@@ -81,7 +81,7 @@ Investigate actual code for each area the plan touches. **Do NOT make assumption
 
 - Read relevant files, classes, interfaces; check for existing patterns
 - **Trace construction sites**: find all instantiation/injection points for modified classes
-- **Trace internal deps**: for moved methods, verify `$this->` dependencies exist on destination
+- **Trace internal deps**: for moved methods, verify dependencies exist on destination
 - **Identify affected tests**: search for tests that mock/instantiate/assert on changed classes
 
 ### 4. Ensure a source doc exists (stub only)
@@ -107,7 +107,7 @@ The source doc is the permanent record that lives in `docs/`. At this stage, cre
 
 Use datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`
 
-That's it — just frontmatter and the requirement. Full planning sections come in step 8.
+That's it — just frontmatter and the requirement. Full planning sections come in _Write the source document_.
 
 ### 5. Create the implementation plan artifact
 
@@ -149,11 +149,11 @@ Record answers as they come in. Keep the numbering matched:
 
 Table of remaining items (done items excluded). Include files and parallelism:
 
-| Phase | Description   | Files Touched        | Parallelism               |
-| ----- | ------------- | -------------------- | ------------------------- |
-| 1     | <description> | file1.php, file2.php | `parallel:A`              |
-| 2     | <description> | file3.php            | `parallel:A`              |
-| 3     | <description> | file1.php, file4.php | `sequential (depends: 1)` |
+| Phase | Description   | Files Touched | Parallelism               |
+| ----- | ------------- | ------------- | ------------------------- |
+| 1     | <description> | file1, file2  | `parallel:A`              |
+| 2     | <description> | file3         | `parallel:A`              |
+| 3     | <description> | file1, file4  | `sequential (depends: 1)` |
 
 **Parallelism**: `parallel:X` = concurrent within group; `sequential (depends: N)` = wait. Phases sharing files MUST be sequential.
 
@@ -175,7 +175,7 @@ Group by component. For each file, note [NEW], [MODIFY], or [DELETE]:
 
 ### <Component Name>
 
-#### [MODIFY] [filename.php](../laravel/path/to/file)
+#### [MODIFY] [filename](../path/to/file)
 
 Brief description + code sketch if helpful.
 
@@ -183,7 +183,7 @@ Brief description + code sketch if helpful.
 
 List test files that need updating due to mock/assertion changes:
 
-- [ ] [TestFile.php](../laravel/path/to/TestFile.php) — what needs to change
+- [ ] [TestFile](../path/to/TestFile) — what needs to change
 
 ## Verification Plan
 

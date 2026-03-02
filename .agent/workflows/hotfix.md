@@ -4,7 +4,7 @@ description: "SDLC Shortcut — Fast-track a simple fix through plan → impleme
 
 # /hotfix — Fast-Track Fix
 
-Plan, implement, and close a simple fix in one pass. No implementation doc review gate — use best judgement. Only ask questions if the answer is genuinely ambiguous.
+Runs `/plan` → `/implement` → `/close` in one pass with no review gates. Use best judgement. Only ask questions if the answer is genuinely ambiguous.
 
 ## SDLC Pipeline
 
@@ -22,83 +22,29 @@ Plan, implement, and close a simple fix in one pass. No implementation doc revie
 
 ### 0. Evaluate skills
 
-// turbo
+Follow `/plan`'s _Evaluate skills_ step.
 
-Scan installed skills and identify which ones are relevant to the task at hand:
+### 1. Plan
 
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
+Follow `/plan` with these overrides:
 
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
+- **Skip** _Present for review_ and _Iterate until approved_ — no review gate
+- **Do NOT ask clarifying questions** unless the fix could go in two genuinely different directions with different consequences. Make reasonable assumptions and state them.
+- Keep research tight — you already know it's a small fix
 
-### 1. Understand the intent
+### 2. Implement
 
-Read the user's input. This can be:
+Follow `/implement` with these overrides:
 
-- **A description** in conversation ("fix the timeout in SyncProductJob")
-- **An existing doc** (`/hotfix @[docs/some-spec.md]`) — read it for requirements
-- **A file reference** (`/hotfix @[path/to/file.php]`) — the fix targets this file
+- **Skip** parallelism triage — small fix, sequential only
+- **Skip** _Report completion_ review invitation — no review gate
 
-Identify:
+### 3. Close
 
-- What's broken or missing
-- Where in the codebase it lives
-- What "done" looks like
+Follow `/close` with these overrides:
 
-**Do NOT ask clarifying questions** unless the fix could go in two genuinely different directions with different consequences. Make reasonable assumptions and state them.
+- **Skip** _Test new code_ and _Code smell sweep_ — small fix, no debt filing needed
 
-### 2. Research
+### 4. Report
 
-Investigate the relevant code. Find:
-
-- The file(s) to change
-- Existing patterns to follow
-- Affected tests
-
-Keep this tight — you already know it's a small fix.
-
-### 3. Create source doc stub
-
-Create a minimal planning doc:
-
-```
-docs/YYYY-MM-DDTHHMM--<slug>.md
-```
-
-```markdown
-# <Title>
-
-> Created: YYYY-MM-DD HH:MM (local)
-> Status: In Progress
-
-## Requirement
-
-<one-liner describing the fix>
-```
-
-### 4. Implement
-
-Make the code changes. Follow existing patterns. Update or add tests as needed.
-
-### 5. Verify
-
-Run the test suite. Fix any failures caused by your changes. Note pre-existing failures but don't block on them.
-
-### 6. Close
-
-Append a `## Walkthrough` to the source doc with:
-
-- Files created/modified (with links)
-- Decisions made (if any)
-- Test results
-
-Set status to `Done`, add `> Finished:` timestamp. Move to `docs/finished/` with finish-time prefix.
-
-### 7. Report
-
-Summarize to the user:
-
-- What changed
-- Test results
-- Provide a copy-paste commit message (conventional commits format)
+Follow `/close`'s _Report_ step — summarize changes, test results, and provide a copy-paste commit message.

@@ -4,7 +4,7 @@ description: "SDLC Meta — Audit all SDLC workflows for inconsistencies, stale 
 
 # /sdlc-audit — Audit SDLC Workflow Consistency
 
-Read every SDLC workflow file and check for inconsistencies. Report findings and fix them.
+Read every SDLC workflow file, check for inconsistencies, report findings, and fix them.
 
 **Input**: None — reads all workflow files automatically
 **Output**: Audit report with findings and fixes applied
@@ -12,7 +12,7 @@ Read every SDLC workflow file and check for inconsistencies. Report findings and
 ## SDLC Pipeline
 
 **Full path**: `/plan` → `/implement` → `/close`
-**Lightweight**: `/capture` (self-contained — for ad-hoc fixes)
+**Lightweight**: `/capture` (self-contained) | `/hotfix` (fast-track)
 
 **You are here**: `/sdlc-audit` — meta-workflow for auditing the SDLC itself
 
@@ -22,180 +22,140 @@ Read every SDLC workflow file and check for inconsistencies. Report findings and
 
 // turbo
 
-Read every file in `.agent/workflows/`. Identify which are SDLC workflows (have `SDLC Step` or `SDLC` in their description). Currently:
-
-- `plan.md` (Step 1/3)
-- `implement.md` (Step 2/3)
-- `close.md` (Step 3/3)
-- `capture.md` (Shortcut)
-- `hotfix.md` (Shortcut)
+Read every file in `.agent/workflows/`. Identify SDLC workflows (`SDLC Step` or `SDLC` in description). Currently: `plan.md` (1/3), `implement.md` (2/3), `close.md` (3/3), `capture.md` (Shortcut), `hotfix.md` (Shortcut).
 
 ### 2. Run consistency checks
 
-For each check below, scan all SDLC workflow files and report any violations.
+Scan all SDLC workflow files for each check below. Report violations.
 
 #### Check 1: Status lifecycle completeness
 
-The valid status lifecycle is:
+Valid lifecycle: `Draft → Planned → Approved → In Progress → Done → finished/`
 
-```
-Draft → Planned → Approved → In Progress → Done → finished/
-```
+| Workflow     | Accepts                     | Outputs       | Next accepts     |
+| ------------ | --------------------------- | ------------- | ---------------- |
+| `/plan`      | Draft, Debt, Planned, none  | `Approved`    | `/implement`: ✅ |
+| `/implement` | Approved, In Progress       | `In Progress` | `/close`: ✅     |
+| `/close`     | In Progress, Done (unfiled) | `Done`        | (terminal)       |
+| `/capture`   | (self-contained)            | `Done`        | (terminal)       |
+| `/hotfix`    | (self-contained)            | `Done`        | (terminal)       |
 
-Verify:
-
-- Every workflow that checks status lists **all** statuses it might encounter (not just the ones it accepts)
-- Every "wrong status" guard names the **specific command** to run (no vague "tell the user the correct workflow")
-- The status a workflow **outputs** matches the status the **next** workflow **accepts**
-
-| Workflow     | Accepts               | Outputs       | Next step accepts |
-| ------------ | --------------------- | ------------- | ----------------- |
-| `/plan`      | Draft, Planned, none  | `Approved`    | `/implement`: ✅  |
-| `/implement` | Approved, In Progress | `In Progress` | `/close`: ✅      |
-| `/close`     | In Progress           | `Done`        | (terminal)        |
-| `/capture`   | (self-contained)      | `Done`        | (terminal)        |
-
-Flag any mismatches.
+Verify: every workflow lists **all** statuses it might encounter, every "wrong status" guard names the **specific command** to run, outputs match next workflow's accepts. Flag mismatches.
 
 #### Check 2: Frontmatter field references
 
-Every place a workflow reads document status must specify `> Status:` line (frontmatter), not body text. Search for:
-
-- `Check status` without `frontmatter` or `> Status:`
-- Any guard logic that could match body text instead of frontmatter
+Status reads must target `> Status:` (frontmatter), not body text. Flag `Check status` without `> Status:` or guard logic matching body text.
 
 #### Check 3: Stale cross-references
 
-Search all SDLC workflows for references to workflows that **don't exist**. Check:
-
-- `/work` (deleted)
-- `/version` (deleted)
-- `/fix` (renamed to `/capture`)
-- `/review` (merged into `/plan`)
-- Any other `/slash-command` references that don't match a file in `.agent/workflows/`
+Search for references to deleted/renamed workflows: `/work`, `/version`, `/fix`, `/review`, or any `/slash-command` without a matching file.
 
 #### Check 4: SDLC Pipeline block
 
-Every SDLC workflow must have a `## SDLC Pipeline` section with:
-
-- Full path: `/plan` → `/implement` → `/close`
-- Lightweight: `/capture`
-- "You are here" marker with the current workflow bolded
-
-Verify the pipeline block exists and matches the current workflow set. If a new workflow was added, all pipeline blocks need updating.
+Every SDLC workflow needs `## SDLC Pipeline` with full path, lightweight path, and "You are here" marker. Verify all blocks match current workflow set.
 
 #### Check 5: Description labels
 
-Every SDLC workflow's YAML `description:` must start with:
-
-- `SDLC Step N/3 —` for the 3 main steps (check numbering is correct)
-- `SDLC Shortcut —` for `/capture`
-- `SDLC Meta —` for this audit workflow
-
-Verify the step numbers are sequential and correct (1/3, 2/3, 3/3).
+YAML `description:` must start with `SDLC Step N/3 —` (main), `SDLC Shortcut —` (lightweight), or `SDLC Meta —` (audit). Verify numbering is sequential.
 
 #### Check 6: Date/time format consistency
 
-All datetime formats must match: `YYYY-MM-DD HH:MM (local)`. Search for any deviations:
-
-- `YYYY-MM-DDTHHMM` in filenames (correct)
-- `YYYY-MM-DD HH:MM (local)` in frontmatter (correct)
-- Any other format (flag)
+Filenames: `YYYY-MM-DDTHHMM`. Frontmatter: `YYYY-MM-DD HH:MM (local)`. Flag deviations.
 
 #### Check 7: Template structure consistency
 
-For workflows that have doc templates (`/plan`, `/close`, `/capture`), verify:
-
-- Frontmatter fields are consistent (Created, Status, Finished, Parent, Debt, etc.)
-- Same fields use the same format across workflows
-- Walkthrough sections in `/close` and `/capture` use compatible structures
+For workflows with doc templates (`/plan`, `/close`, `/capture`): verify frontmatter fields are consistent, same fields use same format, walkthrough sections are compatible.
 
 #### Check 8: Guard redirect consistency
 
-Every guard that rejects a doc should:
-
-- Name the exact command to run (e.g., "Run `/implement`" not "use the correct workflow")
-- Match the status-to-command mapping from `/plan`'s routing table
-- Use consistent phrasing ("Tell user:" pattern)
+Every guard that rejects a doc must: name the exact command (`/implement`, not "correct workflow"), match `/plan`'s routing table, use "Tell user:" phrasing.
 
 #### Check 9: turbo annotation consistency
 
-Check that `// turbo` annotations are used consistently:
+Read-only steps → `// turbo`. Mutating/interactive steps → no turbo. `// turbo-all` makes individual `// turbo` redundant — flag overlap.
 
-- Steps that only read files should have `// turbo`
-- Steps that modify files or ask the user should NOT have `// turbo`
+#### Check 10: Named cross-references
+
+All step references must use **named refs** (e.g., `/plan`'s _Write the source document_), not step numbers. Applies to cross-file (`/plan` step N) and internal (`step 8`, `steps 8`) references. Exclude template labels like `Step 1/3`.
+
+#### Check 11: Debt status guard
+
+Debt docs use `> Status: Draft` — never `> Status: Debt`. The `🗑️ Debt` emoji is a Progress table status only. Search for `Status: Debt` (exclude guard routing logic and Progress table definitions).
+
+#### Check 12: Link rebasing on move to finished
+
+Every workflow that moves to `finished/` must rebase relative links (one directory level added). `/close` has rebase step — verify `/capture` and `/hotfix` reference it.
+
+#### Check 13: DRY — pointer vs redefinition
+
+Shortcut workflows must **reference** shared steps, not redefine inline. Canonical owners:
+
+| Step                                                   | Owner    |
+| ------------------------------------------------------ | -------- |
+| Evaluate skills                                        | `/plan`  |
+| Append walkthrough, Finalize, Move to finished, Report | `/close` |
+
+Flag: inline bash snippets, templates, or process descriptions that duplicate a canonical step. Acceptable: one-liner references like "Follow `/close`'s _Move to finished_ step".
+
+#### Check 14: Test and static analysis failure policy
+
+All workflows with test/analysis gates must require **all failures fixed** — including pre-existing. Policy: zero failures, fix inline, re-run. Flag any "note but don't fix" language.
+
+#### Check 15: Platform-agnostic language
+
+Workflows must be framework-agnostic. Platform details belong in `.agent/rules/platform-*.md` or `language-*.md`. Flag hardcoded commands (`make phpstan`, `npm test`), language patterns (`.php`, `$this->`), or tool names (PHPStan, ESLint). Use generic: "test suite", "static analysis", "discover how to run tests".
 
 ### 3. Report findings
 
-Present findings as a table:
+| #   | Check | File | Issue | Severity |
+| --- | ----- | ---- | ----- | -------- |
 
-| #   | Check            | File         | Issue                                  | Severity |
-| --- | ---------------- | ------------ | -------------------------------------- | -------- |
-| 1   | Status lifecycle | implement.md | Guard doesn't mention `Planned` status | Medium   |
-| ... | ...              | ...          | ...                                    | ...      |
-
-Severity levels:
-
-- **High**: Could cause the agent to take the wrong action (wrong redirect, missing guard)
-- **Medium**: Inconsistent wording or missing information
-- **Low**: Style or formatting inconsistency
+Severity: **High** = wrong agent action. **Medium** = inconsistent info. **Low** = style.
 
 ### 4. Fix issues
 
 // turbo
 
-Apply fixes for all High and Medium issues. Present Low issues for user review.
-
-After fixing, re-run checks 1-9 to verify no regressions.
+Fix all High and Medium. Present Low for user review. Re-run all checks to verify no regressions.
 
 ### 5. Dry-run walkthrough
 
-**Run this last**, after all mechanical fixes are applied. The dry run validates the _fixed_ workflows actually work as a coherent system — not just that fields are correct, but that the flow makes sense.
+**Run last**, after fixes. Simulate end-to-end, verifying each handoff:
 
-Mentally simulate a realistic scenario end-to-end, verifying each handoff:
+1. User describes feature → `/plan` _Capture the intent_ → no doc, description input ✅
+2. `/plan` _Ensure a source doc exists_ → stub with `Draft` status. Template matches `/implement` expectations?
+3. `/plan` _Create the implementation plan artifact_ → has all sections `/implement` references?
+4. `/plan` _Present for review_ / _Iterate until approved_ → user iterates via inline comments
+5. `/plan` _Write the source document_ → full doc with Proposal, Reconciliation, Decisions
+6. `/plan` _Mark as approved_ → `Approved`. `/implement` accepts? ✅
+7. `/implement` _Load the document and plan_ → reads doc + artifact. Missing artifact handling?
+8. `/implement` _Mark the source document_ → Progress table from Proposal phases
+9. `/implement` _Report completion_ → invites review, Review rows tracked. `/close` accepts `In Progress`? ✅
+10. `/close` _Load and verify_ → Progress table all terminal?
+11. `/close` _Append walkthrough_ → references source doc data?
+12. `/close` _Move to finished_ → finish-time prefix, rebase links ✅
 
-#### Scenario: A user wants to add a feature
+#### Edge cases
 
-1. **User says**: "I want to add caching to the sync pipeline"
-2. **`/plan` step 1**: Agent reads the request. No existing doc — identified as description input. ✅ or flag issue.
-3. **`/plan` step 3**: Agent creates a stub doc in `docs/`. What status? What sections? Does the stub template match what `/implement` later expects to read?
-4. **`/plan` step 4**: Agent creates implementation plan artifact. Does the template have all sections `/implement` will reference?
-5. **`/plan` steps 5-6**: User iterates via inline comments. Does the artifact template support the commenting patterns described?
-6. **`/plan` step 7**: User approves. Agent writes full source doc. Does the written doc have the sections that `/implement` needs (Proposal with phases, Reconciliation, Decisions)?
-7. **`/plan` step 8**: Status set to `Approved`. Does `/implement` accept `Approved`? ✅
-8. **`/implement` step 1**: Agent reads the `Approved` doc. Does it also load the artifact? What if the artifact was from a previous conversation and no longer exists?
-9. **`/implement` step 2**: Agent adds Progress table. Does the phase list come from the source doc's Proposal section? Is there a clear mapping?
-10. **`/implement` step 7**: All phases done. Agent says "Run `/close`". Status is `In Progress`. Does `/close` accept `In Progress`? ✅
-11. **`/close` step 1**: Agent reads `In Progress` doc. Checks Progress table — all terminal? Proceeds.
-12. **`/close` step 4**: Appends walkthrough. Do the walkthrough sections reference data that exists in the source doc (phases, files, decisions)?
-13. **`/close` step 6**: Moves to `finished/`. Filename gets finish-time prefix. Clean.
+- **Mid-plan interrupt**: Stub + artifact exist, status `Draft` → routes to "continue planning"?
+- **Resume `/implement`**: `In Progress` → scans Progress table for `⬜ Ready`?
+- **Debt flow**: Debt doc `Draft` → `/plan` accepts? `> Parent:` useful?
+- **`/capture` bypass**: Produces `finished/`-ready doc? `/close` can't accidentally run on it?
+- **Post-implementation review**: Changes tracked as Review rows? Status stays `In Progress`?
 
-#### Edge cases to check
-
-- **Mid-conversation interrupt during `/plan`**: Only a stub doc + artifact exist. User starts new conversation and says `/plan` on the stub. Does the status (`Draft`) correctly route to "continue planning"? Does the agent know to check for an existing artifact?
-- **Resuming `/implement`**: Status is `In Progress`, Progress table exists. Does `/implement` step 1 correctly scan the table and find the next `⬜ Ready` item?
-- **Debt flow**: `/close` creates debt doc with status `Draft`. User runs `/plan` on debt doc. Does `/plan` accept `Draft`? (Should proceed with planning.) Does the `> Parent:` link provide useful context?
-- **`/capture` bypass**: Does `/capture` produce a doc that looks like it came through the full pipeline? Can `/close` be accidentally run on a `/capture` doc?
-
-Flag any handoff that doesn't work or any state where the agent would be confused about what to do next.
+Flag any broken handoff or confused state.
 
 ### 6. Self-audit
 
-The audit must also audit itself. After running all checks and fixes, verify:
+Verify this audit workflow is current:
 
-- **Step references**: Does the dry-run scenario reference the correct step numbers in each workflow? (e.g., if `/plan` was reordered, step numbers in the scenario must match.)
-- **Edge case relevance**: Are the edge cases in step 5 still realistic? Remove any that reference deleted concepts, add any for newly introduced patterns.
-- **Check coverage**: Do the 9 mechanical checks cover all conventions currently in use? If a new convention was introduced (e.g., a new frontmatter field, a new status), add a check for it.
-- **Workflow list**: Does step 1's workflow list match the actual files in `.agent/workflows/`?
+- Dry-run uses named step refs (not numbers)?
+- Edge cases are realistic (no deleted concepts, covers new patterns)?
+- Mechanical checks cover all active conventions?
+- Workflow list matches actual files in `.agent/workflows/`?
 
-If anything is stale, fix it inline.
+Fix anything stale inline.
 
 ### 7. Summary
 
-Report:
-
-- Total checks run (mechanical + dry-run + self-audit)
-- Issues found (by severity)
-- Issues fixed
-- Dry-run result: clean handoff or issues found
-- Any remaining items that need user decision
+Report: total checks run, issues by severity, issues fixed, dry-run result, remaining items needing user decision.

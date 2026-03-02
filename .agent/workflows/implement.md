@@ -35,7 +35,7 @@ For each skill, decide: **relevant** or **not relevant** to this specific task. 
 **If a source doc path was provided**, read it and check the frontmatter `> Status:` line:
 
 - **`Approved`**: Fresh start — set status to `In Progress` and begin
-- **`In Progress`**: Resuming — scan the `## Progress` section (see step 2) to identify what's already done vs remaining
+- **`In Progress`**: Resuming — scan the `## Progress` section (see _Mark the source document_) to identify what's already done vs remaining
 - **`Draft` or `Planned`**: Tell user: "This doc needs planning. Run `/plan`."
 - **`Debt`**: Tell user: "This is a debt doc. Run `/plan` to plan the work."
 - **`Done`**: Tell user: "This doc is already done. Run `/close` to file it."
@@ -44,13 +44,13 @@ For each skill, decide: **relevant** or **not relevant** to this specific task. 
 **If no source doc was provided** (e.g., `/implement` invoked from conversation after an in-chat `/plan`):
 
 1. Check if an implementation plan artifact exists in the brain directory
-2. If it does, **create the source doc first** using the same structure as `/plan` step 8 — this is the permanent record in `docs/`. Use datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`. Populate it from the implementation plan artifact. Set status to `Approved`.
+2. If it does, **create the source doc first** using the same structure as `/plan`'s _Write the source document_ step — this is the permanent record in `docs/`. Use datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`. Populate it from the implementation plan artifact. Set status to `Approved`.
 3. If no artifact exists either, tell user: "No plan found. Run `/plan` first."
 
 > [!IMPORTANT]
 > **The source doc must exist before any code is touched.** If planning happened in conversation without writing the doc, `/implement` writes it as its first action.
 
-If an implementation plan artifact exists in the brain directory, load it to understand the reconciliation and work plan. If not, create one using the same structure as `/plan` step 5.
+If an implementation plan artifact exists in the brain directory, load it to understand the reconciliation and work plan. If not, create one using the same structure as `/plan`'s _Create the implementation plan artifact_ step.
 
 // turbo
 
@@ -119,7 +119,7 @@ If any dispatch returns exit code 2 (`QUEUE_FULL`): do that work yourself.
 ### 4. Handle test failures
 
 - **Caused by your changes**: Fix inline as part of the current phase. Do NOT park as debt.
-- **Pre-existing**: Note but don't fix — outside scope.
+- **Pre-existing**: Fix inline, re-run. All failures must be resolved.
 - **Design issues**: Stop and discuss with user before proceeding.
 
 Include test file updates as part of the phase they belong to — no separate "fix tests" phase.
@@ -150,17 +150,15 @@ Encountered code that looks wrong but is unrelated to your task:
 
 Next session: `/implement` same doc → resumes from Progress table.
 
-### 8. Run PHPStan (mandatory gate)
+### 8. Run static analysis (mandatory gate)
 
 After all phases complete and tests pass:
 
 // turbo
 
-```bash
-make phpstan
-```
+Discover and run the project's static analysis tool (check Makefile targets, package.json scripts, or project config). If none is configured, skip.
 
-**Hard gate** — do not report completion with errors. Fix errors in touched files inline. Pre-existing errors in untouched files: note but don't fix. Repeat until clean.
+**Hard gate** — do not report completion with errors. Fix errors inline, re-run. All errors must be resolved. Repeat until clean.
 
 ### 9. Report completion
 
@@ -174,5 +172,5 @@ If the user requests changes after this point:
 
 - Apply the changes as continuation of the current implementation
 - Add a `Review` row to the Progress table: `🔧 In Progress` → `✅ Done` with a brief note of what was adjusted
-- Re-run tests and PHPStan (steps 8) if the changes are non-trivial
+- Re-run tests and static analysis (_Run static analysis_) if the changes are non-trivial
 - Status stays `In Progress` throughout

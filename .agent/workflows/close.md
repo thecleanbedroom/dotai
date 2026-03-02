@@ -35,7 +35,7 @@ For each skill, decide: **relevant** or **not relevant** to this specific task. 
 Read the target document. Check the frontmatter `> Status:` line:
 
 - **`In Progress`**: Proceed with closing
-- **`Done` but not in `finished/`**: Proceed — just needs filing (skip to step 9)
+- **`Done` but not in `finished/`**: Proceed — just needs filing (skip to _Move to finished_)
 - **`Draft` or `Planned`**: Tell user: "This doc needs planning. Run `/plan`."
 - **`Approved`**: Tell user: "This doc hasn't been implemented yet. Run `/implement`."
 - **`Debt`**: Tell user: "This is a debt doc. Run `/plan` to plan the work."
@@ -60,10 +60,10 @@ If no Progress table exists (older docs), infer completion and confirm with user
 
 // turbo
 
-Check in order: Makefile targets → Docker/Lando commands → package.json scripts → direct commands (`php artisan test`, `phpunit`, etc.).
+Check in order: Makefile targets → Docker/Lando commands → package.json scripts → framework-specific commands.
 
 > [!IMPORTANT]
-> PHP version mismatch? Find the containerized command — do not skip tests.
+> Runtime version mismatch? Find the containerized command — do not skip tests.
 
 #### Run the tests
 
@@ -79,18 +79,16 @@ Run full test suite and capture output.
 
 Repeat until green — zero failures required.
 
-### 3. Run PHPStan (mandatory gate)
+### 3. Run static analysis (mandatory gate)
 
 **Hard gate** — do not proceed until clean.
 
 > [!TIP]
-> **Skip if already green**: If `make phpstan` passed during `/implement` (step 8) **and no code changes since**, skip. Note in walkthrough.
+> **Skip if already green**: If static analysis passed during `/implement`'s _Run static analysis_ step **and no code changes since**, skip. Note in walkthrough.
 
 // turbo
 
-```bash
-make phpstan
-```
+Discover and run the project's static analysis tool (check Makefile targets, package.json scripts, or project config). If none is configured, skip.
 
 - **Your changes**: Fix inline, re-run.
 - **Pre-existing**: Fix inline, re-run. All errors must be resolved.
@@ -125,7 +123,7 @@ If none found, skip.
 
 ### 6. Create the debt document (if needed)
 
-When items were parked (Progress table) or smells filed (step 5):
+When items were parked (Progress table) or smells filed (_Code smell sweep_):
 
 // turbo
 
@@ -171,7 +169,7 @@ Append a `## Walkthrough` section — the permanent record of what happened:
 
 | File                | Purpose/Change |
 | ------------------- | -------------- |
-| [file.php](../path) | Description    |
+| [filename](../path) | Description    |
 
 ### Decisions Made
 
