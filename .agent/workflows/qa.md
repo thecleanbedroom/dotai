@@ -8,6 +8,18 @@ Run a structured quality assurance pass over the codebase (or a targeted scope) 
 
 ## Steps
 
+### 0. Evaluate skills
+
+// turbo
+
+Scan installed skills and identify which ones are relevant to the task at hand:
+
+```bash
+for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
+```
+
+For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
+
 1. **Load the QA rules**:
 
 Read `.agent/rules/core-quality-assurance.md` in full. Every section is a checklist item.
