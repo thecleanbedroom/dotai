@@ -10,7 +10,7 @@ Load all governance context, verify tooling, and confirm readiness.
 
 ## Steps
 
-### 1. Read every rule file
+### Read every rule file
 
 ```bash
 for f in .agent/rules/*.md; do echo "=== $(basename $f) ==="; cat "$f"; echo ""; done
@@ -18,17 +18,11 @@ for f in .agent/rules/*.md; do echo "=== $(basename $f) ==="; cat "$f"; echo "";
 
 After reading, list each filename and a one-line summary of what it requires.
 
-### 2. Evaluate skills
+### Evaluate skills
 
-Read the SKILL.md for **every** active skill:
+Follow `/skills`'s _Evaluate skills_ step.
 
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, state: **relevant** (will read fully if task matches) or **not relevant** (to current context). Do NOT skip this step — the evaluation itself is the point.
-
-### 3. Check parallelism gateway
+### Check parallelism gateway
 
 ```bash
 .agent/bin/gemini-gateway --status
@@ -42,7 +36,7 @@ Report the result:
 
 If the binary is missing, report: "Gateway not installed — parallelism disabled."
 
-### 4. Report to user
+### Report to user
 
 Confirm with a structured summary:
 
@@ -63,7 +57,7 @@ Confirm with a structured summary:
 Awaiting task.
 ```
 
-### 5. On every subsequent task
+### On every subsequent task
 
 Before starting ANY work in this conversation, evaluate:
 

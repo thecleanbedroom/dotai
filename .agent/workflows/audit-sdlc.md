@@ -18,13 +18,11 @@ Read every SDLC workflow file, check for inconsistencies, report findings, and f
 
 ## Steps
 
-### 1. Load all SDLC workflows
-
-// turbo
+### Load all SDLC workflows
 
 Read every file in `.agent/workflows/`. Identify SDLC workflows (`SDLC Step` or `SDLC` in description). Currently: `plan.md` (1/3), `implement.md` (2/3), `close.md` (3/3), `capture.md` (Shortcut), `hotfix.md` (Shortcut).
 
-### 2. Run consistency checks
+### Run consistency checks
 
 Scan all SDLC workflow files for each check below. Report violations.
 
@@ -95,10 +93,10 @@ Every workflow that moves to `finished/` must rebase relative links (one directo
 
 Shortcut workflows must **reference** shared steps, not redefine inline. Canonical owners:
 
-| Step                                                   | Owner    |
-| ------------------------------------------------------ | -------- |
-| Evaluate skills                                        | `/plan`  |
-| Append walkthrough, Finalize, Move to finished, Report | `/close` |
+| Step                                                   | Owner     |
+| ------------------------------------------------------ | --------- |
+| Evaluate skills                                        | `/skills` |
+| Append walkthrough, Finalize, Move to finished, Report | `/close`  |
 
 Flag: inline bash snippets, templates, or process descriptions that duplicate a canonical step. Acceptable: one-liner references like "Follow `/close`'s _Move to finished_ step".
 
@@ -110,34 +108,32 @@ All workflows with test/analysis gates must require **all failures fixed** — i
 
 Workflows must be framework-agnostic. Platform details belong in `.agent/rules/platform-*.md` or `language-*.md`. Flag hardcoded commands (`make phpstan`, `npm test`), language patterns (`.php`, `$this->`), or tool names (PHPStan, ESLint). Use generic: "test suite", "static analysis", "discover how to run tests".
 
-### 3. Report findings
+### Report findings
 
 | #   | Check | File | Issue | Severity |
 | --- | ----- | ---- | ----- | -------- |
 
 Severity: **High** = wrong agent action. **Medium** = inconsistent info. **Low** = style.
 
-### 4. Fix issues
-
-// turbo
+### Fix issues
 
 Fix all High and Medium. Present Low for user review. Re-run all checks to verify no regressions.
 
-### 5. Dry-run walkthrough
+### Dry-run walkthrough
 
 **Run last**, after fixes. Simulate end-to-end, verifying each handoff:
 
 1. User describes feature → `/plan` _Capture the intent_ → no doc, description input ✅
-2. `/plan` _Ensure a source doc exists_ → stub with `Draft` status. Template matches `/implement` expectations?
+2. `/plan` _Ensure a source doc exists (stub only)_ → stub with `Draft` status. Template matches `/implement` expectations?
 3. `/plan` _Create the implementation plan artifact_ → has all sections `/implement` references?
 4. `/plan` _Present for review_ / _Iterate until approved_ → user iterates via inline comments
 5. `/plan` _Write the source document_ → full doc with Proposal, Reconciliation, Decisions
 6. `/plan` _Mark as approved_ → `Approved`. `/implement` accepts? ✅
 7. `/implement` _Load the document and plan_ → reads doc + artifact. Missing artifact handling?
-8. `/implement` _Mark the source document_ → Progress table from Proposal phases
+8. `/implement` _Mark the source document and initialize progress tracking_ → Progress table from Proposal phases
 9. `/implement` _Report completion_ → invites review, Review rows tracked. `/close` accepts `In Progress`? ✅
 10. `/close` _Load and verify_ → Progress table all terminal?
-11. `/close` _Append walkthrough_ → references source doc data?
+11. `/close` _Append walkthrough to the source document_ → references source doc data?
 12. `/close` _Move to finished_ → finish-time prefix, rebase links ✅
 
 #### Edge cases
@@ -150,7 +146,7 @@ Fix all High and Medium. Present Low for user review. Re-run all checks to verif
 
 Flag any broken handoff or confused state.
 
-### 6. Self-audit
+### Self-audit
 
 Verify this audit workflow is current:
 
@@ -161,6 +157,6 @@ Verify this audit workflow is current:
 
 Fix anything stale inline.
 
-### 7. Summary
+### Summary
 
 Report: total checks run, issues by severity, issues fixed, dry-run result, remaining items needing user decision.

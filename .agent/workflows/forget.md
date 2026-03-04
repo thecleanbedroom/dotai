@@ -23,13 +23,13 @@ Review existing knowledge (both global KIs and project rules) and remove or upda
 | `/forget <topic>` | **Targeted** | Search both KIs and rules matching the topic, present for review             |
 | `/forget @[file]` | **Diff**     | Compare file contents against KIs and rules; flag contradictions             |
 
-All three modes converge at **Step 2: Present for Approval**.
+All three modes converge at _Present for approval_.
 
 ---
 
 ## Steps
 
-### 1. Identify candidates
+### Identify candidates
 
 #### Audit mode (no input)
 
@@ -77,7 +77,7 @@ Read the referenced file(s) and all existing KI artifacts + rule files. Identify
 
 ---
 
-### 2. Present for approval
+### Present for approval
 
 For each candidate, show:
 
@@ -106,7 +106,7 @@ The user must choose for each candidate:
 
 ---
 
-### 3. Execute
+### Execute
 
 #### For global KI deletions
 
@@ -138,7 +138,7 @@ rm -rf ~/.gemini/antigravity/knowledge/<topic_slug>/
 
 ---
 
-### 4. Confirm
+### Confirm
 
 Report to the user:
 

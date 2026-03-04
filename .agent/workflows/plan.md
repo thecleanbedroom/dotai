@@ -19,19 +19,11 @@ Research the codebase, reconcile intent against reality, surface questions, and 
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
-// turbo
+Follow `/skills`'s _Evaluate skills_ step.
 
-Scan installed skills and identify which ones are relevant to the task at hand:
-
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
-
-### 1. Consolidate multi-doc inputs (if applicable)
+### Consolidate multi-doc inputs (if applicable)
 
 // turbo
 
@@ -56,7 +48,7 @@ When multiple source docs are provided, **combine them into a single planning do
 
 If only one doc (or a chat description) is provided, skip this step.
 
-### 2. Capture the intent
+### Capture the intent
 
 Read what the user provided (description, existing doc, or debt doc). For existing docs, check frontmatter `> Status:`:
 
@@ -73,7 +65,7 @@ Read what the user provided (description, existing doc, or debt doc). For existi
 
 Identify: **Goal**, **Scope**, **Constraints**, **Referenced code**. If intent is unclear, batch all questions into one ask.
 
-### 3. Research the codebase (deep)
+### Research the codebase (deep)
 
 // turbo
 
@@ -84,7 +76,7 @@ Investigate actual code for each area the plan touches. **Do NOT make assumption
 - **Trace internal deps**: for moved methods, verify dependencies exist on destination
 - **Identify affected tests**: search for tests that mock/instantiate/assert on changed classes
 
-### 4. Ensure a source doc exists (stub only)
+### Ensure a source doc exists (stub only)
 
 // turbo
 
@@ -109,7 +101,7 @@ Use datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`
 
 That's it — just frontmatter and the requirement. Full planning sections come in _Write the source document_.
 
-### 5. Create the implementation plan artifact
+### Create the implementation plan artifact
 
 Create an **implementation_plan** artifact in the brain directory — the primary working document. **Batch all questions into the artifact**, not chat.
 
@@ -190,15 +182,15 @@ List test files that need updating due to mock/assertion changes:
 How you'll verify each change works.
 ```
 
-### 6. Present for review
+### Present for review
 
 Present the artifact via `notify_user` with `BlockedOnUser: true`. Keep the message brief: decision count, drift/blockers, and prompt for inline comments. Don't present the source doc.
 
-### 7. Iterate until approved
+### Iterate until approved
 
 On user feedback: re-research questioned areas, update artifact only, move answered questions to Decisions Made. **Repeat until approved** ("looks good", "approved", `/implement`, etc.).
 
-### 8. Write the source document
+### Write the source document
 
 // turbo
 
@@ -212,7 +204,7 @@ Once approved, **now** augment the source document with the finalized plan. This
 
 **Never overwrite existing doc content.** Add sections below it. Include: Context, Goals, Current State, Proposal (phases with affected files), Reconciliation table, Decisions, Verification Plan, Changelog.
 
-### 9. Mark as approved
+### Mark as approved
 
 // turbo
 

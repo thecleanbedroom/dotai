@@ -35,13 +35,13 @@ This is the most common mode — you fixed something quickly and want to capture
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
 // turbo
 
-Follow `/plan`'s _Evaluate skills_ step.
+Follow `/skills`'s _Evaluate skills_ step.
 
-### 1. Create the doc
+### Create the doc
 
 // turbo
 
@@ -81,7 +81,7 @@ How the fix was verified — test output, live testing results, manual checks.
 
 In retroactive mode, populate all sections from the conversation context. In proactive mode, fill Problem first and update the rest as you go.
 
-### 2. Fix (proactive mode only)
+### Fix (proactive mode only)
 
 // turbo
 
@@ -93,11 +93,11 @@ If the fix hasn't been applied yet, do it now:
 - Add results to the Verification section
 - Record any decisions made
 
-### 3. Close
+### Close
 
 // turbo
 
-- **Walkthrough**: Follow `/close`'s _Append walkthrough_ step
+- **Walkthrough**: Follow `/close`'s _Append walkthrough to the source document_ step
 - **Finalize**: Follow `/close`'s _Finalize the original document_ step
 - **Move + rebase**: Follow `/close`'s _Move to finished_ step
 - **Report**: Follow `/close`'s _Report_ step — include a copy-paste commit message

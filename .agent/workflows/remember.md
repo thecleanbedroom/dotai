@@ -21,13 +21,13 @@ Save insights, decisions, and tribal knowledge so it surfaces automatically in f
 | `/remember <text>`  | **Direct** | Craft a memory from the user's statement                                    |
 | `/remember @[file]` | **File**   | Consume referenced file(s), summarize learnings                             |
 
-All three modes converge at **Step 2: Determine Scope**.
+All three modes converge at _Determine scope_.
 
 ---
 
 ## Steps
 
-### 1. Extract knowledge
+### Extract knowledge
 
 #### Scan mode (no input)
 
@@ -54,7 +54,7 @@ Read the referenced file(s). Extract the key learnings, patterns, decisions, or 
 
 ---
 
-### 2. Determine scope
+### Determine scope
 
 For each piece of knowledge, decide whether it is **global** or **project-specific**:
 
@@ -77,11 +77,11 @@ For each piece of knowledge, decide whether it is **global** or **project-specif
 | A personal preference or cross-cutting convention          | **Global**                    |
 | Could help in a different project with similar tech        | **Global** — frame it broadly |
 
-Include the determined scope in the preview (Step 3). The user can override.
+Include the determined scope in the preview (_Present for approval_). The user can override.
 
 ---
 
-### 3. Present for approval
+### Present for approval
 
 For each proposed memory, present the user with a clear preview:
 
@@ -106,7 +106,7 @@ Loop on edits until approved or skipped.
 
 ---
 
-### 4. Check for duplicates
+### Check for duplicates
 
 #### For global scope (KIs)
 
@@ -129,7 +129,7 @@ Read existing rule files to check if the knowledge is already captured. If so, o
 
 ---
 
-### 5. Persist
+### Persist
 
 #### Global scope → KI
 
@@ -197,7 +197,7 @@ Append to an existing rule file or create a new one in `.agent/rules/`:
 
 ---
 
-### 6. Confirm
+### Confirm
 
 Report to the user:
 

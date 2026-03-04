@@ -52,7 +52,7 @@ Create a concise orientation document with these sections (omit only if truly no
    - **Orientation, not reference.** Someone should understand the project and how to start, not get a help manual.
    - **Don't duplicate tool output.** Point to the task runner for full command lists.
    - **Don't duplicate env files.** Reference the example file, highlight only critical vars.
-   - **Cover every subsystem** found in step 2.
+   - **Cover every subsystem** found in _Discover the application_.
    - **Highlight non-obvious conventions.** Call out anything where a reasonable person's first guess would be wrong: application code nested in a subdirectory instead of the repo root, namespace prefixes that don't match the directory structure intuitively, config that lives in an unexpected location (e.g., inside modules instead of the framework root), entry points that aren't where the framework docs say they'd be.
    - **Show how subsystems connect.** If the project has multiple subsystems, include a brief description of how they relate — which one sends data to which, and via what mechanism (REST API, queue, shared DB, etc.).
    - **Clarify repo boundaries.** Note what's owned by this repo vs what lives elsewhere (companion apps, external APIs, separately-deployed services). Prevents searching for code that isn't here.

@@ -18,19 +18,11 @@ Raise code coverage to a target percentage by analyzing the coverage report, tri
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
-// turbo
+Follow `/skills`'s _Evaluate skills_ step.
 
-Scan installed skills and identify which ones are relevant to the task at hand:
-
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
-
-### 1. Run tests and parse coverage report
+### Run tests and parse coverage report
 
 // turbo
 
@@ -85,7 +77,7 @@ printf(\"\n=== OVERALL: %s%% (%d/%d statements) ===\n\", \$overall, \$totalCover
 
 Record the baseline coverage percentage and list of uncovered files.
 
-### 2. Build the coverage priority queue
+### Build the coverage priority queue
 
 Create a prioritized list of files to test, sorted by **uncovered statements** (largest gaps = most impact per test written):
 
@@ -101,7 +93,7 @@ Create a prioritized list of files to test, sorted by **uncovered statements** (
 2. **Tier 2 — Medium impact**: Files with 10–30 uncovered statements + clean code
 3. **Tier 3 — Low impact**: Files with 5–10 uncovered statements + clean code
 
-### 3. Triage each file for code smells (BEFORE writing tests)
+### Triage each file for code smells (BEFORE writing tests)
 
 For each file in the priority queue, **read it first** and check for code smells:
 
@@ -127,7 +119,7 @@ For each file in the priority queue, **read it first** and check for code smells
 > [!IMPORTANT]
 > **The smell check is a quick scan, not a deep audit.** Spend ~30 seconds per file. If a file is mostly clean with one minor smell, test the clean parts and note the smell. Only skip the file entirely if the smell is structural (wrong abstraction, dead code path, tangled deps).
 
-### 4. Write tests in batches
+### Write tests in batches
 
 For each clean file (or batch of related files):
 
@@ -184,7 +176,7 @@ make artisan-test
 - Do NOT fix production code bugs discovered during testing — file as debt
 - Ensure all tests pass before moving to the next batch
 
-### 5. Track progress
+### Track progress
 
 Maintain a progress table (in conversation or artifact) showing:
 
@@ -194,17 +186,17 @@ Maintain a progress table (in conversation or artifact) showing:
 | MagentoProduct.php   | 150        | 30%     | 🗑️ Debt          | Dead code in buildQuery |
 | StoreSyncService.php | 80         | 60%     | ✅ Tests written | +4 tests                |
 
-After each batch, re-run the coverage parser from step 1 to check progress toward the target.
+After each batch, re-run the coverage parser from _Run tests and parse coverage report_ to check progress toward the target.
 
-### 6. Iterate until target reached
+### Iterate until target reached
 
-Repeat steps 3–5 moving down the priority queue until:
+Repeat _Triage each file for code smells_ through _Track progress_, moving down the priority queue until:
 
 - **Target reached** (e.g., 80%) — stop, report
 - **Only smelly files remain** — stop, report, all debt docs filed
 - **Diminishing returns** — remaining files have < 5 uncovered statements each
 
-### 7. Final verification
+### Final verification
 
 // turbo
 
@@ -212,10 +204,10 @@ Run the full test suite one final time and parse coverage:
 
 ```bash
 make artisan-test
-# Re-run the coverage parser from step 1
+# Re-run the coverage parser from _Run tests and parse coverage report_
 ```
 
-### 8. Report
+### Report
 
 Summarize:
 

@@ -15,19 +15,11 @@ A high CRAP score means a method is both complex AND poorly tested — the worst
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
-// turbo
+Follow `/skills`'s _Evaluate skills_ step.
 
-Scan installed skills and identify which ones are relevant to the task at hand:
-
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
-
-### 1. Run tests and extract CRAP data
+### Run tests and extract CRAP data
 
 // turbo
 
@@ -81,7 +73,7 @@ printf(\"\n=== %d methods with CRAP >= 30 ===\n\", \$shown);
 > [!TIP]
 > Adjust the `if (\$m['crap'] < 30) break;` threshold if you want to see more or fewer results.
 
-### 2. Categorize methods by fix strategy
+### Categorize methods by fix strategy
 
 For each high-CRAP method, read the source and categorize:
 
@@ -106,7 +98,7 @@ Methods that are complex due to framework requirements, CLI commands, or boot/co
 - Artisan command `handle()` with framework orchestration
 - Migration files
 
-### 3. Prioritize by impact
+### Prioritize by impact
 
 Sort the actionable methods (A + B) by:
 
@@ -114,7 +106,7 @@ Sort the actionable methods (A + B) by:
 2. **Change frequency** — check `git log --follow --format='%H' -- <file> | wc -l` for each file. Higher churn + high CRAP = top priority
 3. **Blast radius** — methods called from many places are riskier than isolated ones
 
-### 4. Create refactoring plan
+### Create refactoring plan
 
 Use `/plan` to create a planning doc targeting the top methods. The plan should include:
 
@@ -138,18 +130,18 @@ Each method in the plan should specify:
 - [Specific change 2]
 ```
 
-### 5. Verify after implementation
+### Verify after implementation
 
 // turbo
 
-After implementing changes, re-run the CRAP extraction from step 1 to verify scores decreased:
+After implementing changes, re-run the CRAP extraction from _Run tests and extract CRAP data_ to verify scores decreased:
 
 ```bash
 make artisan-test
 # Re-run CRAP extraction
 ```
 
-### 6. Report
+### Report
 
 Summarize:
 

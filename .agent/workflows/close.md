@@ -18,19 +18,11 @@ Finalize a completed planning document: append walkthrough, create debt doc for 
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
-// turbo
+Follow `/skills`'s _Evaluate skills_ step.
 
-Scan installed skills and identify which ones are relevant to the task at hand:
-
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
-
-### 1. Load and verify
+### Load and verify
 
 Read the target document. Check the frontmatter `> Status:` line:
 
@@ -49,7 +41,7 @@ If any items are `⬜ Ready` or `🔧 In Progress`, list them and ask the user t
 
 If no Progress table exists (older docs), infer completion and confirm with user.
 
-### 2. Run tests (mandatory gate)
+### Run tests (mandatory gate)
 
 **Hard gate** — do not proceed until tests are green.
 
@@ -79,12 +71,12 @@ Run full test suite and capture output.
 
 Repeat until green — zero failures required.
 
-### 3. Run static analysis (mandatory gate)
+### Run static analysis (mandatory gate)
 
 **Hard gate** — do not proceed until clean.
 
 > [!TIP]
-> **Skip if already green**: If static analysis passed during `/implement`'s _Run static analysis_ step **and no code changes since**, skip. Note in walkthrough.
+> **Skip if already green**: If static analysis passed during `/implement`'s _Run static analysis (mandatory gate)_ step **and no code changes since**, skip. Note in walkthrough.
 
 // turbo
 
@@ -95,7 +87,7 @@ Discover and run the project's static analysis tool (check Makefile targets, pac
 
 Repeat until zero errors.
 
-### 4. Test new code
+### Test new code
 
 Check whether new files/methods created during implementation lack test coverage. **Quality gate** — new code should not be closed without tests.
 
@@ -110,7 +102,7 @@ Check whether new files/methods created during implementation lack test coverage
 > [!NOTE]
 > New code only — extending coverage for pre-existing code is out of scope. File as debt if needed.
 
-### 5. Code smell sweep
+### Code smell sweep
 
 Quick scan of touched files and neighbors for smells: duplicated logic, dead code, wrong abstraction, magic values, missing interface methods.
 
@@ -121,7 +113,7 @@ For each smell: create a **separate debt doc** in `docs/` with `> Status: Draft`
 
 If none found, skip.
 
-### 6. Create the debt document (if needed)
+### Create the debt document (if needed)
 
 When items were parked (Progress table) or smells filed (_Code smell sweep_):
 
@@ -148,7 +140,7 @@ Create a sister doc with same slug + `-debt` suffix. Datetime prefix uses the **
 
 Debt docs stay in active `docs/` — ready for `/plan`.
 
-### 7. Append walkthrough to the source document
+### Append walkthrough to the source document
 
 // turbo
 
@@ -180,7 +172,7 @@ Append a `## Walkthrough` section — the permanent record of what happened:
 Items + link to debt doc (if created).
 ```
 
-### 8. Finalize the original document
+### Finalize the original document
 
 // turbo
 
@@ -188,7 +180,7 @@ Items + link to debt doc (if created).
 - Add `> Finished: YYYY-MM-DD HH:MM (local)` line
 - If debt doc created, add `> Debt: <link>` line
 
-### 9. Move to finished
+### Move to finished
 
 // turbo
 
@@ -212,7 +204,7 @@ sed -i 's|(\.\.\/|(../../|g; s|(\.\./|(../../|g' docs/finished/<filename>.md
 
 Spot-check links. Update any docs referencing the moved file.
 
-### 10. Report
+### Report
 
 Summarize: items completed, items as debt, decisions, file paths, test results, follow-ups.
 

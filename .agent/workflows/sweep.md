@@ -24,21 +24,13 @@ Produce a prioritized list of improvement ideas based on what you observe in the
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
-// turbo
-
-Scan installed skills and identify which ones are relevant to the task at hand:
-
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
+Follow `/skills`'s _Evaluate skills_ step.
 
 1. **Understand the project.** Read [PROJECT.md] and scan the codebase structure. Identify the platform, custom code areas, and conventions already in place.
 
-2. **Load rules.** Read all `.agent/rules/` files — these define the project's own standards and are the primary benchmark for the sweep. Use rules and active skills (from step 0) as the lens for evaluating the codebase.
+2. **Load rules.** Read all `.agent/rules/` files — these define the project's own standards and are the primary benchmark for the sweep. Use rules and active skills (from _Evaluate skills_) as the lens for evaluating the codebase.
 
 3. **Review knowledge and history.** Check knowledge items, conversation history, and `docs/finished/` for known debt, past decisions, and recurring friction.
 

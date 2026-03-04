@@ -4,13 +4,13 @@ description: Generate a project-specific skills bundle by analyzing the codebase
 
 # Generate Skills Bundle
 
-Clone the skills repo, extract a catalog, summarize the codebase, reason about which skills match, and install them.
+Clone the skills repo, analyze the project and workflows, reason about which skills match, and install them. Every run performs a full evaluation covering both universal skills (platform-agnostic, workflow-complementing) and project-specific skills.
 
 // turbo-all
 
 ## Steps
 
-1. **Clone skills repo to tmp**:
+### Clone skills repo to tmp
 
 ```bash
 SKILLS_TMP=$(mktemp -d)
@@ -27,7 +27,7 @@ ls "$SKILLS_TMP/skills/" | wc -l
 
 If the clone fails, stop and tell the user.
 
-2. **Extract frontmatter from every SKILL.md into a plain text catalog**:
+### Extract frontmatter catalog
 
 One skill per line: `slug - description`
 
@@ -66,43 +66,70 @@ print(f'Catalog: {len(lines)} skills, one per line')
 "
 ```
 
-3. **Reason through the codebase** to understand what this project is:
+### Analyze project and workflows
 
-Explore the project freely — look at file extensions, directory structure, dependency files (composer.json, package.json, etc. wherever they live), infrastructure (Dockerfile, docker-compose, Makefile, CI configs), and any other signals that reveal the tech stack, architecture, and domain.
-
-Use whatever tools make sense: `find`, `ls`, `cat`, `view_file`, etc. Don't rely on a single fixed script — poke around until you understand:
+**Project profile** — explore the codebase freely (file extensions, directory structure, dependency files, infrastructure, CI configs) until you understand:
 
 - What languages/frameworks are used
 - What the project actually does (its domain)
 - How it's built, tested, and deployed
 - What kinds of problems developers face working on it
 
-After exploring, write a 3-5 line **project profile** summarizing the tech stack, architecture, domain, and key concerns.
+Write a 3-5 line project profile summarizing the tech stack, architecture, domain, and key concerns.
 
-4. **Read the catalog and reason about skill selection**:
+**Workflow profile** — read every file in `.agent/workflows/`. For each, extract:
 
-Read `/tmp/.skills_catalog.txt` using `view_file`.
+- **Purpose**: what it does (from description and intro)
+- **Key steps**: the major actions the agent performs
+- **Skill gaps**: what kinds of knowledge would make the agent better at executing each step
 
-You now have:
+Build a workflow profile summarizing what the agent is asked to do across all workflows.
 
-- The **project profile** from step 3
+### Read catalog and reason about skill selection
+
+Read `/tmp/.skills_catalog.txt` using `view_file`. You now have:
+
+- The **project profile** from _Analyze project and workflows_ (what this project is)
+- The **workflow profile** from _Analyze project and workflows_ (what the agent is asked to do)
 - The **full skill catalog** with slug + description for every skill
 
-Using both, reason about which skills genuinely match this project — the same way you'd answer "which of these skills are relevant to this project?" if someone pasted both into a conversation.
+Do NOT use grep, keyword matching, or string filtering. Read the catalog and reason about fit.
 
-**Selection rules:**
+For each candidate, read its full `SKILL.md` to verify it delivers actionable guidance (not just a thin description wrapper).
 
-- Select 10-20 skills maximum
-- Max ONE skill per concern area (e.g., one code review skill, one testing skill, one bash skill)
+#### Category A: Universal skills
+
+Skills that every project needs regardless of platform. Select in two sub-groups:
+
+**A1 — Universal production skills**: foundational software engineering concerns (clean code, debugging, testing methodology, code review). Must be genuinely platform-agnostic.
+
+**A2 — Workflow complement skills**: skills that make installed workflows more effective. Each must cite a specific workflow and step it strengthens.
+
+**Universal selection rules:**
+
+- Must be genuinely **platform-agnostic** — skip language/framework-specific skills
+- Pick the most **comprehensive** skill per concern
+- When multiple skills cover the same concern, compare depth: prefer actionable guidance (checklists, examples, processes) over theory-only
+- Prefer `risk: safe` over `risk: unknown` when quality is comparable
+- Max ONE skill per concern area
+
+#### Category B: Project-specific skills
+
+Skills relevant to THIS project's tech stack, domain, and challenges.
+
+**Project-specific selection rules:**
+
+- Select based on the project profile, not just file extensions
 - Skip skills for languages/frameworks/platforms NOT in the project
 - Skip penetration testing unless it's a security project
 - Prefer specific skills (e.g., `laravel-expert`) over generic ones (e.g., `backend-architect`) when both exist
-- Do NOT keyword-match — match based on what the project actually does and what problems its developers face
 
 > ❌ Bad: "project has PHP files → pick `php-pro`"
 > ✅ Good: "project has complex OOP patterns, generators, SPL usage → `php-pro` helps write idiomatic PHP"
 
-5. **Install selected skills**:
+**Combined budget**: 10-20 skills total across both categories. Max ONE skill per concern area.
+
+### Install selected skills
 
 ```bash
 SKILLS_TMP=$(cat /tmp/.skills_tmp_path)
@@ -113,7 +140,7 @@ find .agent/skills/ -mindepth 1 -maxdepth 1 -type l -exec rm -f {} +
 mkdir -p .agent/skills
 
 # Copy each selected skill
-for skill in <space-separated slugs from step 4>; do
+for skill in <space-separated slugs from skill selection>; do
   if [ -d "$SKILLS_TMP/skills/$skill" ]; then
     cp -r "$SKILLS_TMP/skills/$skill" ".agent/skills/$skill"
     echo "✅ $skill"
@@ -123,7 +150,7 @@ for skill in <space-separated slugs from step 4>; do
 done
 ```
 
-6. **Clean up**:
+### Clean up
 
 ```bash
 SKILLS_TMP=$(cat /tmp/.skills_tmp_path)
@@ -132,7 +159,7 @@ rm -f /tmp/.skills_tmp_path /tmp/.skills_catalog.txt
 echo "Cleaned up."
 ```
 
-7. **Verify**:
+### Verify
 
 ```bash
 echo "Skills installed:"
@@ -157,9 +184,18 @@ Report to the user:
 
 ### Project Profile
 
-[3-5 line summary from step 3]
+[3-5 line summary from _Analyze project and workflows_]
 
 ### Selected Skills (N/20)
+
+#### Universal Skills
+
+| #   | Skill | Category   | Concern                  | Supports       |
+| --- | ----- | ---------- | ------------------------ | -------------- |
+| 1   | slug  | Production | e.g., Clean code / SOLID | All projects   |
+| 2   | slug  | Workflow   | e.g., Planning           | `/plan` step X |
+
+#### Project-Specific Skills
 
 | #   | Skill      | Reason                             |
 | --- | ---------- | ---------------------------------- |

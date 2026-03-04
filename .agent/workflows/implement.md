@@ -18,24 +18,16 @@ Execute an approved planning document item by item. Supports resuming across con
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
-// turbo
+Follow `/skills`'s _Evaluate skills_ step.
 
-Scan installed skills and identify which ones are relevant to the task at hand:
-
-```bash
-for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
-```
-
-For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
-
-### 1. Load the document and plan
+### Load the document and plan
 
 **If a source doc path was provided**, read it and check the frontmatter `> Status:` line:
 
 - **`Approved`**: Fresh start — set status to `In Progress` and begin
-- **`In Progress`**: Resuming — scan the `## Progress` section (see _Mark the source document_) to identify what's already done vs remaining
+- **`In Progress`**: Resuming — scan the `## Progress` section (see _Mark the source document and initialize progress tracking_) to identify what's already done vs remaining
 - **`Draft` or `Planned`**: Tell user: "This doc needs planning. Run `/plan`."
 - **`Debt`**: Tell user: "This is a debt doc. Run `/plan` to plan the work."
 - **`Done`**: Tell user: "This doc is already done. Run `/close` to file it."
@@ -54,7 +46,7 @@ If an implementation plan artifact exists in the brain directory, load it to und
 
 // turbo
 
-### 2. Mark the source document and initialize progress tracking
+### Mark the source document and initialize progress tracking
 
 // turbo
 
@@ -75,7 +67,7 @@ Phase statuses: `⬜ Ready` | `🔧 In Progress` | `✅ Done` | `🚫 Blocked` |
 
 This table is the **single source of truth** for resumption.
 
-### 3. Implement iteratively
+### Implement iteratively
 
 Work through items from the Progress table. **Before touching any code**, triage for parallelism.
 
@@ -116,7 +108,7 @@ If any dispatch returns exit code 2 (`QUEUE_FULL`): do that work yourself.
 
 **Between items**, briefly report progress (completed, next, blockers).
 
-### 4. Handle test failures
+### Handle test failures
 
 - **Caused by your changes**: Fix inline as part of the current phase. Do NOT park as debt.
 - **Pre-existing**: Fix inline, re-run. All failures must be resolved.
@@ -124,13 +116,13 @@ If any dispatch returns exit code 2 (`QUEUE_FULL`): do that work yourself.
 
 Include test file updates as part of the phase they belong to — no separate "fix tests" phase.
 
-### 5. Handle blockers
+### Handle blockers
 
 When an item cannot be completed (missing dependency, undecided architecture, out of scope, external blocker):
 
 **Do NOT skip silently.** Flag to user, confirm parking. Mark `🚫 Blocked` or `🗑️ Debt` with notes.
 
-### 6. File discovered issues as debt (do NOT fix inline)
+### File discovered issues as debt (do NOT fix inline)
 
 Encountered code that looks wrong but is unrelated to your task:
 
@@ -141,7 +133,7 @@ Encountered code that looks wrong but is unrelated to your task:
 > [!CAUTION]
 > **Never fix discovered issues inline** (scope creep). **Never just mention them in chat** (gets lost). One debt doc per issue, filed immediately.
 
-### 7. Session boundary (if stopping mid-work)
+### Session boundary (if stopping mid-work)
 
 // turbo
 
@@ -150,7 +142,7 @@ Encountered code that looks wrong but is unrelated to your task:
 
 Next session: `/implement` same doc → resumes from Progress table.
 
-### 8. Run static analysis (mandatory gate)
+### Run static analysis (mandatory gate)
 
 After all phases complete and tests pass:
 
@@ -160,7 +152,7 @@ Discover and run the project's static analysis tool (check Makefile targets, pac
 
 **Hard gate** — do not report completion with errors. Fix errors inline, re-run. All errors must be resolved. Repeat until clean.
 
-### 9. Report completion
+### Report completion
 
 Summarize: items completed, items parked as debt, follow-up actions.
 
@@ -172,5 +164,5 @@ If the user requests changes after this point:
 
 - Apply the changes as continuation of the current implementation
 - Add a `Review` row to the Progress table: `🔧 In Progress` → `✅ Done` with a brief note of what was adjusted
-- Re-run tests and static analysis (_Run static analysis_) if the changes are non-trivial
+- Re-run tests and static analysis (_Run static analysis (mandatory gate)_) if the changes are non-trivial
 - Status stays `In Progress` throughout

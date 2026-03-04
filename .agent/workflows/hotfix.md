@@ -20,11 +20,11 @@ Runs `/plan` → `/implement` → `/close` in one pass with no review gates. Use
 
 ## Steps
 
-### 0. Evaluate skills
+### Evaluate skills
 
-Follow `/plan`'s _Evaluate skills_ step.
+Follow `/skills`'s _Evaluate skills_ step.
 
-### 1. Plan
+### Plan
 
 Follow `/plan` with these overrides:
 
@@ -32,19 +32,19 @@ Follow `/plan` with these overrides:
 - **Do NOT ask clarifying questions** unless the fix could go in two genuinely different directions with different consequences. Make reasonable assumptions and state them.
 - Keep research tight — you already know it's a small fix
 
-### 2. Implement
+### Implement
 
 Follow `/implement` with these overrides:
 
 - **Skip** parallelism triage — small fix, sequential only
 - **Skip** _Report completion_ review invitation — no review gate
 
-### 3. Close
+### Close
 
 Follow `/close` with these overrides:
 
 - **Skip** _Test new code_ and _Code smell sweep_ — small fix, no debt filing needed
 
-### 4. Report
+### Report
 
 Follow `/close`'s _Report_ step — summarize changes, test results, and provide a copy-paste commit message.

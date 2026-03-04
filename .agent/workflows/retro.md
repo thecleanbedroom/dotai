@@ -11,7 +11,7 @@ Systematically evaluate how well the agent system performed in this conversation
 
 ## Steps
 
-### 1. Scan for friction
+### Scan for friction
 
 Review the full conversation for friction signals:
 
@@ -34,7 +34,7 @@ For each friction point, diagnose the **root cause**:
 | Missing skill guidance | Recommend skill addition                |
 | Scope creep            | Add guard to relevant workflow          |
 
-### 2. Check rule adherence
+### Check rule adherence
 
 For each file in `.agent/rules/`, evaluate whether its requirements were followed:
 
@@ -42,7 +42,7 @@ For each file in `.agent/rules/`, evaluate whether its requirements were followe
 - Check conversation evidence of compliance or violation
 - Flag rules that were violated and note **why** (forgot? ambiguous wording? conflicting guidance?)
 
-### 3. Check parallelism discipline
+### Check parallelism discipline
 
 Evaluate parallelism for this conversation:
 
@@ -51,7 +51,7 @@ Evaluate parallelism for this conversation:
 - Were new-file phases dispatched (per retrospective rule)?
 - If parallelism was skipped, was a valid reason given?
 
-### 4. Check skill usage
+### Check skill usage
 
 Review work performed against available skills:
 
@@ -59,7 +59,7 @@ Review work performed against available skills:
 - Were skills read but their guidance not followed?
 - Did the work need guidance that no skill provides? (candidate for addition)
 
-### 5. Draft improvements
+### Draft improvements
 
 For each issue found, draft the concrete fix:
 
@@ -79,7 +79,7 @@ For each issue found, draft the concrete fix:
 
 Before writing, read `.agent/rules/retrospective.md` — if a similar rule already exists, **revise and combine** rather than adding a duplicate.
 
-### 6. Apply improvements
+### Apply improvements
 
 // turbo-all
 
@@ -87,7 +87,7 @@ Before writing, read `.agent/rules/retrospective.md` — if a similar rule alrea
 2. Apply workflow patches to the relevant workflow files
 3. Symlink recommended skills from `.agent/skills-available/` to `.agent/skills/`
 
-### 7. Report
+### Report
 
 Summarize to the user:
 
