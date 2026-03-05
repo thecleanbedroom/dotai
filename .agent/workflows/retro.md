@@ -87,6 +87,21 @@ Before writing, read `.agent/rules/retrospective.md` — if a similar rule alrea
 2. Apply workflow patches to the relevant workflow files
 3. Symlink recommended skills from `.agent/skills-available/` to `.agent/skills/`
 
+### Promote entries
+
+Review every entry in `.agent/rules/retrospective.md` for promotion to permanent rule files. Referenced by `/audit-all`.
+
+For each entry, evaluate: validated across multiple sessions? Destination file by topic (`core-workflow.md`, `core-testing.md`, `core-engineering.md`, `platform-laravel.md`, etc.)? Merge into existing section or append?
+
+For each entry ready for promotion:
+
+1. **Generalize** — strip project-specific references (class names, paths, APIs). If it can't be generalized, skip it.
+2. Add to the appropriate permanent file (condensed into the destination's style)
+3. Remove from `retrospective.md`
+4. Record what was promoted
+
+**Skip**: entries from current session, too project-specific to generalize, or superseded by existing rules.
+
 ### Report
 
 Summarize to the user:

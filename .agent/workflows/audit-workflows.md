@@ -1,5 +1,5 @@
 ---
-description: "Audit all workflows against core-workflow-authoring rules for structural quality"
+description: "Audit workflows for structural quality, cross-references, DRY, SDLC pipeline integrity, and file hygiene"
 ---
 
 # /audit-workflows — Audit Workflow Quality
@@ -76,31 +76,31 @@ Checks marked **(M)** are mechanical — run against extraction data. Checks mar
 
 ---
 
-#### Check 1 (M): Heading uniqueness
+#### Heading uniqueness (M)
 
-- **Within file**: flag duplicate headings (case-insensitive) in any single workflow
+- **Within file**: flag duplicate headings (case-insensitive) in any single workflow. Exempt headings inside fenced code blocks (markdown templates/examples).
 - **Across files**: collect headings that are cross-referenced by other workflows. Flag if two different workflows define the same heading. Exempt generic headings never used as cross-ref targets (e.g., "Steps", "Summary")
 
-#### Check 2 (M): Step references use names, not numbers
+#### Step references use names, not numbers (M)
 
 From `step_nums` field. Any non-empty value is a violation. Exclude: YAML description fields with `Step N/3`, this audit workflow's own examples.
 
-#### Check 3 (M): Cross-reference resolution
+#### Cross-reference resolution (M)
 
 For each `named_refs` entry, verify the target heading exists in the target workflow. Flag dangling refs and missing workflows.
 
-#### Check 4 (M): Frontmatter and labels
+#### Frontmatter and labels (M)
 
 - Every workflow must have a non-empty YAML `description`
 - SDLC workflows: description must start with `SDLC Step N/3 —`, `SDLC Shortcut —`, or `SDLC Meta —`. Verify numbering is sequential.
 - Status reads must target `> Status:` frontmatter, not body text
 - Filenames: `YYYY-MM-DDTHHMM` format. Frontmatter dates: `YYYY-MM-DD HH:MM (local)`. Flag deviations.
 
-#### Check 5 (M): Platform-agnostic language
+#### Platform-agnostic language (M)
 
 From `platform_hits` field. Flag non-empty values. Exclude meta-examples that describe what violations look like. Use generic: "test suite", "static analysis".
 
-#### Check 6 (M): Turbo annotations
+#### Turbo annotations (M)
 
 From `has_turbo_all`, `turbo_lines`, `step_classes`:
 
@@ -108,16 +108,32 @@ From `has_turbo_all`, `turbo_lines`, `step_classes`:
 - **Redundant turbo** (Low): Individual `// turbo` when `// turbo-all` is set
 - **Missing turbo-all** (Medium): All steps safe but no `// turbo-all`
 
-#### Check 7 (M): Step numbering convention
+#### Step numbering convention (M)
 
 From `numbered_headings`. Any non-empty value is a violation — use descriptive names, not `### 3. Run tests`.
 
-#### Check 8 (M): Skills loading
+#### Skills loading (M)
 
 - Every workflow needing skill evaluation should reference `/skills`'s _Evaluate skills_ with a one-liner. Flag inline copies.
 - _Evaluate skills_ must appear **before** any substantive work step (research, scanning, implementing). Flag violations as Medium.
 
-#### Check 9 (AI): Canonical ownership and DRY
+#### Circular dependencies (M)
+
+Build a dependency graph from all `named_refs` (workflow → workflow edges). Run cycle detection. Any cycle is a High severity finding — it would cause infinite recursion at runtime.
+
+#### Orphan references (M)
+
+Scan all rule and workflow files for references to nonexistent files, workflows, or rules. Cross-check all internal `\`/workflow\`` references, file path mentions, and rule file references. Flag any that don't resolve.
+
+#### Absolute paths (M)
+
+Scan all rule and workflow files for `file:///` URIs or absolute filesystem paths. All paths must be relative. Exclude mentions that describe what to avoid (e.g., "never use absolute paths").
+
+#### File size (M)
+
+`wc -c` all rule and workflow files. Flag any over **12,000 bytes** — condense without losing meaning.
+
+#### Canonical ownership and DRY (AI)
 
 Read workflows with `named_refs`. Verify referencing workflows don't also contain inline copies of the same logic. Canonical owners:
 
@@ -130,7 +146,7 @@ Read workflows with `named_refs`. Verify referencing workflows don't also contai
 
 Flag parallel definitions of the same concern without a reference relationship.
 
-#### Check 10 (AI): Document template quality
+#### Document template quality (AI)
 
 Workflows creating documents must use consistent templates:
 
@@ -138,7 +154,7 @@ Workflows creating documents must use consistent templates:
 - **Source docs**: must include `> Status:` and `> Created:` frontmatter.
 - **Status values**: every `> Status:` value written must be accepted by at least one downstream workflow's routing table. Flag orphaned statuses.
 
-#### Check 11 (AI): SDLC pipeline integrity
+#### SDLC pipeline integrity (AI)
 
 **Status lifecycle**: `Draft → Planned → Approved → In Progress → Done → finished/`
 
@@ -152,12 +168,12 @@ Workflows creating documents must use consistent templates:
 
 Verify: outputs match next workflow's accepts, guard redirects name exact commands, every SDLC workflow has `## SDLC Pipeline` block with "You are here" marker.
 
-#### Check 12 (AI): Link rebasing and test policy
+#### Link rebasing and test policy (AI)
 
 - Every workflow moving to `finished/` must rebase relative links. Verify `/capture` and `/hotfix` reference `/close`'s step.
 - All test/analysis gates must require **all failures fixed** — including pre-existing. Flag "note but don't fix" language.
 
-#### Check 13 (AI): Document pluggability
+#### Document pluggability (AI)
 
 For each doc type (source docs, debt docs), trace creation → consumption path. Verify consumer can pick up the doc without user formatting. Flag format mismatches.
 
@@ -165,8 +181,14 @@ For each doc type (source docs, debt docs), trace creation → consumption path.
 
 ### Report findings
 
-| #   | Check | File | Issue | Severity |
-| --- | ----- | ---- | ----- | -------- |
+Write findings to an artifact file and present for review:
+
+```markdown
+# Workflow Audit — <date>
+
+| Check | File | Issue | Severity |
+| ----- | ---- | ----- | -------- |
+```
 
 Severity: **High** = wrong agent action. **Medium** = DRY violation, inconsistency. **Low** = style.
 

@@ -2,7 +2,7 @@
 
 ## Scope
 
-- ONLY act on folders with `merge.json` (primary) or PROJECT.md "Owned Code Paths" (fallback). Skip vendor/core/contributed plugins.
+- ONLY act on folders with `merge.json` (primary) or PROJECT.md "Owned Code Paths" if available at the project root (fallback). Skip vendor/core/contributed plugins.
 - Report bugs in unowned code to user with suggested fixes for upstream tickets.
 
 ## Initiation

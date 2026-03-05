@@ -108,6 +108,7 @@ Review the `## Debt` section accumulated during `/plan` and `/implement` (via `/
 
 > [!IMPORTANT]
 > **Do NOT fix smells inline during close** — that's scope creep. File as debt, announce to user, move on.
+> **Recursion guard**: When running `/sniff` from `/close`, do NOT invoke `/sniff`'s _Standalone mode_ (which calls back to _Create debt doc_). Append findings to the existing debt table only.
 
 If no debt section exists (older docs), run a focused `/sniff` on the files listed in the Progress table.
 

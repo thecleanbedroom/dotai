@@ -6,6 +6,7 @@ set -euo pipefail
 TARGET_DIR="${1:?Usage: update <target_dir>}"
 POLICY_REPO_URL="git@github.com:thecleanbedroom/dotai.git"
 REFERENCE="main"
+SYNC_DIRS=".agent"
 
 command -v git >/dev/null 2>&1 || { echo "Error: git not found." >&2; exit 1; }
 command -v rsync >/dev/null 2>&1 || { echo "Error: rsync not found." >&2; exit 1; }
@@ -14,7 +15,7 @@ cat <<INFO
 This script will clone the dotai policy repository and sync rules/config into:
   $TARGET_DIR
 
-Existing policy files may be overwritten (except PROJECT.md and Git folders).
+Existing policy files may be overwritten (except Git folders and project-local files).
 Local-only files will be preserved. Review the diff after it completes.
 
 To install skills, run the /add-skills workflow after syncing.
@@ -37,14 +38,12 @@ git clone --depth 1 --branch "$REFERENCE" "$POLICY_REPO_URL" "$temp_dir/policy" 
 
 printf 'Syncing policy files to %s\n' "$TARGET_DIR"
 
-# Sync only the directories and files we own — never touch project-local files
-SYNC_DIRS=".agent .codex .continue .cursor .gemini .github .windsurf"
+# Sync only the directories we own — never touch project-local files
 for dir in $SYNC_DIRS; do
     if [ -d "$temp_dir/policy/$dir" ]; then
         mkdir -p "$TARGET_DIR/$dir"
         rsync -av \
             --exclude '.agent/skills' \
-            --exclude '.agent/dotai' \
             "$temp_dir/policy/$dir/" "$TARGET_DIR/$dir/"
     fi
 done

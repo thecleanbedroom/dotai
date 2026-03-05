@@ -19,7 +19,7 @@ Follow `/skills`'s _Evaluate skills_ step.
 
 // turbo
 
-Read PROJECT.md and scan the codebase structure. Identify the platform, custom code areas, and conventions in place. Read all `.agent/rules/` files — these define the project's standards and are the primary benchmark.
+Read PROJECT.md (if available at the project root) and scan the codebase structure. Identify the platform, custom code areas, and conventions in place. Read all `.agent/rules/` files — these define the project's standards and are the primary benchmark.
 
 ### Review knowledge and history
 

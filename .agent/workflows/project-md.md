@@ -34,28 +34,39 @@ Create a concise orientation document with these sections (omit only if truly no
 
 ## Steps
 
-1. **Discover the project stack.** Check for and read whichever of these exist:
-   - Container/environment config (Docker Compose, Lando, Vagrant, etc.)
-   - Dockerfiles or build scripts
-   - Task runners and their help output (Makefile, justfile, npm scripts, etc.)
-   - Dependency manifests (composer.json, package.json, etc.)
-   - Environment contracts (`.env.example`, etc.)
+### Discover the project stack
 
-2. **Discover the application.** The stack tells you the platform — now find what makes this app _this app_. Look past framework scaffolding for the custom code: modules, plugins, themes, extensions, services, packages, apps. When you find a container directory (e.g., a modules folder, a plugins folder, an extensions folder), list **all siblings** inside it. Browse each subsystem enough to understand its purpose. Nothing should be silently omitted from the final document.
+Check for and read whichever of these exist:
 
-3. **Gather context from knowledge and history:**
-   - Review knowledge items and memories for architecture decisions, migrations, and known gotchas.
-   - Check recent conversation history for relevant context about the project's evolution.
-   - List `docs/finished/` (if it exists) and scan titles for project timeline.
+- Container/environment config (Docker Compose, Lando, Vagrant, etc.)
+- Dockerfiles or build scripts
+- Task runners and their help output (Makefile, justfile, npm scripts, etc.)
+- Dependency manifests (composer.json, package.json, etc.)
+- Environment contracts (`.env.example`, etc.)
 
-4. **Generate PROJECT.md** following the hard requirements and section guide above. Additional guidance:
-   - **Orientation, not reference.** Someone should understand the project and how to start, not get a help manual.
-   - **Don't duplicate tool output.** Point to the task runner for full command lists.
-   - **Don't duplicate env files.** Reference the example file, highlight only critical vars.
-   - **Cover every subsystem** found in _Discover the application_.
-   - **Highlight non-obvious conventions.** Call out anything where a reasonable person's first guess would be wrong: application code nested in a subdirectory instead of the repo root, namespace prefixes that don't match the directory structure intuitively, config that lives in an unexpected location (e.g., inside modules instead of the framework root), entry points that aren't where the framework docs say they'd be.
-   - **Show how subsystems connect.** If the project has multiple subsystems, include a brief description of how they relate — which one sends data to which, and via what mechanism (REST API, queue, shared DB, etc.).
-   - **Clarify repo boundaries.** Note what's owned by this repo vs what lives elsewhere (companion apps, external APIs, separately-deployed services). Prevents searching for code that isn't here.
-   - **Note what requires a restart.** If some changes take effect immediately and others need a service restart, cache clear, or rebuild, say so. This is a universal source of confusion.
+### Discover the application
 
-5. **Write** to [PROJECT.md] in the repo root (overwrite), then present for review.
+The stack tells you the platform — now find what makes this app _this app_. Look past framework scaffolding for the custom code: modules, plugins, themes, extensions, services, packages, apps. When you find a container directory (e.g., a modules folder, a plugins folder, an extensions folder), list **all siblings** inside it. Browse each subsystem enough to understand its purpose. Nothing should be silently omitted from the final document.
+
+### Gather context from knowledge and history
+
+- Review knowledge items and memories for architecture decisions, migrations, and known gotchas.
+- Check recent conversation history for relevant context about the project's evolution.
+- List `docs/finished/` (if it exists) and scan titles for project timeline.
+
+### Generate PROJECT.md
+
+Follow the hard requirements and section guide above. Additional guidance:
+
+- **Orientation, not reference.** Someone should understand the project and how to start, not get a help manual.
+- **Don't duplicate tool output.** Point to the task runner for full command lists.
+- **Don't duplicate env files.** Reference the example file, highlight only critical vars.
+- **Cover every subsystem** found in _Discover the application_.
+- **Highlight non-obvious conventions.** Call out anything where a reasonable person's first guess would be wrong: application code nested in a subdirectory instead of the repo root, namespace prefixes that don't match the directory structure intuitively, config that lives in an unexpected location (e.g., inside modules instead of the framework root), entry points that aren't where the framework docs say they'd be.
+- **Show how subsystems connect.** If the project has multiple subsystems, include a brief description of how they relate — which one sends data to which, and via what mechanism (REST API, queue, shared DB, etc.).
+- **Clarify repo boundaries.** Note what's owned by this repo vs what lives elsewhere (companion apps, external APIs, separately-deployed services). Prevents searching for code that isn't here.
+- **Note what requires a restart.** If some changes take effect immediately and others need a service restart, cache clear, or rebuild, say so. This is a universal source of confusion.
+
+### Write the document
+
+Write to PROJECT.md in the repo root (overwrite), then present for review.

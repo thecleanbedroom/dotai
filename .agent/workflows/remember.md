@@ -191,7 +191,7 @@ Optional deeper technical information, code snippets, examples.
 
 Append to an existing rule file or create a new one in `.agent/rules/`:
 
-- **Match by category**: if the knowledge fits an existing file (e.g., Docker knowledge → `platform-docker.md`, Laravel specifics → `platform-laravel.md`), append to it.
+- **Match by category**: if the knowledge fits an existing file (e.g., Docker knowledge → `platform-docker.md`, framework specifics → the matching `platform-*.md`), append to it.
 - **New file**: if no existing file fits, create a new one following the naming convention (`platform-*.md` for platform/tool rules, `core-*.md` for workflow rules).
 - Use the same directive style as existing rule files — concise, imperative statements.
 
