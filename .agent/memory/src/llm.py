@@ -183,7 +183,7 @@ class LLMClient:
         """
         try:
             log_dir = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "..", "data", "build_responses"
+                os.getcwd(), ".agent", "memory", "data", "build_responses"
             )
             os.makedirs(log_dir, exist_ok=True)
             from datetime import datetime

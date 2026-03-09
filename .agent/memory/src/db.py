@@ -12,8 +12,8 @@ class Database:
 
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
-            data_dir = Path(__file__).parent.parent / "data"
-            data_dir.mkdir(exist_ok=True)
+            data_dir = Path.cwd() / ".agent" / "memory" / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
             db_path = str(data_dir / "project_memory.db")
         self.db_path = db_path
         self._conn: Optional[sqlite3.Connection] = None
