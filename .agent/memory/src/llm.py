@@ -29,10 +29,10 @@ class LLMClient:
         if config is None:
             from src.config import Config
             config = Config.from_env()
-        self.api_key = config.openrouter_api_key
-        self.api_url = config.api_url
-        self.model = config.model
-        self._min_context_length = config.min_context_length
+        self.api_key = config.OPENROUTER_API_KEY
+        self.api_url = config.MEMORY_BUILD_API_URL
+        self.model = config.MEMORY_BUILD_MODEL
+        self._min_context_length = config.MIN_CONTEXT_LENGTH
         self._model_info: Optional[dict] = None
 
     def get_model_info(self) -> dict:

@@ -57,7 +57,7 @@ class DependencyChecker:
         if require_api_key:
             from src.config import Config
             config = Config.from_env()
-            if not config.openrouter_api_key:
+            if not config.OPENROUTER_API_KEY:
                 env_path = Path(__file__).parent.parent / ".env"
                 print(
                     f"No API key found. Set OPENROUTER_API_KEY in one of:\n"

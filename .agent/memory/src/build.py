@@ -161,7 +161,7 @@ class BuildAgent:
                    MEMORY_COMMIT_LIMIT env var if not provided.
                    0 or None = all commits.
         """
-        limit = limit or self._config.commit_limit or None
+        limit = limit or self._config.MEMORY_COMMIT_LIMIT or None
         import shutil
 
         db_path = self._db.db_path
@@ -230,7 +230,7 @@ class BuildAgent:
         max_output = min(model_max_output, ctx // 3)
         max_output = max(max_output, self._MIN_OUTPUT_TOKENS)
 
-        return self._config.batch_token_budget, max_output
+        return self._config.MEMORY_BATCH_TOKEN_BUDGET, max_output
 
     def _run_build(
         self,
@@ -264,7 +264,7 @@ class BuildAgent:
             return {"status": "no_new_commits", "commits_processed": 0}
 
         # Split into batches by token budget + commit count limit
-        max_commits = self._config.batch_max_commits
+        max_commits = self._config.MEMORY_BATCH_MAX_COMMITS
         batches = self._make_batches(commits, token_budget, max_commits)
         total = len(commits)
         new_count = 0
