@@ -16,6 +16,7 @@ from src.db import Database
 from src.stores import MemoryStore, LinkStore, BuildMetaStore
 from src.git import GitLogParser
 from src.llm import LLMClient
+from src.openrouter import OpenRouterAPI
 
 from src.prompts import (
     EXTRACT_SYSTEM_PROMPT as BUILD_SYSTEM_PROMPT,
@@ -55,21 +56,25 @@ class BuildAgent:
         llm_client: LLMClient,
         config: Optional["Config"] = None,
         *,
+        extract_fallback_llm: Optional[LLMClient] = None,
         reasoning_llm: Optional[LLMClient] = None,
+        openrouter: Optional[OpenRouterAPI] = None,
     ):
         if config is None:
             from src.config import Config
             config = Config.from_env()
         self._config = config
+        self._openrouter = openrouter or OpenRouterAPI(config)
         self._db = db
         self._memories = memory_store
         self._links = link_store
         self._build_meta = build_meta_store
         self._git = git_parser
-        self._llm = llm_client  # fast extraction model
+        self._llm = llm_client  # fast extraction model (primary)
+        self._extract_fallback = extract_fallback_llm  # extraction fallback (cheap)
         self._reasoning_llm = reasoning_llm  # reasoning model for synthesis
 
-    def build(self, *, limit: Optional[int] = None) -> dict:
+    def build(self, *, limit: Optional[int] = None, auto_confirm: bool = False) -> dict:
         """Incremental build — process commits since the last build.
 
         Safe to interrupt (Ctrl+C): progress is recorded after each
@@ -80,6 +85,7 @@ class BuildAgent:
             limit: Max commits to process (newest first). Reads from
                    MEMORY_COMMIT_LIMIT env var if not provided.
                    0 or None = all new commits.
+            auto_confirm: Skip cost confirmation prompt (--yes flag).
         """
         limit = limit or self._config.MEMORY_COMMIT_LIMIT or None
 
@@ -91,9 +97,10 @@ class BuildAgent:
             since_hash=since_hash,
             limit=limit,
             build_type="incremental" if since_hash else "full",
+            auto_confirm=auto_confirm,
         )
 
-    def rebuild(self, *, limit: Optional[int] = None) -> dict:
+    def rebuild(self, *, limit: Optional[int] = None, auto_confirm: bool = False) -> dict:
         """Full rebuild — drop all data and reprocess entire git history.
 
         Backs up the existing DB first. If the rebuild produces zero
@@ -103,6 +110,7 @@ class BuildAgent:
             limit: Max commits to process (newest first). Reads from
                    MEMORY_COMMIT_LIMIT env var if not provided.
                    0 or None = all commits.
+            auto_confirm: Skip cost confirmation prompt (--yes flag).
         """
         limit = limit or self._config.MEMORY_COMMIT_LIMIT or None
         import shutil
@@ -134,6 +142,7 @@ class BuildAgent:
             since_hash=None,
             limit=limit,
             build_type="full",
+            auto_confirm=auto_confirm,
         )
 
         # Restore backup if rebuild produced nothing
@@ -178,6 +187,7 @@ class BuildAgent:
         since_hash: Optional[str],
         limit: Optional[int],
         build_type: str,
+        auto_confirm: bool = False,
     ) -> dict:
         """Core build logic — two-pass architecture.
 
@@ -194,6 +204,12 @@ class BuildAgent:
             f"max_output: {info['max_completion_tokens']:,})",
             file=sys.stderr, flush=True,
         )
+        if self._extract_fallback:
+            fb_info = self._extract_fallback.get_model_info()
+            print(
+                f"  extract fallback: {fb_info['name']}",
+                file=sys.stderr, flush=True,
+            )
         if self._reasoning_llm:
             r_info = self._reasoning_llm.get_model_info()
             print(
@@ -222,10 +238,41 @@ class BuildAgent:
         errors: list[str] = []
 
         # ── Pass 1: Extraction (fast model, concurrent) ──
+
+        # Estimate cost and show summary
+        total_input_tokens = sum(
+            sum(self._estimate_commit_tokens(c) for c in batch)
+            for batch in batches
+        )
+        info = self._llm.get_model_info()
+        est_cost = self._openrouter.estimate_cost(
+            self._llm.model, total_input_tokens,
+        )
+        max_workers = self._openrouter.recommended_max_workers(self._llm.model)
+
         print(
-            f"  pass 1: extracting memories from {len(batches)} batches (parallel)...",
+            f"  pass 1: extracting memories from {len(batches)} batches "
+            f"(workers: {max_workers})",
             file=sys.stderr, flush=True,
         )
+        if est_cost > 0:
+            print(
+                f"  estimated extraction cost: ~${est_cost:.3f} "
+                f"({total_input_tokens:,} input tokens)",
+                file=sys.stderr, flush=True,
+            )
+            if not auto_confirm:
+                try:
+                    answer = input("  proceed? [Y/n] ").strip().lower()
+                    if answer and answer not in ("y", "yes"):
+                        return {"status": "cancelled", "commits_processed": 0}
+                except (EOFError, KeyboardInterrupt):
+                    return {"status": "cancelled", "commits_processed": 0}
+        elif info.get("is_free"):
+            print(
+                f"  estimated extraction cost: FREE",
+                file=sys.stderr, flush=True,
+            )
 
         from concurrent.futures import ThreadPoolExecutor, as_completed
         import threading
@@ -246,7 +293,7 @@ class BuildAgent:
                 ],
                 max_tokens=max_output,
                 response_schema=EXTRACT_SCHEMA,
-                fallback_llm=self._reasoning_llm,
+                fallback_llm=self._extract_fallback,
                 label=f"batch {batch_num}/{len(batches)} ({len(batch)} commits)",
                 print_lock=print_lock,
             )
@@ -254,7 +301,7 @@ class BuildAgent:
 
         # Fire all LLM calls concurrently
         llm_results: list[Optional[dict]] = []
-        with ThreadPoolExecutor(max_workers=min(len(batches), 8)) as executor:
+        with ThreadPoolExecutor(max_workers=min(len(batches), max_workers)) as executor:
             futures = [
                 executor.submit(_llm_extract, (i, batch))
                 for i, batch in enumerate(batches, 1)
@@ -322,6 +369,7 @@ class BuildAgent:
         chars = (
             len(commit.hash) + len(commit.author) + len(commit.date)
             + len(commit.message) + len(commit.body)
+            + len(commit.diff)
             + sum(len(f) for f in commit.files)
             + sum(len(k) + len(v) for k, v in commit.trailers.items())
             + 80  # formatting overhead
@@ -393,12 +441,32 @@ class BuildAgent:
         available_chars = available * 4
 
         # Split files into groups that fit
+        # Split diff into per-file chunks
+        diff_by_file: dict[str, str] = {}
+        if commit.diff:
+            current_file = ""
+            current_lines: list[str] = []
+            for line in commit.diff.split("\n"):
+                if line.startswith("diff --git "):
+                    if current_file and current_lines:
+                        diff_by_file[current_file] = "\n".join(current_lines)
+                    # Extract filename: diff --git a/path b/path
+                    parts = line.split(" b/", 1)
+                    current_file = parts[1] if len(parts) > 1 else ""
+                    current_lines = [line]
+                else:
+                    current_lines.append(line)
+            if current_file and current_lines:
+                diff_by_file[current_file] = "\n".join(current_lines)
+
         sub_commits: list[ParsedCommit] = []
         current_files: list[str] = []
+        current_diffs: list[str] = []
         current_chars = 0
 
         for f in commit.files:
-            file_chars = len(f) + 2  # comma + space
+            file_diff = diff_by_file.get(f, "")
+            file_chars = len(f) + len(file_diff) + 2
             if current_files and current_chars + file_chars > available_chars // 2:
                 # Create sub-commit with current files
                 sub_commits.append(ParsedCommit(
@@ -407,12 +475,16 @@ class BuildAgent:
                     date=commit.date,
                     message=f"{commit.message} [part {len(sub_commits) + 1}]",
                     body="",
+                    diff="\n".join(current_diffs),
                     files=current_files,
                     trailers=commit.trailers,
                 ))
                 current_files = []
+                current_diffs = []
                 current_chars = 0
             current_files.append(f)
+            if file_diff:
+                current_diffs.append(file_diff)
             current_chars += file_chars
 
         # Handle body text — split across sub-commits evenly
@@ -426,10 +498,12 @@ class BuildAgent:
                     date=commit.date,
                     message=f"{commit.message} [part {len(sub_commits) + 1}]",
                     body="",
+                    diff="\n".join(current_diffs),
                     files=current_files,
                     trailers=commit.trailers,
                 ))
                 current_files = []
+                current_diffs = []
 
             # Split body into chunks
             body_budget_chars = available_chars
@@ -741,5 +815,7 @@ class BuildAgent:
                 section += f"Trailers: {json.dumps(c.trailers)}\n"
             if c.files:
                 section += f"Files: {', '.join(c.files)}\n"
+            if c.diff:
+                section += f"Diff:\n{c.diff}\n"
             parts.append(section)
         return "\n".join(parts)

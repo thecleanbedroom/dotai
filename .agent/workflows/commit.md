@@ -64,7 +64,13 @@ Confidence: high|medium|low
 
 ### Commit
 
-Show the generated message to the user. Apply only on approval.
+If the user invoked `/commit fast`, commit immediately without waiting for approval:
+
+```bash
+git commit -m "<generated message>"
+```
+
+Otherwise (plain `/commit`), show the generated message to the user. Apply only on approval.
 
 ```bash
 git commit -m "<generated message>"

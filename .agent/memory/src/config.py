@@ -15,12 +15,13 @@ class Config:
     # API
     OPENROUTER_API_KEY: str = ""
     MEMORY_BUILD_API_URL: str = "https://openrouter.ai/api/v1/chat/completions"
-    MEMORY_EXTRACT_MODEL: str = "google/gemini-2.5-flash-lite"
+    MEMORY_EXTRACT_MODEL: str = "nvidia/nemotron-3-super-120b-a12b:free"
+    MEMORY_EXTRACT_FALLBACK_MODEL: str = "google/gemini-2.5-flash-lite"
     MEMORY_REASONING_MODEL: str = "google/gemini-3.1-pro-preview"
 
     # Build batching
     MEMORY_COMMIT_LIMIT: int = 0          # 0 = all commits
-    MEMORY_BATCH_TOKEN_BUDGET: int = 15000
+    MEMORY_BATCH_TOKEN_BUDGET: int = 100000
     MEMORY_BATCH_MAX_COMMITS: int = 20
 
     # Model constraints

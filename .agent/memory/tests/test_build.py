@@ -7,12 +7,36 @@ from src.git import GitLogParser
 from src.build import BuildAgent
 
 
+class MockOpenRouterAPI:
+    """Mock OpenRouter API for tests."""
+
+    def get_model_info(self, model_id: str) -> dict:
+        return {
+            "context_length": 1_000_000,
+            "max_completion_tokens": 65_536,
+            "name": "mock-model",
+            "supported_parameters": ["structured_outputs"],
+            "pricing": {"prompt": 0, "completion": 0},
+            "is_free": True,
+        }
+
+    def validate_model(self, model_id: str) -> None:
+        pass
+
+    def recommended_max_workers(self, model_id: str) -> int:
+        return 3
+
+    def estimate_cost(self, model_id: str, input_tokens: int, output_tokens: int = 0) -> float:
+        return 0.0
+
+
 class MockLLMClient:
     """Mock LLM client that returns pre-defined responses."""
 
     def __init__(self, response: dict):
         self._response = response
         self.calls = []
+        self.model = "mock-model"
 
     def chat(self, messages: list[dict], *, temperature: float = 0.2,
              max_tokens: int = 16384,
@@ -27,6 +51,8 @@ class MockLLMClient:
             "context_length": 1_000_000,
             "max_completion_tokens": 65_536,
             "name": "mock-model",
+            "pricing": {"prompt": 0, "completion": 0},
+            "is_free": True,
         }
 
     def validate_model(self) -> None:
@@ -84,6 +110,7 @@ Confidence: high
             PatchedParser(),
             extract_llm,
             reasoning_llm=reasoning_llm,
+            openrouter=MockOpenRouterAPI(),
         ), extract_llm, reasoning_llm
 
     def test_build_creates_memories(self, components):

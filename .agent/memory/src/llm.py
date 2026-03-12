@@ -1,25 +1,23 @@
-"""OpenRouter / OpenAI-compatible LLM client."""
+"""LLM chat client — handles request/response, retries, logging."""
 
 import json
 import os
-from pathlib import Path
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.config import Config
+    from src.openrouter import OpenRouterAPI
 
 
 class LLMClient:
-    """Simple OpenAI-compatible API client using requests. No provider SDKs."""
-
-    # Minimum context window to be usable for memory extraction.
-    # System prompt ~2K + existing memories ~5K + commits + response.
+    """Chat completion client. Uses OpenRouterAPI for model/provider concerns."""
 
     def __init__(
         self,
         config: Optional["Config"] = None,
         *,
         model: Optional[str] = None,
+        openrouter: Optional["OpenRouterAPI"] = None,
     ):
         from src import PROJECT_ROOT
         self._log_dir = os.path.join(
@@ -28,81 +26,21 @@ class LLMClient:
         if config is None:
             from src.config import Config
             config = Config.from_env()
-        self.api_key = config.OPENROUTER_API_KEY
-        self.api_url = config.MEMORY_BUILD_API_URL
+        if openrouter is None:
+            from src.openrouter import OpenRouterAPI
+            openrouter = OpenRouterAPI(config)
+        self._openrouter = openrouter
         self.model = model or config.MEMORY_EXTRACT_MODEL
-        self._min_context_length = config.MIN_CONTEXT_LENGTH
-        self._model_info: Optional[dict] = None
+        self.api_key = openrouter.api_key
+        self.api_url = openrouter.api_url
 
     def get_model_info(self) -> dict:
-        """Query OpenRouter for model capabilities. Cached after first call.
-
-        Returns dict with keys: context_length, max_completion_tokens, name.
-        Falls back to conservative defaults if the API is unreachable.
-        """
-        if self._model_info is not None:
-            return self._model_info
-
-        import requests
-        base_url = self.api_url.rsplit("/chat/completions", 1)[0]
-        try:
-            resp = requests.get(
-                f"{base_url}/models",
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                timeout=15,
-            )
-            resp.raise_for_status()
-            models = resp.json().get("data", [])
-            info = next((m for m in models if m.get("id") == self.model), None)
-            if info is None:
-                raise RuntimeError(
-                    f"Model '{self.model}' not found on OpenRouter. "
-                    f"Check MEMORY_EXTRACT_MODEL or MEMORY_REASONING_MODEL in .env."
-                )
-
-            self._model_info = {
-                "context_length": info.get("context_length", 32_000),
-                "max_completion_tokens": info.get(
-                    "top_provider", {}
-                ).get("max_completion_tokens", 16_384),
-                "name": info.get("name", self.model),
-                "supported_parameters": info.get("supported_parameters", []),
-            }
-        except RuntimeError:
-            raise  # re-raise model-not-found
-        except Exception:
-            # API unreachable — use conservative defaults
-            self._model_info = {
-                "context_length": 32_000,
-                "max_completion_tokens": 16_384,
-                "name": self.model,
-                "supported_parameters": [],
-            }
-
-        return self._model_info
+        """Delegate to OpenRouterAPI for model capabilities."""
+        return self._openrouter.get_model_info(self.model)
 
     def validate_model(self) -> None:
-        """Raise RuntimeError if the model is unsuitable for memory extraction.
-
-        Checks:
-          1. Context window >= MIN_CONTEXT_LENGTH
-          2. Model supports response_format (structured JSON output)
-        """
-        info = self.get_model_info()
-        ctx = info["context_length"]
-        if ctx < self._min_context_length:
-            raise RuntimeError(
-                f"Model '{self.model}' context window ({ctx:,} tokens) is too "
-                f"small. Minimum required: {self._min_context_length:,}. "
-                f"Use a model with a larger context window."
-            )
-        supported = info.get("supported_parameters", [])
-        if supported and "structured_outputs" not in supported:
-            raise RuntimeError(
-                f"Model '{self.model}' does not support structured outputs "
-                f"(json_schema). Only models with strict JSON schema support are allowed. "
-                f"See .env for verified models."
-            )
+        """Delegate to OpenRouterAPI for model validation."""
+        self._openrouter.validate_model(self.model)
 
     @staticmethod
     def _extract_json(text: str) -> str:

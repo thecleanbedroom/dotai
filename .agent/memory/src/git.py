@@ -60,7 +60,7 @@ class GitLogParser:
         order (git gives newest-first, we reverse).
         """
         fmt = "commit %H%nAuthor: %an%nDate: %ai%n%n%B%n%(trailers)%n---END_COMMIT---"
-        args = ["log", "--stat", f"--format={fmt}"]
+        args = ["log", "--stat", "--patch", f"--format={fmt}"]
         if not limit:
             args.insert(2, "--reverse")  # all commits: chronological order
         if since_hash:
@@ -152,7 +152,27 @@ class GitLogParser:
                         file_path = file_path.replace("}", "")
                     commit.files.append(file_path.strip())
 
-            commit.diff = "\n".join(diff_lines)
+            # Filter binary diffs — keep text diffs only
+            filtered_diff_lines: list[str] = []
+            current_section: list[str] = []
+            is_binary = False
+            for line in diff_lines:
+                if line.startswith("diff --git "):
+                    # Flush previous section if not binary
+                    if current_section and not is_binary:
+                        filtered_diff_lines.extend(current_section)
+                    current_section = [line]
+                    is_binary = False
+                elif "Binary files" in line and "differ" in line:
+                    is_binary = True
+                    current_section.append(line)
+                else:
+                    current_section.append(line)
+            # Flush last section
+            if current_section and not is_binary:
+                filtered_diff_lines.extend(current_section)
+
+            commit.diff = "\n".join(filtered_diff_lines)
             commits.append(commit)
 
         return commits
