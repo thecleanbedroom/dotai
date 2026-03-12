@@ -139,14 +139,4 @@ Summarize:
 - **Remaining gap**: What would be needed to close the remaining gap (if any)
 - **True blockers**: Any files that are genuinely untestable (external deps, etc.)
 
-Provide copy-paste git commit message:
-
-```
-test(coverage): raise coverage from X% to Y%
-
-- Add N tests across M test files
-- Skip K smelly files as debt (see docs/)
-- Focus: main code paths and primary error handling
-
-Coverage: X% → Y% (target: 80%)
-```
+Follow `/commit`'s _Generate the commit message_ step.

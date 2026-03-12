@@ -227,15 +227,4 @@ Summarize: items completed, items as debt, decisions, file paths, test results, 
 
 #### Git commit message
 
-Copy-paste ready conventional commit. Derive scope from doc slug:
-
-```
-feat(scope): summary
-
-- One line per logical change
-- Prefixed with -
-
-Closes: docs/finished/YYYY-MM-DDTHHMM--slug.md
-```
-
-Types: `feat` | `fix` | `refactor` | `security`. Body: `-` per change. Footer: reference planning doc.
+Follow `/commit`'s _Generate the commit message_ step.

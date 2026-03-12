@@ -10,6 +10,14 @@ Generate a structured commit message with git trailers that enrich the project m
 
 ## Steps
 
+### Stage all outstanding changes
+
+`/commit` implies add + stage + commit. Stage everything the user hasn't explicitly excluded:
+
+```bash
+git add -A
+```
+
 ### Analyze the staged changes
 
 ```bash

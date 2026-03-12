@@ -14,6 +14,7 @@ Rules for writing and modifying `.agent/workflows/` files.
   - Clone skills repo, Extract catalog → `/skillsfinder`
   - Smell checklist, Logging format → `/sniff`
   - Document format, Resolve input, Requirement item format → `/plan`
+  - Commit message format, Git trailers → `/commit`
 - **Platform-agnostic language**: Workflows must not contain hardcoded commands, language-specific patterns, or tool-specific names. Use generic terms ("run the test suite", "run static analysis") and let `.agent/rules/platform-*.md` or `language-*.md` supply the specifics.
 - **Unique step names**: Every step heading within a workflow must be unique. Duplicate names make references ambiguous.
 - **Globally unique referenced headings**: If a step heading is cross-referenced by other workflows, it must be unique across all workflow files. Two workflows defining the same heading name creates ambiguous references. Generic headings never used as cross-reference targets (e.g., "Summary", "Report") are exempt.

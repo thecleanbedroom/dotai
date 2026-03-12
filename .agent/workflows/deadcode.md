@@ -177,16 +177,7 @@ After each successful quarantine, run static analysis. If new errors appear refe
 
 #### Commit each quarantine
 
-After each successful quarantine (tests green, static analysis clean), commit:
-
-```
-refactor(deadcode): quarantine <SymbolName>
-
-Renamed to __dead_YYYYMMDD__ prefix. Remove after production soak
-period with no errors referencing this symbol.
-
-Signals: <N>/3 (static analysis, zero coverage, zero refs)
-```
+After each successful quarantine (tests green, static analysis clean), follow `/commit`'s _Generate the commit message_ step.
 
 ---
 
