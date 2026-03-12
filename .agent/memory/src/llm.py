@@ -165,10 +165,11 @@ class LLMClient:
                 f"    API error {response.status_code}: {body_snippet}",
                 file=sys.stderr, flush=True,
             )
-        response.raise_for_status()
 
-        # Log request + response for debugging
+        # Always log the exchange (even failures) for diagnostics
         self._log_exchange(messages, response)
+
+        response.raise_for_status()
 
         raw_body = response.text.strip()
         if not raw_body:
@@ -209,24 +210,36 @@ class LLMClient:
         }
 
     def _log_exchange(self, messages: list[dict], response) -> None:
-        """Save limited request + full response to data/build_responses/.
+        """Save limited request + raw response to data/build_responses/.
 
-        Request messages are truncated to keep log files manageable.
-        Response uses response.json() because OpenRouter returns SSE-padded
-        content even for non-streaming requests.
+        Logs BEFORE parsing so failures are captured too.
+        Failed responses get an _error_ prefix for easy identification.
         """
         try:
             os.makedirs(self._log_dir, exist_ok=True)
             from datetime import datetime
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-            path = os.path.join(self._log_dir, f"{ts}.json")
+
+            is_error = response.status_code != 200 or not response.text.strip()
+            prefix = "_error_" if is_error else ""
+            path = os.path.join(self._log_dir, f"{prefix}{ts}.json")
+
+            # Parse response JSON if possible, fall back to raw text
+            try:
+                resp_data = response.json()
+            except Exception:
+                resp_data = {
+                    "raw_text": response.text[:2000] if response.text else "(empty)",
+                    "status_code": response.status_code,
+                    "headers": dict(response.headers),
+                }
 
             log_entry = {
                 "request": {
                     "model": self.model,
                     "messages": [self._truncate_message(m) for m in messages],
                 },
-                "response": response.json(),
+                "response": resp_data,
             }
             with open(path, "w") as f:
                 json.dump(log_entry, f, indent=2)

@@ -417,15 +417,23 @@ class BuildAgent:
                 # Retry on transient errors: empty content, truncated JSON,
                 # rate limits, server errors, network issues
                 is_transient = False
+                is_rate_limit = False
                 if isinstance(e, (json.JSONDecodeError, ValueError)):
                     is_transient = True
                 elif _is_http_transient(e):
                     is_transient = True
+                    # Check specifically for 429
+                    from requests.exceptions import HTTPError
+                    if isinstance(e, HTTPError) and e.response is not None:
+                        is_rate_limit = e.response.status_code == 429
                 elif isinstance(e, (ConnectionError, TimeoutError, OSError)):
                     is_transient = True
 
                 if is_transient and attempt < max_retries - 1:
-                    wait = 1 + attempt  # 1s, 2s, 3s
+                    if is_rate_limit:
+                        wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
+                    else:
+                        wait = 1 + attempt  # 1s, 2s, 3s
                     print(
                         f"    retry {attempt + 1}/{max_retries - 1} after {wait}s ({e})",
                         file=sys.stderr, flush=True,
