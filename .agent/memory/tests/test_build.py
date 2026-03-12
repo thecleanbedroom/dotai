@@ -23,8 +23,9 @@ class MockOpenRouterAPI:
     def validate_model(self, model_id: str) -> None:
         pass
 
-    def recommended_max_workers(self, model_id: str) -> int:
-        return 3
+    def create_rate_limiter(self, model_id: str, max_workers: int = 8):
+        from src.openrouter import RateLimiter
+        return RateLimiter(max_workers=max_workers)
 
     def estimate_cost(self, model_id: str, input_tokens: int, output_tokens: int = 0) -> float:
         return 0.0

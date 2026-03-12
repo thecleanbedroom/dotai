@@ -16,7 +16,7 @@ from src.db import Database
 from src.stores import MemoryStore, LinkStore, BuildMetaStore
 from src.git import GitLogParser
 from src.llm import LLMClient
-from src.openrouter import OpenRouterAPI
+from src.openrouter import OpenRouterAPI, RateLimiter
 
 from src.prompts import (
     EXTRACT_SYSTEM_PROMPT as BUILD_SYSTEM_PROMPT,
@@ -248,11 +248,11 @@ class BuildAgent:
         est_cost = self._openrouter.estimate_cost(
             self._llm.model, total_input_tokens,
         )
-        max_workers = self._openrouter.recommended_max_workers(self._llm.model)
+        rate_limiter = self._openrouter.create_rate_limiter(self._llm.model)
 
         print(
             f"  pass 1: extracting memories from {len(batches)} batches "
-            f"(workers: {max_workers})",
+            f"(workers: {rate_limiter.max_workers})",
             file=sys.stderr, flush=True,
         )
         if est_cost > 0:
@@ -296,12 +296,13 @@ class BuildAgent:
                 fallback_llm=self._extract_fallback,
                 label=f"batch {batch_num}/{len(batches)} ({len(batch)} commits)",
                 print_lock=print_lock,
+                rate_limiter=rate_limiter,
             )
             return batch_num, result
 
         # Fire all LLM calls concurrently
         llm_results: list[Optional[dict]] = []
-        with ThreadPoolExecutor(max_workers=min(len(batches), max_workers)) as executor:
+        with ThreadPoolExecutor(max_workers=min(len(batches), rate_limiter.max_workers)) as executor:
             futures = [
                 executor.submit(_llm_extract, (i, batch))
                 for i, batch in enumerate(batches, 1)
@@ -548,14 +549,18 @@ class BuildAgent:
         fallback_llm: Optional[LLMClient] = None,
         label: str = "",
         print_lock: Optional["threading.Lock"] = None,
+        rate_limiter: Optional[RateLimiter] = None,
     ) -> Optional[dict]:
         """Make an LLM call with retry logic. Returns parsed dict or error dict.
 
         On truncation (finish_reason=length), escalates to fallback_llm if provided.
+        If rate_limiter is provided, acquires before each attempt and signals on 429.
         """
         last_error = None
         for attempt in range(max_retries):
             try:
+                if rate_limiter:
+                    rate_limiter.acquire()
                 response_text = llm.chat(
                     messages,
                     max_tokens=max_tokens,
@@ -563,6 +568,8 @@ class BuildAgent:
                     label=label,
                     print_lock=print_lock,
                 )
+                if rate_limiter:
+                    rate_limiter.on_success()
                 return json.loads(response_text)
             except Exception as e:
                 last_error = e
@@ -600,7 +607,21 @@ class BuildAgent:
 
                 if is_transient and attempt < max_retries - 1:
                     if is_rate_limit:
-                        wait = 15 * (2 ** attempt)
+                        # Let the rate limiter handle 429s globally
+                        if rate_limiter:
+                            retry_after = None
+                            from requests.exceptions import HTTPError
+                            if isinstance(e, HTTPError) and e.response is not None:
+                                retry_after_str = e.response.headers.get("Retry-After")
+                                if retry_after_str:
+                                    try:
+                                        retry_after = float(retry_after_str)
+                                    except ValueError:
+                                        pass
+                            rate_limiter.on_rate_limit(retry_after)
+                            continue  # Rate limiter will block on next acquire()
+                        else:
+                            wait = 15 * (2 ** attempt)
                     else:
                         wait = 1 + attempt
                     print(

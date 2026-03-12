@@ -1,5 +1,8 @@
 """OpenRouter API client — model info, pricing, rate limits, and validation."""
 
+import sys
+import threading
+import time
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -157,17 +160,9 @@ class OpenRouterAPI:
 
     # -- Concurrency --
 
-    def recommended_max_workers(self, model_id: str) -> int:
-        """Determine optimal concurrency based on model pricing and rate limits.
-
-        Free models: limited by 20 req/min → use 3 workers to stay safe.
-        Paid models: much higher limits → use 8 workers.
-        """
-        info = self.get_model_info(model_id)
-        if info.get("is_free"):
-            # 20 req/min → ~3 concurrent to avoid 429s
-            return 3
-        return 8
+    def create_rate_limiter(self, model_id: str, max_workers: int = 8) -> "RateLimiter":
+        """Create a RateLimiter tuned for this model."""
+        return RateLimiter(max_workers=max_workers)
 
     # -- Cost Estimation --
 
@@ -181,3 +176,84 @@ class OpenRouterAPI:
             input_tokens * pricing["prompt"]
             + output_tokens * pricing["completion"]
         )
+
+class RateLimiter:
+    """Adaptive rate limiter — blocks all threads when a 429 is received.
+
+    When any thread reports a 429:
+    1. All threads block on acquire() until the cooldown expires
+    2. Cooldown uses Retry-After header if available, else exponential backoff
+    3. After cooldown, all threads resume
+
+    Thread-safe. Designed for use with ThreadPoolExecutor.
+    """
+
+    def __init__(self, max_workers: int = 8):
+        self._max_workers = max_workers
+        self._gate = threading.Event()
+        self._gate.set()  # Start open
+        self._lock = threading.Lock()
+        self._consecutive_429s = 0
+        self._cooldown_until = 0.0
+        self._total_429s = 0
+
+    @property
+    def max_workers(self) -> int:
+        return self._max_workers
+
+    @property
+    def total_429s(self) -> int:
+        return self._total_429s
+
+    def acquire(self) -> None:
+        """Call before each API request. Blocks if rate-limited."""
+        self._gate.wait()  # Blocks if gate is closed
+
+    def on_success(self) -> None:
+        """Call after a successful response."""
+        with self._lock:
+            self._consecutive_429s = 0
+
+    def on_rate_limit(self, retry_after: Optional[float] = None) -> None:
+        """Call when a 429 is received. Closes the gate for all threads.
+
+        Args:
+            retry_after: Value from Retry-After header (seconds).
+                         Falls back to exponential backoff if None.
+        """
+        with self._lock:
+            self._total_429s += 1
+            self._consecutive_429s += 1
+
+            # Calculate cooldown
+            if retry_after and retry_after > 0:
+                wait = retry_after
+            else:
+                # Exponential backoff: 2, 4, 8, 16, 30 (capped)
+                wait = min(2 ** self._consecutive_429s, 30)
+
+            target = time.monotonic() + wait
+
+            # Only extend cooldown, never shorten
+            if target <= self._cooldown_until:
+                return  # Another thread already set a longer cooldown
+
+            self._cooldown_until = target
+            self._gate.clear()  # Block all threads
+
+            print(
+                f"      rate limited — pausing all workers for {wait:.0f}s "
+                f"(429 #{self._total_429s})",
+                file=sys.stderr, flush=True,
+            )
+
+        # Start cooldown timer in background
+        timer = threading.Timer(wait, self._release)
+        timer.daemon = True
+        timer.start()
+
+    def _release(self) -> None:
+        """Re-open the gate after cooldown."""
+        with self._lock:
+            if time.monotonic() >= self._cooldown_until:
+                self._gate.set()
