@@ -97,18 +97,15 @@ class McpServer:
             Results are historical context — always verify against current code.
             """
             c = await server._ensure_components(ctx)
-            try:
-                memories = c["memory_store"].query_by_file(
-                    path,
-                    limit=limit,
-                    min_importance=min_importance,
-                )
-                for m in memories:
-                    c["memory_store"].touch(m.id)
-                result = [m.to_dict() for m in memories]
-                return json.dumps({"caveat": _CAVEAT, "memories": result}, indent=2)
-            finally:
-                c["db"].close()
+            memories = c["memory_store"].query_by_file(
+                path,
+                limit=limit,
+                min_importance=min_importance,
+            )
+            for m in memories:
+                c["memory_store"].touch(m.id)
+            result = [m.to_dict() for m in memories]
+            return json.dumps({"caveat": _CAVEAT, "memories": result}, indent=2)
 
         @mcp.tool()
         async def search_project_memory_by_topic(
@@ -135,20 +132,17 @@ class McpServer:
             Results are historical context — always verify against current code.
             """
             c = await server._ensure_components(ctx)
-            try:
-                memories = c["memory_store"].search(
-                    query,
-                    memory_type=type or None,
-                    match=match,
-                    min_importance=min_importance,
-                    limit=limit,
-                )
-                for m in memories:
-                    c["memory_store"].touch(m.id)
-                result = [m.to_dict() for m in memories]
-                return json.dumps({"caveat": _CAVEAT, "memories": result}, indent=2)
-            finally:
-                c["db"].close()
+            memories = c["memory_store"].search(
+                query,
+                memory_type=type or None,
+                match=match,
+                min_importance=min_importance,
+                limit=limit,
+            )
+            for m in memories:
+                c["memory_store"].touch(m.id)
+            result = [m.to_dict() for m in memories]
+            return json.dumps({"caveat": _CAVEAT, "memories": result}, indent=2)
 
         @mcp.tool()
         async def recall_memory(
@@ -160,27 +154,24 @@ class McpServer:
             Results are historical context — always verify against current code.
             """
             c = await server._ensure_components(ctx)
-            try:
-                memory = c["memory_store"].get(memory_id)
-                if memory is None:
-                    return json.dumps({"error": f"Memory {memory_id} not found"})
+            memory = c["memory_store"].get(memory_id)
+            if memory is None:
+                return json.dumps({"error": f"Memory {memory_id} not found"})
 
-                c["memory_store"].touch(memory.id)
-                result = memory.to_dict()
+            c["memory_store"].touch(memory.id)
+            result = memory.to_dict()
 
-                if include_links:
-                    links = c["link_store"].get_links_for(memory.id)
-                    result["links"] = [asdict(l) for l in links]
-                    linked_ids = c["link_store"].get_linked_ids(memory.id)
-                    result["linked_memories"] = [
-                        c["memory_store"].get(lid).to_dict()
-                        for lid in linked_ids
-                        if c["memory_store"].get(lid)
-                    ]
+            if include_links:
+                links = c["link_store"].get_links_for(memory.id)
+                result["links"] = [asdict(l) for l in links]
+                linked_ids = c["link_store"].get_linked_ids(memory.id)
+                result["linked_memories"] = [
+                    c["memory_store"].get(lid).to_dict()
+                    for lid in linked_ids
+                    if c["memory_store"].get(lid)
+                ]
 
-                return json.dumps({"caveat": _CAVEAT, "memory": result}, indent=2)
-            finally:
-                c["db"].close()
+            return json.dumps({"caveat": _CAVEAT, "memory": result}, indent=2)
 
         @mcp.tool()
         async def project_memory_overview(ctx: Context) -> str:
@@ -191,13 +182,10 @@ class McpServer:
             memory count).
             """
             c = await server._ensure_components(ctx)
-            try:
-                stats = c["memory_store"].stats()
-                last_build = c["build_meta_store"].get_last()
-                stats["last_build"] = asdict(last_build) if last_build else None
-                return json.dumps(stats, indent=2)
-            finally:
-                c["db"].close()
+            stats = c["memory_store"].stats()
+            last_build = c["build_meta_store"].get_last()
+            stats["last_build"] = asdict(last_build) if last_build else None
+            return json.dumps(stats, indent=2)
 
         @mcp.tool()
         async def memory_inspect(ctx: Context, query: str) -> str:
@@ -206,28 +194,22 @@ class McpServer:
             Commands: tables, memories, memory <id>, links, builds, stats, schema, fts, help
             """
             c = await server._ensure_components(ctx)
-            try:
-                return c["inspector"].inspect(query)
-            finally:
-                c["db"].close()
+            return c["inspector"].inspect(query)
 
         @mcp.prompt()
         async def briefing(ctx: Context) -> list[dict]:
             """Load key project context — top decisions, patterns, and conventions from project memory."""
             c = await server._ensure_components(ctx)
-            try:
-                memories = c["memory_store"].list_all(limit=20)
-                if not memories:
-                    return [{"role": "user", "content": "No project memories found. Run a build first."}]
-                lines = [f"- **[{m.type}]** (importance: {m.importance}) {m.summary}" for m in memories]
-                summary = "\n".join(lines)
-                return [{"role": "user", "content": (
-                    f"## Project Memory Briefing\n\n"
-                    f"{_CAVEAT}\n\n"
-                    f"{summary}"
-                )}]
-            finally:
-                c["db"].close()
+            memories = c["memory_store"].list_all(limit=20)
+            if not memories:
+                return [{"role": "user", "content": "No project memories found. Run a build first."}]
+            lines = [f"- **[{m.type}]** (importance: {m.importance}) {m.summary}" for m in memories]
+            summary = "\n".join(lines)
+            return [{"role": "user", "content": (
+                f"## Project Memory Briefing\n\n"
+                f"{_CAVEAT}\n\n"
+                f"{summary}"
+            )}]
 
         mcp.run(transport="stdio")
 

@@ -15,7 +15,8 @@ class Config:
     # API
     OPENROUTER_API_KEY: str = ""
     MEMORY_BUILD_API_URL: str = "https://openrouter.ai/api/v1/chat/completions"
-    MEMORY_BUILD_MODEL: str = "anthropic/claude-sonnet-4.6"
+    MEMORY_EXTRACT_MODEL: str = "google/gemini-2.5-flash-lite"
+    MEMORY_REASONING_MODEL: str = "google/gemini-3.1-pro-preview"
 
     # Build batching
     MEMORY_COMMIT_LIMIT: int = 0          # 0 = all commits

@@ -3,6 +3,9 @@
 import json
 import os
 import sys
+import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,6 +16,14 @@ from src.db import Database
 from src.stores import MemoryStore, LinkStore, BuildMetaStore
 from src.git import GitLogParser
 from src.llm import LLMClient
+
+from src.prompts import (
+    EXTRACT_SYSTEM_PROMPT as BUILD_SYSTEM_PROMPT,
+    EXTRACT_SYSTEM_PROMPT,
+    SYNTHESIS_SYSTEM_PROMPT,
+    EXTRACT_SCHEMA,
+    SYNTHESIS_SCHEMA,
+)
 
 
 def _is_http_transient(e: Exception) -> bool:
@@ -26,105 +37,13 @@ def _is_http_transient(e: Exception) -> bool:
     return False
 
 
-BUILD_SYSTEM_PROMPT = """You are a build agent for a project memory system.
-You analyze git commits and produce structured memories about the project.
-
-RULES:
-- Only create memories where there is clear evidence from the commits
-- Never infer beyond what the commit shows
-- High confidence = explicit in trailers or detailed commit message
-- Medium confidence = inferred from clear diff patterns across multiple commits
-- Low confidence = inferred from a single ambiguous diff or bare message
-- Score importance 0.0-1.0 based on how much the memory would affect future development
-- When new info contradicts an existing memory, mark the old one for deactivation
-- Always create links between related memories (see LINKS section below)
-- For bare commits ("hotfix", "fix stuff"), derive what you can from the diff, confidence=low
-- Never fabricate — silence is better than fiction
-
-SUMMARY GUIDELINES:
-- Be specific and descriptive — mention the what, why, and relevant domain concepts
-- Include the memory type concept naturally (e.g. "Decided to use X over Y" not "The project is doing X")
-- Mention file names, patterns, or technologies by name when relevant
-- Avoid generic phrasing like "The project is..." — be precise about what changed and why
-
-TAGS:
-- Include 3-8 lowercase keyword tags per memory
-- Tags should cover: domain concepts, technologies, subsystems, patterns, affected areas
-- Use consistent naming (e.g. "dead-code" not "deadCode", "audit" not "auditing")
-- Tags make memories discoverable via search — choose terms a developer would search for
-
-MEMORY TYPES: decision, pattern, convention, debt, bug_fix, context
-
-LINKS — this section is MANDATORY, do not skip it:
-- After creating all memories, review them and create links between any that are related
-- If two memories share files, tags, or affect the same subsystem, they MUST be linked
-- For N memories, expect roughly N/3 to N/2 links — 0 links is almost never correct
-- Link both new↔new memories AND new↔existing memories
-- Choose the most specific relationship type:
-  supersedes    — A newer decision/convention replaces an older one
-                  Example: ".agent/ directory system" supersedes ".ai/ directory system"
-  implements    — One memory is the concrete implementation of an abstract decision
-                  Example: "Added core-pre-flight.md rule" implements "Decided on mandatory pre-flight checklist"
-  caused_by     — A bug or debt was caused by a prior decision or change
-                  Example: "FTS index out of sync bug" caused_by "Switched to WAL journal mode"
-  resolved_by   — A bug or debt memory was fixed by a subsequent change
-                  Example: "FTS sync issue" resolved_by "Added FTS rebuild on schema migration"
-  convention_group — Two conventions belong to the same logical group
-                  Example: "PHP strict_types" convention_group "PHP namespace conventions"
-  debt_in       — A debt memory exists within a specific subsystem or area
-                  Example: "Missing test coverage" debt_in "Authentication module"
-  related_to    — LAST RESORT — use only when no other type fits
-                  If you're tempted to use related_to, ask: is one superseding the other?
-                  Is one implementing the other? Is one caused by the other?
-
-CRITICAL: Your response MUST be a raw JSON object and NOTHING else.
-Do NOT wrap it in markdown code fences. Do NOT include any text before or after the JSON.
-The response must be parseable by json.loads() directly.
-
-Return this exact JSON structure:
-{
-  "new_memories": [
-    {
-      "key": "short_snake_case_slug",
-      "summary": "...",
-      "type": "decision|pattern|convention|debt|bug_fix|context",
-      "confidence": "high|medium|low",
-      "importance": 0.0-1.0,
-      "source_commits": ["hash1"],
-      "files": ["path/to/file"],
-      "tags": ["keyword1", "keyword2"]
-    }
-  ],
-  "update_memories": [
-    {
-      "id": 123,
-      "summary": "updated summary",
-      "confidence": "high",
-      "importance": 0.8
-    }
-  ],
-  "deactivate_memory_ids": [456],
-  "new_links": [
-    {
-      "source": "short_snake_case_slug OR integer_id",
-      "target": "short_snake_case_slug OR integer_id",
-      "relationship": "supersedes",
-      "strength": 0.9
-    }
-  ]
-}
-
-LINKING ID RULES — read carefully:
-- Each new memory MUST have a unique "key" (short snake_case slug, e.g. "jwt_auth_decision")
-- In new_links, reference NEW memories by their string key
-- Reference EXISTING memories by their integer id (as provided in the existing memories list)
-- Example: {"source": "jwt_auth_decision", "target": 15, "relationship": "implements"}
-- NEVER use integer IDs for new memories — always use the string key
-"""
-
-
 class BuildAgent:
-    """Orchestrates build: parse commits → LLM call → memory creation → DB writes."""
+    """Orchestrates build: parse commits → LLM call → memory creation → DB writes.
+
+    Two-pass architecture:
+      Pass 1 (extraction): Fast model extracts memories from commit batches.
+      Pass 2 (synthesis): Reasoning model links, deduplicates, and adjusts memories.
+    """
 
     def __init__(
         self,
@@ -135,6 +54,8 @@ class BuildAgent:
         git_parser: GitLogParser,
         llm_client: LLMClient,
         config: Optional["Config"] = None,
+        *,
+        reasoning_llm: Optional[LLMClient] = None,
     ):
         if config is None:
             from src.config import Config
@@ -145,7 +66,8 @@ class BuildAgent:
         self._links = link_store
         self._build_meta = build_meta_store
         self._git = git_parser
-        self._llm = llm_client
+        self._llm = llm_client  # fast extraction model
+        self._reasoning_llm = reasoning_llm  # reasoning model for synthesis
 
     def build(self, *, limit: Optional[int] = None) -> dict:
         """Incremental build — process commits since the last build.
@@ -257,21 +179,32 @@ class BuildAgent:
         limit: Optional[int],
         build_type: str,
     ) -> dict:
+        """Core build logic — two-pass architecture.
+
+        Pass 1 (extraction): Fast model processes commit batches → new memories.
+        Pass 2 (synthesis): Reasoning model links, deduplicates, adjusts all memories.
+        """
         # Validate model and compute dynamic budget
         self._llm.validate_model()
         token_budget, max_output = self._compute_budget()
         info = self._llm.get_model_info()
         print(
-            f"  model: {info['name']} "
+            f"  extract model: {info['name']} "
             f"(context: {info['context_length']:,}, "
             f"max_output: {info['max_completion_tokens']:,})",
             file=sys.stderr, flush=True,
         )
+        if self._reasoning_llm:
+            r_info = self._reasoning_llm.get_model_info()
+            print(
+                f"  reasoning model: {r_info['name']}",
+                file=sys.stderr, flush=True,
+            )
         print(
             f"  budget: {token_budget:,} input / {max_output:,} output",
             file=sys.stderr, flush=True,
         )
-        """Core build logic shared by build() and rebuild()."""
+
         # Get commits
         raw_log = self._git.get_file_list(since_hash=since_hash, limit=limit)
         commits = self._git.parse(raw_log)
@@ -286,30 +219,80 @@ class BuildAgent:
         batches = self._make_batches(commits, token_budget, max_commits)
         total = len(commits)
         new_count = 0
-        updated_count = 0
-        deactivated_count = 0
-        link_count = 0
         errors: list[str] = []
 
-        for batch_num, batch in enumerate(batches, 1):
+        # ── Pass 1: Extraction (fast model, concurrent) ──
+        print(
+            f"  pass 1: extracting memories from {len(batches)} batches (parallel)...",
+            file=sys.stderr, flush=True,
+        )
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        import threading
+        print_lock = threading.Lock()
+
+        def _llm_extract(batch_num_batch):
+            """Run LLM call in thread — returns raw result dict, no DB writes."""
+            batch_num, batch = batch_num_batch
             est_tokens = sum(self._estimate_commit_tokens(c) for c in batch)
-            print(
-                f"  batch {batch_num}/{len(batches)} "
-                f"({len(batch)} commits, ~{est_tokens} tokens)...",
-                file=sys.stderr, flush=True,
+            with print_lock:
+                print(
+                    f"    batch {batch_num}/{len(batches)} "
+                    f"({len(batch)} commits, ~{est_tokens} tokens)...",
+                    file=sys.stderr, flush=True,
+                )
+
+            commits_text = self._format_commits(batch)
+            user_msg = f"New commits to process:\n{commits_text}"
+
+            return self._llm_call_with_retries(
+                self._llm,
+                [
+                    {"role": "system", "content": BUILD_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                ],
+                max_tokens=max_output,
+                response_schema=EXTRACT_SCHEMA,
+                fallback_llm=self._reasoning_llm,
             )
 
-            result = self._process_batch(batch, max_output_tokens=max_output)
+        # Fire all LLM calls concurrently
+        llm_results: list[Optional[dict]] = []
+        with ThreadPoolExecutor(max_workers=min(len(batches), 8)) as executor:
+            futures = [
+                executor.submit(_llm_extract, (i, batch))
+                for i, batch in enumerate(batches, 1)
+            ]
+            for future in as_completed(futures):
+                llm_results.append(future.result())
+
+        # Save all extracted memories to DB (main thread, sequential)
+        for result in llm_results:
             if result is None:
                 continue
             if "error" in result:
                 errors.append(result["error"])
                 continue
+            for mem_data in result.get("new_memories", []):
+                self._memories.create(self._memory_from_dict(mem_data))
+                new_count += 1
 
-            new_count += result.get("new", 0)
-            updated_count += result.get("updated", 0)
-            deactivated_count += result.get("deactivated", 0)
-            link_count += result.get("links", 0)
+        # ── Pass 2: Synthesis (reasoning model) ──
+        updated_count = 0
+        deactivated_count = 0
+        link_count = 0
+
+        synth_llm = self._reasoning_llm or self._llm
+        print(
+            f"  pass 2: synthesizing links across {self._memories.count()} memories...",
+            file=sys.stderr, flush=True,
+        )
+        synth_result = self._synthesis_pass(synth_llm)
+        if synth_result and "error" not in synth_result:
+            updated_count += synth_result.get("updated", 0)
+            deactivated_count += synth_result.get("deactivated", 0)
+            link_count += synth_result.get("links", 0)
+        elif synth_result and "error" in synth_result:
+            errors.append(synth_result["error"])
 
         # Record build
         current_hash = commits[-1].hash if commits else self._git.get_current_hash()
@@ -350,7 +333,7 @@ class BuildAgent:
         """Split commits into batches.
 
         Splits when either the token budget OR max commits per batch is hit.
-        A single oversized commit always gets its own batch (never dropped).
+        Oversized commits are split into multiple sub-commits by files+body.
         """
         batches: list[list[ParsedCommit]] = []
         current_batch: list[ParsedCommit] = []
@@ -358,6 +341,20 @@ class BuildAgent:
 
         for commit in commits:
             tokens = self._estimate_commit_tokens(commit)
+
+            # If a single commit exceeds budget, split it into sub-commits
+            if tokens > budget:
+                # Flush any pending batch first
+                if current_batch:
+                    batches.append(current_batch)
+                    current_batch = []
+                    current_tokens = 0
+
+                sub_commits = self._split_oversized_commit(commit, budget)
+                for sc in sub_commits:
+                    batches.append([sc])
+                continue
+
             if current_batch and (
                 current_tokens + tokens > budget
                 or len(current_batch) >= max_commits
@@ -372,57 +369,150 @@ class BuildAgent:
             batches.append(current_batch)
         return batches
 
-    def _process_batch(self, batch: list[ParsedCommit],
-                       *, max_output_tokens: int = 16_384) -> Optional[dict]:
-        """Process a single batch of commits through the LLM.
+    @staticmethod
+    def _split_oversized_commit(commit: ParsedCommit,
+                                budget: int) -> list[ParsedCommit]:
+        """Split a commit that exceeds the token budget into smaller sub-commits.
 
-        Retries up to 5 times with exponential backoff for transient errors
-        (429 rate limit, 5xx server errors, timeouts, empty responses).
+        Strategy: split by files. Each sub-commit gets the same commit
+        metadata (hash, author, date, message) but a subset of files and
+        a proportional slice of the body text.
         """
-        # Refresh existing memories for context each batch (no limit — send all)
-        existing = self._memories.list_all(limit=10_000)
-        existing_summary = [
-            {"id": m.id, "summary": m.summary, "type": m.type, "files": m.files}
-            for m in existing
-        ]
+        # Estimate metadata overhead (everything except body and files)
+        meta_chars = (
+            len(commit.hash) + len(commit.author) + len(commit.date)
+            + len(commit.message)
+            + sum(len(k) + len(v) for k, v in commit.trailers.items())
+            + 120  # formatting overhead
+        )
+        meta_tokens = meta_chars // 4
 
-        # Build system prompt with existing memories appended.
-        # This keeps the large static prefix cacheable by LLM providers
-        # (Anthropic caches identical system prompt prefixes for 5 min).
-        system_msg = BUILD_SYSTEM_PROMPT
-        if existing_summary:
-            system_msg += (
-                "\n\nEXISTING MEMORIES (for context, linking, and superseding):\n"
-                + json.dumps(existing_summary, indent=2)
-            )
+        # Available tokens per sub-commit for body + files
+        available = max(budget - meta_tokens, budget // 2)
+        available_chars = available * 4
 
-        commits_text = self._format_commits(batch)
-        user_msg = f"New commits to process:\n{commits_text}"
+        # Split files into groups that fit
+        sub_commits: list[ParsedCommit] = []
+        current_files: list[str] = []
+        current_chars = 0
 
-        max_retries = 4
+        for f in commit.files:
+            file_chars = len(f) + 2  # comma + space
+            if current_files and current_chars + file_chars > available_chars // 2:
+                # Create sub-commit with current files
+                sub_commits.append(ParsedCommit(
+                    hash=commit.hash,
+                    author=commit.author,
+                    date=commit.date,
+                    message=f"{commit.message} [part {len(sub_commits) + 1}]",
+                    body="",
+                    files=current_files,
+                    trailers=commit.trailers,
+                ))
+                current_files = []
+                current_chars = 0
+            current_files.append(f)
+            current_chars += file_chars
+
+        # Handle body text — split across sub-commits evenly
+        body = commit.body
+        if body:
+            # If we have remaining files, add them as a sub-commit first
+            if current_files:
+                sub_commits.append(ParsedCommit(
+                    hash=commit.hash,
+                    author=commit.author,
+                    date=commit.date,
+                    message=f"{commit.message} [part {len(sub_commits) + 1}]",
+                    body="",
+                    files=current_files,
+                    trailers=commit.trailers,
+                ))
+                current_files = []
+
+            # Split body into chunks
+            body_budget_chars = available_chars
+            for i in range(0, len(body), body_budget_chars):
+                chunk = body[i:i + body_budget_chars]
+                sub_commits.append(ParsedCommit(
+                    hash=commit.hash,
+                    author=commit.author,
+                    date=commit.date,
+                    message=f"{commit.message} [body part {len(sub_commits) + 1}]",
+                    body=chunk,
+                    files=[],
+                    trailers=commit.trailers if i == 0 else {},
+                ))
+        elif current_files:
+            # No body, just remaining files
+            sub_commits.append(ParsedCommit(
+                hash=commit.hash,
+                author=commit.author,
+                date=commit.date,
+                message=f"{commit.message} [part {len(sub_commits) + 1}]",
+                body="",
+                files=current_files,
+                trailers=commit.trailers,
+            ))
+
+        # Fallback: if somehow nothing was split, return the original
+        if not sub_commits:
+            sub_commits = [commit]
+
+        print(
+            f"    split oversized commit {commit.hash[:8]} into "
+            f"{len(sub_commits)} sub-batches",
+            file=sys.stderr, flush=True,
+        )
+        return sub_commits
+
+    def _llm_call_with_retries(
+        self, llm: LLMClient, messages: list[dict],
+        *, max_tokens: int, response_schema: dict,
+        max_retries: int = 4,
+        fallback_llm: Optional[LLMClient] = None,
+    ) -> Optional[dict]:
+        """Make an LLM call with retry logic. Returns parsed dict or error dict.
+
+        On truncation (finish_reason=length), escalates to fallback_llm if provided.
+        """
         last_error = None
         for attempt in range(max_retries):
             try:
-                response_text = self._llm.chat(
-                    [
-                        {"role": "system", "content": system_msg},
-                        {"role": "user", "content": user_msg},
-                    ],
-                    max_tokens=max_output_tokens,
+                response_text = llm.chat(
+                    messages,
+                    max_tokens=max_tokens,
+                    response_schema=response_schema,
                 )
-                result = json.loads(response_text)
-                break  # Success
+                return json.loads(response_text)
             except Exception as e:
                 last_error = e
-                # Retry on transient errors: empty content, truncated JSON,
-                # rate limits, server errors, network issues
+
+                # Truncation = model's output cap hit.
+                # Escalate to a bigger model if available.
+                if "finish_reason=length" in str(e):
+                    if fallback_llm and fallback_llm is not llm:
+                        fb_info = fallback_llm.get_model_info()
+                        fb_max = fb_info.get("max_completion_tokens", max_tokens)
+                        print(
+                            f"      truncated — escalating to {fb_info['name']} "
+                            f"(max_output: {fb_max:,})",
+                            file=sys.stderr, flush=True,
+                        )
+                        llm = fallback_llm
+                        max_tokens = min(fb_max, fb_info.get("context_length", fb_max) // 3)
+                        continue
+                    return {"error": (
+                        f"Output truncated (model output cap hit). "
+                        f"Use a model with a higher max_completion_tokens. {e}"
+                    )}
+
                 is_transient = False
                 is_rate_limit = False
                 if isinstance(e, (json.JSONDecodeError, ValueError)):
                     is_transient = True
                 elif _is_http_transient(e):
                     is_transient = True
-                    # Check specifically for 429
                     from requests.exceptions import HTTPError
                     if isinstance(e, HTTPError) and e.response is not None:
                         is_rate_limit = e.response.status_code == 429
@@ -431,54 +521,135 @@ class BuildAgent:
 
                 if is_transient and attempt < max_retries - 1:
                     if is_rate_limit:
-                        wait = 15 * (2 ** attempt)  # 15s, 30s, 60s
+                        wait = 15 * (2 ** attempt)
                     else:
-                        wait = 1 + attempt  # 1s, 2s, 3s
+                        wait = 1 + attempt
                     print(
-                        f"    retry {attempt + 1}/{max_retries - 1} after {wait}s ({e})",
+                        f"      retry {attempt + 1}/{max_retries - 1} after {wait}s ({e})",
                         file=sys.stderr, flush=True,
                     )
-                    import time
                     time.sleep(wait)
                     continue
-                return {"error": f"batch failed: {e}"}
-        else:
-            return {"error": f"batch failed after {max_retries} attempts: {last_error}"}
+                return {"error": f"call failed: {e}"}
+        return {"error": f"call failed after {max_retries} attempts: {last_error}"}
 
-        new_count = 0
+    @staticmethod
+    def _memory_from_dict(data: dict) -> Memory:
+        """Convert a dict from LLM output into a Memory dataclass.
+
+        Confidence is computed mathematically from evidence signals (0-100 scale):
+          - source_commits: 1→10, 2→20, 3+→25              (max 25)
+          - files:          1→10, 2-3→15, 4+→25             (max 25)
+          - summary length: >50→5, >100→10, >200→20, >300→25 (max 25)
+          - tags:           1-2→5, 3-4→10, 5-6→15, 7+→25   (max 25)
+        Thresholds: 0-29 → low, 30-59 → medium, 60+ → high
+        """
+        source_commits = data.get("source_commits", [])
+        files = data.get("files", [])
+        summary = data.get("summary", "")
+        tags = data.get("tags", [])
+
+        # Evidence scoring (0-100)
+        score = 0
+
+        # Source commits (0-25)
+        n_commits = len(source_commits)
+        if n_commits >= 3:
+            score += 25
+        elif n_commits == 2:
+            score += 20
+        elif n_commits == 1:
+            score += 10
+
+        # Files referenced (0-25)
+        n_files = len(files)
+        if n_files >= 4:
+            score += 25
+        elif n_files >= 2:
+            score += 15
+        elif n_files == 1:
+            score += 10
+
+        # Summary length (0-25)
+        s_len = len(summary)
+        if s_len > 300:
+            score += 25
+        elif s_len > 200:
+            score += 20
+        elif s_len > 100:
+            score += 10
+        elif s_len > 50:
+            score += 5
+
+        # Tags (0-25)
+        n_tags = len(tags)
+        if n_tags >= 7:
+            score += 25
+        elif n_tags >= 5:
+            score += 15
+        elif n_tags >= 3:
+            score += 10
+        elif n_tags >= 1:
+            score += 5
+
+        if score >= 60:
+            confidence = "high"
+        elif score >= 30:
+            confidence = "medium"
+        else:
+            confidence = "low"
+
+        return Memory(
+            summary=summary,
+            type=data.get("type", "context"),
+            confidence=confidence,
+            importance=data.get("importance", 0.5),
+            source_commits=source_commits,
+            files=files,
+            tags=tags,
+        )
+
+    def _synthesis_pass(self, llm: LLMClient) -> Optional[dict]:
+        """Pass 2: Synthesize links, updates, and deactivations across all memories.
+
+        Uses the reasoning model. Sees all memories at once for accurate linking.
+        """
+        all_memories = self._memories.list_all(limit=10_000)
+        if not all_memories:
+            return {"updated": 0, "deactivated": 0, "links": 0}
+
+        memories_data = [
+            {"id": m.id, "summary": m.summary, "type": m.type,
+             "confidence": m.confidence, "importance": m.importance,
+             "files": m.files, "tags": m.tags}
+            for m in all_memories
+        ]
+
+        user_msg = (
+            f"Analyze these {len(memories_data)} memories and create links, "
+            f"updates, and deactivations:\n\n"
+            + json.dumps(memories_data, indent=2)
+        )
+
+        # Estimate tokens for the response
+        input_tokens = len(json.dumps(memories_data)) // 4
+        max_output = max(input_tokens // 2, 8_000)  # generous output budget
+
+        result = self._llm_call_with_retries(
+            llm,
+            [
+                {"role": "system", "content": SYNTHESIS_SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+            ],
+            max_tokens=max_output,
+            response_schema=SYNTHESIS_SCHEMA,
+        )
+        if result is None or "error" in result:
+            return result
+
         updated_count = 0
         deactivated_count = 0
         link_count = 0
-
-        # New memories — build key_map: string key → actual DB ID
-        key_map: dict[str, int] = {}
-        for mem_data in result.get("new_memories", []):
-            memory = Memory(
-                summary=mem_data.get("summary", ""),
-                type=mem_data.get("type", "context"),
-                confidence=mem_data.get("confidence", "medium"),
-                importance=mem_data.get("importance", 0.5),
-                source_commits=mem_data.get("source_commits", []),
-                files=mem_data.get("files", []),
-                tags=mem_data.get("tags", []),
-            )
-            created = self._memories.create(memory)
-            key = mem_data.get("key", "")
-            if created.id is not None and key:
-                key_map[key] = created.id
-            new_count += 1
-
-        def _resolve_id(ref: object) -> Optional[int]:
-            """Resolve a link reference to an actual DB ID.
-
-            String refs → look up in key_map (new memories).
-            Integer refs → existing memory DB ID (passthrough).
-            """
-            if isinstance(ref, str):
-                return key_map.get(ref)
-            if isinstance(ref, (int, float)):
-                return int(ref)
-            return None
 
         # Update existing memories
         for update_data in result.get("update_memories", []):
@@ -490,8 +661,6 @@ class BuildAgent:
                 continue
             if "summary" in update_data:
                 existing_mem.summary = update_data["summary"]
-            if "confidence" in update_data:
-                existing_mem.confidence = update_data["confidence"]
             if "importance" in update_data:
                 existing_mem.importance = update_data["importance"]
             self._memories.update(existing_mem)
@@ -502,21 +671,19 @@ class BuildAgent:
             self._memories.deactivate(mem_id)
             deactivated_count += 1
 
-        # Create links — resolve string keys and integer IDs
+        # Create links — all IDs are integers now (real DB IDs)
         for link_data in result.get("new_links", []):
-            id_a = _resolve_id(link_data.get("source") or link_data.get("memory_id_a"))
-            id_b = _resolve_id(link_data.get("target") or link_data.get("memory_id_b"))
+            id_a = link_data.get("source")
+            id_b = link_data.get("target")
 
-            if not id_a or not id_b:
-                ref_a = link_data.get("source") or link_data.get("memory_id_a")
-                ref_b = link_data.get("target") or link_data.get("memory_id_b")
+            if not isinstance(id_a, int) or not isinstance(id_b, int):
                 print(
-                    f"    skip link {ref_a}↔{ref_b}: could not resolve",
+                    f"    skip link {id_a}↔{id_b}: not integer IDs",
                     file=sys.stderr, flush=True,
                 )
                 continue
 
-            # Validate both memories exist before inserting
+            # Validate both memories exist
             if self._memories.get(id_a) is None or self._memories.get(id_b) is None:
                 print(
                     f"    skip link {id_a}↔{id_b}: memory not found",
@@ -542,16 +709,14 @@ class BuildAgent:
         # Auto-deactivate targets of 'supersedes' links
         for link_data in result.get("new_links", []):
             if link_data.get("relationship") == "supersedes":
-                target_ref = link_data.get("target") or link_data.get("memory_id_b")
-                target_id = _resolve_id(target_ref)
-                if target_id:
+                target_id = link_data.get("target")
+                if isinstance(target_id, int):
                     mem = self._memories.get(target_id)
                     if mem and mem.active:
                         self._memories.deactivate(target_id)
                         deactivated_count += 1
 
         return {
-            "new": new_count,
             "updated": updated_count,
             "deactivated": deactivated_count,
             "links": link_count,

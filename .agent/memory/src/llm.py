@@ -12,15 +12,14 @@ if TYPE_CHECKING:
 class LLMClient:
     """Simple OpenAI-compatible API client using requests. No provider SDKs."""
 
-    DEFAULT_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-    DEFAULT_MODEL = "anthropic/claude-sonnet-4.6"
     # Minimum context window to be usable for memory extraction.
     # System prompt ~2K + existing memories ~5K + commits + response.
-    MIN_CONTEXT_LENGTH = 32_000
 
     def __init__(
         self,
         config: Optional["Config"] = None,
+        *,
+        model: Optional[str] = None,
     ):
         from src import PROJECT_ROOT
         self._log_dir = os.path.join(
@@ -31,7 +30,7 @@ class LLMClient:
             config = Config.from_env()
         self.api_key = config.OPENROUTER_API_KEY
         self.api_url = config.MEMORY_BUILD_API_URL
-        self.model = config.MEMORY_BUILD_MODEL
+        self.model = model or config.MEMORY_EXTRACT_MODEL
         self._min_context_length = config.MIN_CONTEXT_LENGTH
         self._model_info: Optional[dict] = None
 
@@ -58,7 +57,7 @@ class LLMClient:
             if info is None:
                 raise RuntimeError(
                     f"Model '{self.model}' not found on OpenRouter. "
-                    f"Check MEMORY_BUILD_MODEL in .env."
+                    f"Check MEMORY_EXTRACT_MODEL or MEMORY_REASONING_MODEL in .env."
                 )
 
             self._model_info = {
@@ -132,94 +131,49 @@ class LLMClient:
         return text
 
     def chat(self, messages: list[dict], *, temperature: float = 0.2,
-             max_tokens: int = 16384) -> str:
-        """Send a chat completion request and return the response content."""
+             max_tokens: int = 16384,
+             response_schema: Optional[dict] = None) -> str:
+        """Send a chat completion request and return the response content.
+
+        Args:
+            response_schema: Optional JSON schema dict for strict structured output.
+                If provided, uses json_schema mode with strict: true.
+                If not provided, uses json_object mode.
+        """
         import requests
+        import time as _time
 
         if not self.api_key:
             raise RuntimeError(
                 "No API key configured. Set OPENROUTER_API_KEY environment variable."
             )
 
+        # Build response_format based on whether a schema is provided
+        if response_schema:
+            response_format = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": response_schema.get("name", "response"),
+                    "strict": True,
+                    "schema": response_schema["schema"],
+                },
+            }
+        else:
+            response_format = {"type": "json_object"}
+
         payload = {
             "model": self.model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
-            # Strict JSON schema — guarantees pure JSON, no dialog text.
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "memory_extraction",
-                    "strict": True,
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "new_memories": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "key": {"type": "string"},
-                                        "summary": {"type": "string"},
-                                        "type": {"type": "string"},
-                                        "confidence": {"type": "string"},
-                                        "importance": {"type": "number"},
-                                        "source_commits": {"type": "array", "items": {"type": "string"}},
-                                        "files": {"type": "array", "items": {"type": "string"}},
-                                        "tags": {"type": "array", "items": {"type": "string"}},
-                                    },
-                                    "required": ["key", "summary", "type", "confidence", "importance", "source_commits", "files", "tags"],
-                                    "additionalProperties": False,
-                                },
-                            },
-                            "update_memories": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {"type": "integer"},
-                                        "summary": {"type": "string"},
-                                        "confidence": {"type": "string"},
-                                        "importance": {"type": "number"},
-                                    },
-                                    "required": ["id", "summary", "confidence", "importance"],
-                                    "additionalProperties": False,
-                                },
-                            },
-                            "deactivate_memory_ids": {
-                                "type": "array",
-                                "items": {"type": "integer"},
-                            },
-                            "new_links": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "source": {"type": "string"},
-                                        "target": {"type": "string"},
-                                        "relationship": {"type": "string"},
-                                        "strength": {"type": "number"},
-                                    },
-                                    "required": ["source", "target", "relationship", "strength"],
-                                    "additionalProperties": False,
-                                },
-                            },
-                        },
-                        "required": ["new_memories", "update_memories", "deactivate_memory_ids", "new_links"],
-                        "additionalProperties": False,
-                    },
-                },
-            },
+            "response_format": response_format,
             # Ensure provider actually supports structured output
             "provider": {"require_parameters": True},
-            # Enable Anthropic prompt caching via OpenRouter.
-            # Automatically caches the system prompt prefix.
-            # Cache reads are 0.1x input price (90% savings).
-            # Claude Sonnet 4.6 minimum cacheable: 2048 tokens.
+            # Enable prompt caching via OpenRouter.
             "cache_control": {"type": "ephemeral"},
         }
 
+        t0 = _time.monotonic()
         response = requests.post(
             self.api_url,
             headers={
@@ -234,6 +188,7 @@ class LLMClient:
             timeout=180,
             stream=False,
         )
+        elapsed = _time.monotonic() - t0
 
         # Log diagnostics for non-200 responses before raise_for_status
         if response.status_code != 200:
@@ -254,6 +209,19 @@ class LLMClient:
             raise ValueError("LLM returned empty response body (200 with no content)")
 
         data = json.loads(raw_body)
+
+        # Print timing and usage stats
+        usage = data.get("usage", {})
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        cached = usage.get("prompt_tokens_details", {}).get("cached_tokens", 0)
+        import sys
+        print(
+            f"    {elapsed:.1f}s | "
+            f"in: {prompt_tokens:,} (cached: {cached:,}) | "
+            f"out: {completion_tokens:,}",
+            file=sys.stderr, flush=True,
+        )
 
         content = data["choices"][0]["message"].get("content") or ""
         finish_reason = data["choices"][0].get("finish_reason", "unknown")

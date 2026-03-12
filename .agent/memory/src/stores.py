@@ -238,15 +238,16 @@ class MemoryStore:
 
     def get_ids_for_commits(self, commit_hashes: list[str]) -> set[int]:
         """Return IDs of memories that reference any of the given commit hashes."""
-        ids: set[int] = set()
-        for h in commit_hashes:
-            pattern = f'%"{h}"%'
-            for row in self._db.conn.execute(
-                "SELECT id FROM memories WHERE active = 1 AND source_commits LIKE ?",
-                (pattern,),
-            ).fetchall():
-                ids.add(row["id"])
-        return ids
+        if not commit_hashes:
+            return set()
+        # Single query with OR conditions instead of one query per hash
+        conditions = " OR ".join(["source_commits LIKE ?"] * len(commit_hashes))
+        params = [f'%"{h}"%' for h in commit_hashes]
+        rows = self._db.conn.execute(
+            f"SELECT DISTINCT id FROM memories WHERE active = 1 AND ({conditions})",
+            params,
+        ).fetchall()
+        return {row["id"] for row in rows}
 
 
 class LinkStore:

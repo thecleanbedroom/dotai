@@ -6,6 +6,7 @@ from typing import Optional
 
 MEMORY_TYPES = frozenset({
     "decision", "pattern", "convention", "debt", "bug_fix", "context",
+    "refactor", "fix", "feature",
 })
 
 CONFIDENCE_LEVELS = frozenset({"high", "medium", "low"})

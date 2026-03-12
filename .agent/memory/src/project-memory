@@ -25,16 +25,19 @@ from src.models import BuildMetaEntry
 
 def create_components(db_path=None, repo_path=None, project_root=None):
     """Create and wire all components."""
+    from src.config import Config
+    config = Config.from_env()
     db = Database(db_path)
     db.init_schema()
     memory_store = MemoryStore(db)
     link_store = LinkStore(db)
     build_meta_store = BuildMetaStore(db)
     git_parser = GitLogParser(repo_path or project_root)
-    llm_client = LLMClient()
+    extract_llm = LLMClient(config, model=config.MEMORY_EXTRACT_MODEL)
+    reasoning_llm = LLMClient(config, model=config.MEMORY_REASONING_MODEL)
     inspector = Inspector(db, memory_store, link_store, build_meta_store)
     return (db, memory_store, link_store, build_meta_store,
-            git_parser, llm_client, inspector)
+            git_parser, extract_llm, reasoning_llm, inspector)
 
 
 def main():
@@ -94,10 +97,11 @@ def main():
                 project_root=project_root,
             )
             (db, mem_store, lnk_store, bm_store,
-             git_par, llm_cl, insp) = comps
+             git_par, ext_llm, reas_llm, insp) = comps
             agent = BuildAgent(
                 db, mem_store, lnk_store, bm_store,
-                git_par, llm_cl,
+                git_par, ext_llm,
+                reasoning_llm=reas_llm,
             )
             return {
                 "db": db,
@@ -120,14 +124,15 @@ def main():
         repo_path = getattr(args, "repo", None)
         project_root = getattr(args, "project_root", None)
         (db, memory_store, link_store, build_meta_store,
-         git_parser, llm_client, inspector) = create_components(
+         git_parser, extract_llm, reasoning_llm, inspector) = create_components(
             db_path, repo_path, project_root,
         )
         try:
             if args.command == "build":
                 agent = BuildAgent(
                     db, memory_store, link_store, build_meta_store,
-                    git_parser, llm_client,
+                    git_parser, extract_llm,
+                    reasoning_llm=reasoning_llm,
                 )
                 result = agent.build(limit=args.limit)
                 print(json.dumps(result, indent=2))
@@ -135,7 +140,8 @@ def main():
             elif args.command == "rebuild":
                 agent = BuildAgent(
                     db, memory_store, link_store, build_meta_store,
-                    git_parser, llm_client,
+                    git_parser, extract_llm,
+                    reasoning_llm=reasoning_llm,
                 )
                 result = agent.rebuild(limit=args.limit)
                 print(json.dumps(result, indent=2))
