@@ -5,10 +5,16 @@ import json
 from src.models import Memory, MemoryLink
 from src.git import GitLogParser
 from src.build import BuildAgent
+from src.llm import LLMClient
+from src.openrouter import OpenRouterAPI, RateLimiter
 
 
-class MockOpenRouterAPI:
+class MockOpenRouterAPI(OpenRouterAPI):
     """Mock OpenRouter API for tests."""
+
+    def __init__(self):
+        # Skip real __init__ (needs API key, env vars)
+        object.__init__(self)
 
     def get_model_info(self, model_id: str) -> dict:
         return {
@@ -24,19 +30,20 @@ class MockOpenRouterAPI:
         pass
 
     def create_rate_limiter(self, model_id: str, max_workers: int = 8):
-        from src.openrouter import RateLimiter
         return RateLimiter(max_workers=max_workers)
 
     def estimate_cost(self, model_id: str, input_tokens: int, output_tokens: int = 0) -> float:
         return 0.0
 
 
-class MockLLMClient:
+class MockLLMClient(LLMClient):
     """Mock LLM client that returns pre-defined responses."""
 
     def __init__(self, response: dict):
+        # Skip real __init__ (needs API key, env vars)
+        object.__init__(self)
         self._response = response
-        self.calls = []
+        self.calls: list[list[dict]] = []
         self.model = "mock-model"
 
     def chat(self, messages: list[dict], *, temperature: float = 0.2,

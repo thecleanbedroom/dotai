@@ -58,7 +58,7 @@ class OpenRouterAPI:
             self._models_cache = resp.json().get("data", [])
         except Exception:
             self._models_cache = []
-        return self._models_cache
+        return self._models_cache or []
 
     def get_model_info(self, model_id: str) -> dict:
         """Get model info from OpenRouter API. Raises if model not found.
