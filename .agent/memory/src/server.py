@@ -19,6 +19,12 @@ This surfaces past decisions, known bugs, debt, and conventions that are NOT
 visible in the code itself. Prevents repeating past mistakes and contradicting
 established decisions.
 
+Search tips:
+- Use short, focused queries (2-3 terms). Avoid long compound phrases.
+- Run multiple small searches rather than one big query.
+- Default match is "any" (OR) for broad discovery. Use match="all" to narrow.
+- If a broad query returns too many results, add a type filter or raise min_importance.
+
 Results are historical context \u2014 always verify against current code."""
 
 
@@ -106,13 +112,22 @@ class McpServer:
             ctx: Context,
             query: str,
             type: str = "",
-            match: str = "all",
+            match: str = "any",
             min_importance: float = 0.0,
             limit: int = 20,
         ) -> str:
             """Search project memory by topic. Returns decisions, conventions,
             and patterns not visible in the code. Call when researching an area
             or starting work on a feature.
+
+            Use short queries (2-3 terms). Run multiple searches rather than
+            one compound query.
+
+            match parameter:
+            - "any" (default): returns memories matching ANY keyword (OR).
+              Best for exploratory searches and broad discovery.
+            - "all": returns only memories matching EVERY keyword (AND).
+              Use to narrow when "any" returns too many results.
 
             Results are historical context — always verify against current code.
             """
