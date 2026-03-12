@@ -98,10 +98,10 @@ class LLMClient:
                 f"Use a model with a larger context window."
             )
         supported = info.get("supported_parameters", [])
-        if supported and "response_format" not in supported:
+        if supported and "structured_outputs" not in supported:
             raise RuntimeError(
-                f"Model '{self.model}' does not support structured JSON output "
-                f"(response_format). Only models with JSON output support are allowed. "
+                f"Model '{self.model}' does not support structured outputs "
+                f"(json_schema). Only models with strict JSON schema support are allowed. "
                 f"See .env for verified models."
             )
 
@@ -146,8 +146,72 @@ class LLMClient:
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
-            "response_format": {"type": "json_object"},
-            # Ensure provider actually supports JSON mode
+            # Strict JSON schema — guarantees pure JSON, no dialog text.
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "memory_extraction",
+                    "strict": True,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "new_memories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {"type": "string"},
+                                        "summary": {"type": "string"},
+                                        "type": {"type": "string"},
+                                        "confidence": {"type": "string"},
+                                        "importance": {"type": "number"},
+                                        "source_commits": {"type": "array", "items": {"type": "string"}},
+                                        "files": {"type": "array", "items": {"type": "string"}},
+                                        "tags": {"type": "array", "items": {"type": "string"}},
+                                    },
+                                    "required": ["key", "summary", "type", "confidence", "importance", "source_commits", "files", "tags"],
+                                    "additionalProperties": False,
+                                },
+                            },
+                            "update_memories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {"type": "integer"},
+                                        "summary": {"type": "string"},
+                                        "confidence": {"type": "string"},
+                                        "importance": {"type": "number"},
+                                    },
+                                    "required": ["id", "summary", "confidence", "importance"],
+                                    "additionalProperties": False,
+                                },
+                            },
+                            "deactivate_memory_ids": {
+                                "type": "array",
+                                "items": {"type": "integer"},
+                            },
+                            "new_links": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "source": {"type": "string"},
+                                        "target": {"type": "string"},
+                                        "relationship": {"type": "string"},
+                                        "strength": {"type": "number"},
+                                    },
+                                    "required": ["source", "target", "relationship", "strength"],
+                                    "additionalProperties": False,
+                                },
+                            },
+                        },
+                        "required": ["new_memories", "update_memories", "deactivate_memory_ids", "new_links"],
+                        "additionalProperties": False,
+                    },
+                },
+            },
+            # Ensure provider actually supports structured output
             "provider": {"require_parameters": True},
             # Enable Anthropic prompt caching via OpenRouter.
             # Automatically caches the system prompt prefix.

@@ -4,6 +4,7 @@ Optimize for correctness, minimalism, and developer experience.
 
 ## Operating Principles
 
+- **CRITICAL — Git discipline**: `git commit` is FORBIDDEN unless the user explicitly invokes `/commit` or asks for a commit. `git push` is ALWAYS FORBIDDEN — never push under any circumstances. No auto-commits after finishing work. No proactive commits. No commits as part of another task. Each commit is a separate, user-initiated action. Violating this is a hard failure.
 - Correctness over cleverness; prefer boring, readable solutions.
 - Small, simple, elegant change that works. If it feels hacky, reassess. Don't refactor adjacent code unless it reduces risk.
 - Leverage existing patterns before introducing new abstractions.
