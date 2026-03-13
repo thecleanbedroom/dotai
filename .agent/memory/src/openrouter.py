@@ -364,8 +364,7 @@ class RateLimiter:
             self._gate.clear()
 
             print(
-                f"      rate limited — pausing {wait:.0f}s "
-                f"(429 #{self._total_429s})",
+                f"      ⏳ 429 #{self._total_429s} — waiting {wait:.0f}s",
                 file=sys.stderr, flush=True,
             )
 
