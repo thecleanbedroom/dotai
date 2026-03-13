@@ -1,0 +1,26 @@
+{
+  "id": "bfb73eda-9b26-4f49-8331-5f7b5358b806",
+  "type": "decision",
+  "summary": "Added a new skill providing a structured reference for the 100 most critical web application vulnerabilities organized by 15 major categories aligned with industry standards. Includes definitions, root causes, impacts, and mitigation strategies for vulnerabilities like SQL injection, XSS, command injection, authentication flaws, data exposure, security misconfigurations, XML vulnerabilities, broken access control, insecure deserialization, API security issues, communication security flaws, client-side vulnerabilities, DoS attacks, SSRF, mobile/IoT threats, business logic flaws, and advanced threats. Features quick reference tables, critical security headers, OWASP Top 10 mapping, and troubleshooting guidance.",
+  "confidence": 53,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/top-web-vulnerabilities/SKILL.md"
+  ],
+  "tags": [
+    "security",
+    "vulnerabilities",
+    "owasp",
+    "web-security",
+    "injection",
+    "authentication",
+    "api-security",
+    "access-control",
+    "dos",
+    "ssrf"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

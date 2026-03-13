@@ -1,0 +1,31 @@
+{
+  "id": "6718d231-4ba2-4f55-9c68-3e4a36cb3442",
+  "type": "feature",
+  "summary": "Added cross-process rate limiting via shared file lock using fcntl.flock on a shared JSON file. Coordinated with ThreadPoolExecutor RPM limits to prevent overwhelming the pacer.",
+  "confidence": 37,
+  "importance": 80,
+  "source_commits": [
+    "6321c69c47ae8f5070780996d64f3cc33c347cc0"
+  ],
+  "file_paths": [
+    ".agent/memory/src/openrouter.py"
+  ],
+  "tags": [
+    "rate-limiting",
+    "concurrency",
+    "file-lock",
+    "fcntl",
+    "shared-state",
+    "openrouter"
+  ],
+  "links": [
+    {
+      "source": "6718d231-4ba2-4f55-9c68-3e4a36cb3442",
+      "target": "d5d05e85-8814-46b0-9d89-73b3ec5c3aae",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-12 22:55:06 -0500",
+  "active": true
+}

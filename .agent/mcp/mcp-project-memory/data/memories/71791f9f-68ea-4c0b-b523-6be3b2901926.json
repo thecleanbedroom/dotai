@@ -1,0 +1,31 @@
+{
+  "id": "71791f9f-68ea-4c0b-b523-6be3b2901926",
+  "type": "decision",
+  "summary": "Added language-agnostic code editing safety rules covering focused edits, escape sequences, brace balance, syntax checks, and multi-line replacement safety.",
+  "confidence": 40,
+  "importance": 80,
+  "source_commits": [
+    "03bc7b802fd893bac8c93d823dd57890674eb2a2"
+  ],
+  "file_paths": [
+    ".ai/index.md",
+    ".ai/rules/language-default.md"
+  ],
+  "tags": [
+    "code-editing",
+    "safety",
+    "rules",
+    "language-agnostic",
+    "best-practices"
+  ],
+  "links": [
+    {
+      "source": "71791f9f-68ea-4c0b-b523-6be3b2901926",
+      "target": "8cafb4b1-e98e-46fa-b6cb-1959f1b84fcc",
+      "relationship": "convention_group",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-05 08:09:31 -0600",
+  "active": true
+}

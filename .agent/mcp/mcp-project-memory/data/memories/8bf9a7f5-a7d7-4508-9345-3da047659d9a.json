@@ -1,0 +1,35 @@
+{
+  "id": "8bf9a7f5-a7d7-4508-9345-3da047659d9a",
+  "type": "pattern",
+  "summary": "Defined 37 specialized agent types organized into 7 swarms: Engineering (8 types), Operations (8 types), Business (8 types), Data (3 types), Product (3 types), Growth (4 types), and Review (3 types), with dynamic spawning based on project needs.",
+  "confidence": 55,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/loki-mode/references/agent-types.md",
+    ".agent/skills/loki-mode/references/agents.md"
+  ],
+  "tags": [
+    "agent-swarms",
+    "specialized-agents",
+    "engineering",
+    "operations",
+    "business",
+    "data",
+    "product",
+    "growth",
+    "review"
+  ],
+  "links": [
+    {
+      "source": "8bf9a7f5-a7d7-4508-9345-3da047659d9a",
+      "target": "c06c5f95-8bf2-4e36-b915-d66a6f9d3dc8",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

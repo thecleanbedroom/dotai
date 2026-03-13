@@ -1,0 +1,22 @@
+{
+  "id": "1a08302e-89e4-4458-b573-d862ae44ff62",
+  "type": "decision",
+  "summary": "Added C4 modeling skills for architecture documentation including component, container, and context levels. These skills provide standardized approaches for creating C4 diagrams and documentation at different abstraction levels, enabling consistent architectural communication.",
+  "confidence": 40,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/c4-component/SKILL.md",
+    ".agent/skills/c4-container/SKILL.md",
+    ".agent/skills/c4-context/SKILL.md"
+  ],
+  "tags": [
+    "c4-modeling",
+    "architecture",
+    "documentation",
+    "diagrams"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

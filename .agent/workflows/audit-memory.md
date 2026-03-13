@@ -36,7 +36,7 @@ Check for WAL/SHM file presence:
 
 // turbo
 ```bash
-ls -la .agent/memory/data/project_memory.db* 2>/dev/null
+ls -la .agent/mcp/mcp-project-memory/data/project_memory.db* 2>/dev/null
 ```
 
 If `-shm` or `-wal` files exist and the MCP server is not actively running as a separate process, flag as ⚠️ warning.
@@ -91,7 +91,7 @@ Find the most recent build response log:
 
 // turbo
 ```bash
-ls -t .agent/memory/data/build_responses/*.json 2>/dev/null | head -1
+ls -t .agent/mcp/mcp-project-memory/data/build_responses/*.json 2>/dev/null | head -1
 ```
 
 If a response file exists, parse token usage. The log file structure is `{request, response}` — usage is at `response.usage`. Extract `prompt_tokens` and `completion_tokens`.

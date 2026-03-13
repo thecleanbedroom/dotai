@@ -1,0 +1,31 @@
+{
+  "name": "memory_extraction",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "new_memories": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": {"type": "string"},
+            "summary": {"type": "string"},
+            "type": {"type": "string", "enum": [
+              "decision", "pattern", "convention", "debt",
+              "bug_fix", "context", "refactor", "fix", "feature"
+            ]},
+            "importance": {"type": "integer"},
+            "source_commits": {"type": "array", "items": {"type": "string"}},
+            "files": {"type": "array", "items": {"type": "string"}},
+            "tags": {"type": "array", "items": {"type": "string"}},
+            "created_at": {"type": "string"}
+          },
+          "required": ["key", "summary", "type", "importance", "source_commits", "files", "tags", "created_at"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["new_memories"],
+    "additionalProperties": false
+  }
+}

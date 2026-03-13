@@ -1,0 +1,25 @@
+{
+  "id": "1824b46e-0214-45ea-991a-29f5efdc504e",
+  "type": "refactor",
+  "summary": "Split build functionality into incremental build() (resumes from last commit) and rebuild() (full wipe), making builds interruptible and resumable via Ctrl+C",
+  "confidence": 50,
+  "importance": 90,
+  "source_commits": [
+    "25fc2fe81a57740a23908df58338b444c84019a4"
+  ],
+  "file_paths": [
+    ".agent/memory/src/build.py",
+    ".agent/memory/src/project-memory",
+    ".agent/memory/README.md",
+    ".agent/memory/tests/test_build.py"
+  ],
+  "tags": [
+    "build",
+    "incremental",
+    "resumable",
+    "rebuild",
+    "cli",
+    "interruptible"
+  ],
+  "created_at": "2026-03-12 13:09:04 -0500"
+}

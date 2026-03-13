@@ -1,0 +1,52 @@
+{
+  "id": "7797ba5b-c048-483a-b094-e0a96816b03e",
+  "type": "decision",
+  "summary": "Deleted SKILL.md files for 20+ skills including mailchimp-automation, make-automation, malware-analyst, and market-sizing-analysis as part of repository pruning",
+  "confidence": 55,
+  "importance": 75,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/skills/mailchimp-automation/SKILL.md",
+    ".agent/skills/make-automation/SKILL.md",
+    ".agent/skills/malware-analyst/SKILL.md",
+    ".agent/skills/market-sizing-analysis/SKILL.md",
+    ".agent/skills/marketing-ideas/SKILL.md",
+    ".agent/skills/marketing-psychology/SKILL.md",
+    ".agent/skills/mcp-builder/SKILL.md",
+    ".agent/skills/memory-forensics/SKILL.md",
+    ".agent/skills/memory-safety-patterns/SKILL.md",
+    ".agent/skills/memory-systems/SKILL.md",
+    ".agent/skills/mermaid-expert/SKILL.md",
+    ".agent/skills/metasploit-framework/SKILL.md",
+    ".agent/skills/micro-saas-launcher/SKILL.md",
+    ".agent/skills/microservices-patterns/SKILL.md",
+    ".agent/skills/microsoft-teams-automation/SKILL.md",
+    ".agent/skills/minecraft-bukkit-pro/SKILL.md",
+    ".agent/skills/miro-automation/SKILL.md",
+    ".agent/skills/mixpanel-automation/SKILL.md",
+    ".agent/skills/ml-engineer/SKILL.md",
+    ".agent/skills/ml-pipeline-workflow/SKILL.md",
+    ".agent/skills/mlops-engineer/SKILL.md",
+    ".agent/skills/mobile-design/SKILL.md"
+  ],
+  "tags": [
+    "skill-removal",
+    "cleanup",
+    "multiple-skills",
+    "mailchimp",
+    "make-automation",
+    "malware-analyst"
+  ],
+  "links": [
+    {
+      "source": "7797ba5b-c048-483a-b094-e0a96816b03e",
+      "target": "a571fdc0-57b6-49c4-bc52-906d2782ba70",
+      "relationship": "convention_group",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

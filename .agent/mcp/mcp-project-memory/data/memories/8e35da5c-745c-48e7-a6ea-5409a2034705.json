@@ -1,0 +1,47 @@
+{
+  "id": "8e35da5c-745c-48e7-a6ea-5409a2034705",
+  "type": "decision",
+  "summary": "Established workflow authoring rules requiring descriptive step headings without numbers, named cross-references between workflows (e.g., \"Follow `/close`'s _Move to finished_ step\"), DRY principles by referencing canonical step definitions instead of duplicating instructions, and turbo annotation guidelines for safe steps. Created canonical ownership for shared concerns like Evaluate skills (/skills) and Append walkthrough, Finalize, Move to finished, Report (/close).",
+  "confidence": 63,
+  "importance": 85,
+  "source_commits": [
+    "37ce56fc3a702bb00d675cc4651c2000e65c892d"
+  ],
+  "file_paths": [
+    ".agent/rules/core-workflow-authoring.md",
+    ".agent/workflows/add-skills.md",
+    ".agent/workflows/audit-sdlc.md",
+    ".agent/workflows/audit-workflows.md",
+    ".agent/workflows/capture.md",
+    ".agent/workflows/close.md",
+    ".agent/workflows/coverage.md",
+    ".agent/workflows/crap.md",
+    ".agent/workflows/forget.md",
+    ".agent/workflows/hotfix.md",
+    ".agent/workflows/implement.md",
+    ".agent/workflows/init.md",
+    ".agent/workflows/plan.md",
+    ".agent/workflows/project-md.md",
+    ".agent/workflows/qa.md",
+    ".agent/workflows/remember.md",
+    ".agent/workflows/retro.md",
+    ".agent/workflows/skills.md",
+    ".agent/workflows/sweep.md"
+  ],
+  "tags": [
+    "workflow-authoring",
+    "documentation",
+    "DRY",
+    "naming-conventions"
+  ],
+  "links": [
+    {
+      "source": "8e35da5c-745c-48e7-a6ea-5409a2034705",
+      "target": "e1eab4ce-e45d-4c69-86e6-f4be752706d8",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-04 08:23:46 -0600",
+  "active": true
+}

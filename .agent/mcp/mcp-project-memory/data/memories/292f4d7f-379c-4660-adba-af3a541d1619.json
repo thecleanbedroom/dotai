@@ -1,0 +1,30 @@
+{
+  "id": "292f4d7f-379c-4660-adba-af3a541d1619",
+  "type": "pattern",
+  "summary": "Improved automation and maintenance scripts by adding dependency checks for git and rsync, user confirmation prompts before syncing, repository updates (to thecleanbedroom/dotai), path fixes in installer, and making config files use relative paths (./ai/index.md instead of /.ai/index.md); created and enhanced AGENTS.sh script for synchronizing policy files while preserving local-only files like PROJECT.md",
+  "confidence": 77,
+  "importance": 75,
+  "source_commits": [
+    "c7a04c2ea5132de79ba47607c6b961d5cbea1603",
+    "e8a8c265c44a85e0e99b682ec05ede3b74d97822",
+    "6e0f7ff4fc47e91a8aacc9ecdd99eaff1abdcf48",
+    "b55289dd11a5e47beb043f7e31ae91fe0c56aa4d",
+    "846d2b1915a288b7ab911a9546d421db8a00419e",
+    "81f97fd92319f75135f10d4811110756af77bef3",
+    "dec8f5dc94b05ddf21f2ef66f49e6f72c067e7cc"
+  ],
+  "file_paths": [
+    ".ai/README.md",
+    "AGENTS.sh",
+    ".antigravity/config.json"
+  ],
+  "tags": [
+    "automation",
+    "maintenance-script",
+    "installation",
+    "updater",
+    "dependency-checks",
+    "user-confirmation"
+  ],
+  "created_at": "2025-12-15 15:29:00 -0600"
+}

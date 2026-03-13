@@ -1,0 +1,21 @@
+{
+  "id": "46bf48fc-e4e8-4e23-ab73-12c5b5ccb198",
+  "type": "refactor",
+  "summary": "Moved project-memory entrypoint to src/ directory, added shell wrapper at top level for Antigravity integration that execs into venv Python",
+  "confidence": 33,
+  "importance": 70,
+  "source_commits": [
+    "146d5436d7fb2057c0eb31450fc6fac588293cfd"
+  ],
+  "file_paths": [
+    ".agent/memory/mcp-server",
+    ".agent/memory/src/project-memory"
+  ],
+  "tags": [
+    "entrypoint",
+    "project-structure",
+    "shell-wrapper",
+    "antigravity"
+  ],
+  "created_at": "2026-03-10 12:28:13 -0500"
+}

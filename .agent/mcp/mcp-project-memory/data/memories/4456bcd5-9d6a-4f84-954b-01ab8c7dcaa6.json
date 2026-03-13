@@ -1,0 +1,49 @@
+{
+  "id": "4456bcd5-9d6a-4f84-954b-01ab8c7dcaa6",
+  "type": "pattern",
+  "summary": "Added 30+ new skill files covering automation, CRO, development, security, and business domains to expand the agent's capability library (part 12 of ongoing skill addition effort)",
+  "confidence": 55,
+  "importance": 90,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/onboarding-cro/SKILL.md",
+    ".agent/skills/one-drive-automation/SKILL.md",
+    ".agent/skills/openapi-spec-generation/SKILL.md",
+    ".agent/skills/oss-hunter/SKILL.md",
+    ".agent/skills/outlook-automation/SKILL.md",
+    ".agent/skills/outlook-calendar-automation/SKILL.md",
+    ".agent/skills/page-cro/SKILL.md",
+    ".agent/skills/pagerduty-automation/SKILL.md",
+    ".agent/skills/paid-ads/SKILL.md",
+    ".agent/skills/parallel-agents/SKILL.md",
+    ".agent/skills/payment-integration/SKILL.md",
+    ".agent/skills/paypal-integration/SKILL.md",
+    ".agent/skills/paywall-upgrade-cro/SKILL.md",
+    ".agent/skills/pci-compliance/SKILL.md",
+    ".agent/skills/pdf-official/SKILL.md",
+    ".agent/skills/pentest-checklist/SKILL.md",
+    ".agent/skills/pentest-commands/SKILL.md",
+    ".agent/skills/performance-engineer/SKILL.md",
+    ".agent/skills/performance-profiling/SKILL.md",
+    ".agent/skills/personal-tool-builder/SKILL.md",
+    ".agent/skills/php-pro/SKILL.md",
+    ".agent/skills/pipedrive-automation/SKILL.md",
+    ".agent/skills/plaid-fintech/SKILL.md",
+    ".agent/skills/plan-writing/SKILL.md",
+    ".agent/skills/planning-with-files/SKILL.md",
+    ".agent/skills/playwright-skill/SKILL.md",
+    ".agent/skills/popup-cro/SKILL.md",
+    ".agent/skills/posix-shell-pro/SKILL.md",
+    ".agent/skills/postgres-best-practices/SKILL.md"
+  ],
+  "tags": [
+    "skill-library",
+    "automation",
+    "cro",
+    "development",
+    "security"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

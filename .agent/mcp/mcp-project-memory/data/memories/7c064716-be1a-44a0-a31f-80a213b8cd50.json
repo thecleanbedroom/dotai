@@ -1,0 +1,32 @@
+{
+  "id": "7c064716-be1a-44a0-a31f-80a213b8cd50",
+  "type": "fix",
+  "summary": "Fixed critical bug where incremental build re-processed all commits due to last_commit being stored as empty string from phantom commits; changed to use git rev-parse HEAD for recording last_commit; fixed git log parser to skip chunks without 'commit ' line; restructured batch output to show summary upfront and results as they complete",
+  "confidence": 55,
+  "importance": 0,
+  "source_commits": [
+    "200cfa7b64b96cf2ef0ad506da86aaf39a04bb90"
+  ],
+  "file_paths": [
+    ".agent/memory/src/build.py",
+    ".agent/memory/src/git.py"
+  ],
+  "tags": [
+    "incremental-build",
+    "last-commit",
+    "phantom-commits",
+    "git-rev-parse",
+    "batch-output",
+    "git-log-parser"
+  ],
+  "links": [
+    {
+      "source": "7c064716-be1a-44a0-a31f-80a213b8cd50",
+      "target": "0b9513d5-47c8-4ccb-bac3-def93bca027b",
+      "relationship": "implements",
+      "strength": 85
+    }
+  ],
+  "created_at": "2026-03-12 16:34:02 -0500",
+  "active": true
+}

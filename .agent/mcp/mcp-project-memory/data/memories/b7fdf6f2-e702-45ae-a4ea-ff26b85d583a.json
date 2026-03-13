@@ -1,0 +1,31 @@
+{
+  "id": "b7fdf6f2-e702-45ae-a4ea-ff26b85d583a",
+  "type": "fix",
+  "summary": "Fixed Pyright type checker errors in OpenRouter integration by ensuring _fetch_models never returns None (using 'return self._models_cache or []' pattern) and making test mocks satisfy nominal type inheritance. Modified MockOpenRouterAPI and MockLLMClient to inherit from their real counterparts and bypass real __init__ via object.__init__() to avoid requiring API keys/env vars in tests while maintaining proper type hints for BuildAgent dependency injection.",
+  "confidence": 55,
+  "importance": 60,
+  "source_commits": [
+    "ae9f026e84ab7635e47ef988d7711391c9d4b418"
+  ],
+  "file_paths": [
+    ".agent/memory/src/openrouter.py",
+    ".agent/memory/tests/test_build.py"
+  ],
+  "tags": [
+    "type-checking",
+    "pyright",
+    "mocking",
+    "inheritance",
+    "null-safety"
+  ],
+  "links": [
+    {
+      "source": "b7fdf6f2-e702-45ae-a4ea-ff26b85d583a",
+      "target": "9133f099-69a2-4c27-8c8f-87208e49f31c",
+      "relationship": "related_to",
+      "strength": 70
+    }
+  ],
+  "created_at": "2026-03-12 17:52:43 -0500",
+  "active": true
+}

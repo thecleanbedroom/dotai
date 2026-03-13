@@ -1,0 +1,31 @@
+{
+  "id": "d5d05e85-8814-46b0-9d89-73b3ec5c3aae",
+  "type": "fix",
+  "summary": "Fixed ThreadPoolExecutor being capped at total batches instead of RPM (20), which overwhelmed file-lock pacer; fixed _compute_budget to cap input at context - max_output - overhead preventing batches exceeding model context window; added _split_oversized_commit to truncate individual file diffs exceeding budget",
+  "confidence": 45,
+  "importance": 0,
+  "source_commits": [
+    "31de135b28feff03fe1437b6b507717fbad91609"
+  ],
+  "file_paths": [
+    ".agent/memory/src/build.py"
+  ],
+  "tags": [
+    "threadpool",
+    "rpm",
+    "context-window",
+    "budget-capping",
+    "file-lock",
+    "diff-truncation"
+  ],
+  "links": [
+    {
+      "source": "d5d05e85-8814-46b0-9d89-73b3ec5c3aae",
+      "target": "6718d231-4ba2-4f55-9c68-3e4a36cb3442",
+      "relationship": "related_to",
+      "strength": 85
+    }
+  ],
+  "created_at": "2026-03-12 23:09:13 -0500",
+  "active": true
+}

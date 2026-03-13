@@ -1,0 +1,29 @@
+{
+  "id": "dc18a14e-27c2-4433-a6a2-fa0f2975042a",
+  "type": "fix",
+  "summary": "Added graceful fallback when build_meta contains last_commit hash not found in current repository; catches 'Invalid revision range' error and falls back to full scan instead of crashing; handles scenarios like DB copied between projects or after rebase; modified BuildAgent to reset since_hash=None and retry get_file_list() on specific error.",
+  "confidence": 38,
+  "importance": 65,
+  "source_commits": [
+    "7f09336f23657a87213264341e2d7f09a227800b"
+  ],
+  "file_paths": [
+    ".agent/memory/src/build.py"
+  ],
+  "tags": [
+    "last-commit",
+    "invalid-revision",
+    "fallback-scan",
+    "build-meta"
+  ],
+  "links": [
+    {
+      "source": "dc18a14e-27c2-4433-a6a2-fa0f2975042a",
+      "target": "7c064716-be1a-44a0-a31f-80a213b8cd50",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-12 22:42:56 -0500",
+  "active": true
+}

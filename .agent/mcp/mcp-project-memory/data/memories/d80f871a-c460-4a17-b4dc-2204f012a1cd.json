@@ -1,0 +1,21 @@
+{
+  "id": "d80f871a-c460-4a17-b4dc-2204f012a1cd",
+  "type": "decision",
+  "summary": "Added backend and frontend development patterns skills. Backend patterns cover API design, repository pattern, service layer, database optimization, caching strategies, and security practices. Frontend patterns cover component composition, custom hooks, state management, performance optimization, and accessibility patterns for React/Next.js development.",
+  "confidence": 48,
+  "importance": 80,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/cc-skill-backend-patterns/SKILL.md",
+    ".agent/skills/cc-skill-frontend-patterns/SKILL.md"
+  ],
+  "tags": [
+    "backend-patterns",
+    "frontend-patterns",
+    "development-standards",
+    "architecture"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

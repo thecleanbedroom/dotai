@@ -1,0 +1,29 @@
+{
+  "id": "5fd5a3b4-d0fb-440c-a7eb-fb54ac035fea",
+  "type": "fix",
+  "summary": "Fixed 429 rate limiting by removing permanent RPM reduction; determined sliding window already handles pacing correctly as dead processes' timestamps age out in 60s naturally; concluded cooldown pause alone is sufficient for 429 recovery; changed RateLimiter.handle_429() to only update cooldown_until without modifying RPM.",
+  "confidence": 38,
+  "importance": 75,
+  "source_commits": [
+    "c3582959c852da7693941f7ceb84bb19e15b1f60"
+  ],
+  "file_paths": [
+    ".agent/memory/src/openrouter.py"
+  ],
+  "tags": [
+    "429-rate-limiting",
+    "rpm-reduction",
+    "sliding-window",
+    "cooldown-pause"
+  ],
+  "links": [
+    {
+      "source": "5fd5a3b4-d0fb-440c-a7eb-fb54ac035fea",
+      "target": "8e8dd3e4-81f4-46ab-98fa-44a5580b40f9",
+      "relationship": "implements",
+      "strength": 85
+    }
+  ],
+  "created_at": "2026-03-12 22:57:25 -0500",
+  "active": true
+}

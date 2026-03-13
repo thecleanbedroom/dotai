@@ -1,0 +1,22 @@
+{
+  "id": "464782be-35c5-49ab-ae05-fbc4205bef98",
+  "type": "decision",
+  "summary": "Added a new skill for creating, managing, and completing Conductor tracks - logical work units for features, bugs, and refactors. Provides guidance on spec.md and plan.md files, track lifecycle management, status markers, conventions, tracks.md registry, and track metadata. Includes instructions for clarifying goals, applying best practices, and verifying outcomes when working with tracks.",
+  "confidence": 45,
+  "importance": 75,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/track-management/SKILL.md"
+  ],
+  "tags": [
+    "conductor",
+    "track-management",
+    "workflow",
+    "spec-md",
+    "plan-md",
+    "project-organization"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

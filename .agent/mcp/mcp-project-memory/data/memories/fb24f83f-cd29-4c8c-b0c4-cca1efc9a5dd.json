@@ -1,0 +1,35 @@
+{
+  "id": "fb24f83f-cd29-4c8c-b0c4-cca1efc9a5dd",
+  "type": "pattern",
+  "summary": "Consolidated plugin configuration files for various AI coding assistants into a dedicated .agent/plugins/ directory (since removed).",
+  "confidence": 55,
+  "importance": 40,
+  "source_commits": [
+    "97ab4cb84784a37c7a305ed6bb6574cf706e5625"
+  ],
+  "file_paths": [
+    ".agent/plugins/README.md",
+    ".agent/plugins/.codex/config.toml",
+    ".agent/plugins/.continue/rules/rules.md",
+    ".agent/plugins/.cursor/rules/policy.mdc",
+    ".agent/plugins/.gemini/styleguide.md",
+    ".agent/plugins/.github/copilot-instructions.md",
+    ".agent/plugins/.windsurf/rules/rules.md"
+  ],
+  "tags": [
+    "plugins",
+    "configuration",
+    "organization",
+    "dotfiles"
+  ],
+  "links": [
+    {
+      "source": "fb24f83f-cd29-4c8c-b0c4-cca1efc9a5dd",
+      "target": "758d0273-df58-430e-84ab-96aa6246166e",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-03-05 08:07:30 -0600",
+  "active": true
+}

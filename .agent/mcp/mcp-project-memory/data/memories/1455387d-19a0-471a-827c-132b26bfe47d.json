@@ -1,0 +1,47 @@
+{
+  "id": "1455387d-19a0-471a-827c-132b26bfe47d",
+  "type": "decision",
+  "summary": "Expanded the project's skill library with guidance files for multiple domains (part 13 of an ongoing skill addition effort, many since removed).",
+  "confidence": 78,
+  "importance": 40,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/postgresql/SKILL.md",
+    ".agent/skills/posthog-automation/SKILL.md",
+    ".agent/skills/postmark-automation/SKILL.md",
+    ".agent/skills/postmortem-writing/SKILL.md",
+    ".agent/skills/powershell-windows/SKILL.md",
+    ".agent/skills/pptx",
+    ".agent/skills/pptx-official/SKILL.md",
+    ".agent/skills/pricing-strategy/SKILL.md",
+    ".agent/skills/prisma-expert/SKILL.md",
+    ".agent/skills/product-manager-toolkit/SKILL.md",
+    ".agent/skills/production-code-audit/SKILL.md",
+    ".agent/skills/programmatic-seo/SKILL.md",
+    ".agent/skills/prometheus-configuration/SKILL.md",
+    ".agent/skills/prompt-engineer/SKILL.md",
+    ".agent/skills/prompt-engineering-patterns/SKILL.md",
+    ".agent/skills/prompt-engineering/SKILL.md",
+    ".agent/skills/prompt-library/SKILL.md",
+    ".agent/skills/pypict-skill/SKILL.md",
+    ".agent/skills/python-packaging/SKILL.md",
+    ".agent/skills/python-patterns/SKILL.md",
+    ".agent/skills/python-pro/SKILL.md",
+    ".agent/skills/python-testing-patterns/SKILL.md",
+    ".agent/skills/quant-analyst/SKILL.md"
+  ],
+  "tags": [
+    "skills",
+    "documentation",
+    "postgresql",
+    "pptx",
+    "automation",
+    "python",
+    "prompt-engineering"
+  ],
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

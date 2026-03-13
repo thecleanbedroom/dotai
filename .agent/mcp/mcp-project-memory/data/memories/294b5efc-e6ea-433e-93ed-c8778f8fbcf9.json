@@ -1,0 +1,49 @@
+{
+  "id": "294b5efc-e6ea-433e-93ed-c8778f8fbcf9",
+  "type": "decision",
+  "summary": "Decided to overhaul the gemini-gateway agent execution system with a 5-tier model architecture (lite/quick/fast/think/deep), model buckets for intelligent parallel dispatch, enhanced database schema for detailed telemetry tracking, and batch dispatch capability to improve agent throughput and observability.",
+  "confidence": 70,
+  "importance": 90,
+  "source_commits": [
+    "a784093baefebc4bcbf84328eacaf3396c2a83e6"
+  ],
+  "file_paths": [
+    ".agent/bin/gemini-gateway",
+    ".agent/bin/test_gateway.py",
+    ".agent/index.md",
+    ".agent/rules/core-engineering.md",
+    ".agent/rules/core-parallel-evaluation.md",
+    ".agent/rules/core-testing.md",
+    ".agent/rules/core-workflow.md",
+    ".agent/rules/language-default.md",
+    ".agent/rules/language-frontend.md",
+    ".agent/rules/language-php.md",
+    ".agent/rules/platform-laravel-modules.md",
+    ".agent/rules/platform-laravel.md",
+    ".agent/rules/retrospective.md",
+    ".agent/workflows/audit-agent.md",
+    ".agent/workflows/audit-sdlc.md",
+    ".agent/workflows/capture.md",
+    ".agent/workflows/close.md",
+    ".agent/workflows/coverage.md",
+    ".agent/workflows/crap.md",
+    ".agent/workflows/forget.md",
+    ".agent/workflows/hotfix.md",
+    ".agent/workflows/implement.md",
+    ".agent/workflows/init.md",
+    ".agent/workflows/plan.md",
+    ".agent/workflows/project-md.md",
+    ".agent/workflows/remember.md",
+    ".agent/workflows/retro.md",
+    ".agent/workflows/sweep.md"
+  ],
+  "tags": [
+    "gemini-gateway",
+    "parallelism",
+    "model-tiers",
+    "batch-dispatch",
+    "database-schema",
+    "telemetry"
+  ],
+  "created_at": "2026-03-01 07:57:05 -0600"
+}

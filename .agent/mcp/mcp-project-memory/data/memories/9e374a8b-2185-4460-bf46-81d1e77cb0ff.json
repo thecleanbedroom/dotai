@@ -1,0 +1,30 @@
+{
+  "id": "9e374a8b-2185-4460-bf46-81d1e77cb0ff",
+  "type": "feature",
+  "summary": "Created STUB.md containing critical instructions that MUST be followed before starting ANY task (superseded by automated pre-flight checklist).",
+  "confidence": 45,
+  "importance": 40,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/STUB.md"
+  ],
+  "tags": [
+    "stub",
+    "critical",
+    "instructions",
+    "checklist",
+    "prerequisite"
+  ],
+  "links": [
+    {
+      "source": "9e374a8b-2185-4460-bf46-81d1e77cb0ff",
+      "target": "797ad659-e717-4a61-989b-94144cd41d9a",
+      "relationship": "implements",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

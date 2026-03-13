@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Thin wrapper — Antigravity points here, actual code lives in project-memory.
+# This ensures code changes are picked up without restarting Antigravity.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export PYTHONPYCACHEPREFIX="$SCRIPT_DIR/.venv/pycache"
+
+if [ ! -f "$SCRIPT_DIR/.venv/bin/python" ]; then
+    echo "project-memory: venv not found. Running installer..." >&2
+    if ! "$SCRIPT_DIR/scripts/install"; then
+        echo "" >&2
+        echo "project-memory: install failed. Run manually:" >&2
+        echo "  $SCRIPT_DIR/scripts/install" >&2
+        exit 1
+    fi
+    echo "" >&2
+fi
+ENV_FILE="$SCRIPT_DIR/.env"
+if [ ! -f "$ENV_FILE" ]; then
+    cp "$SCRIPT_DIR/.env.example" "$ENV_FILE"
+fi
+
+# Only prompt for API key on build/rebuild (not MCP server or inspect)
+if [ "$1" = "build" ] || [ "$1" = "rebuild" ]; then
+    CURRENT_KEY=$(grep -E '^OPENROUTER_API_KEY=' "$ENV_FILE" 2>/dev/null | cut -d= -f2-)
+    if [ -z "$CURRENT_KEY" ]; then
+        echo "" >&2
+        echo "  An OpenRouter API key is required." >&2
+        echo "  Get one at: https://openrouter.ai/keys" >&2
+        echo "" >&2
+        while true; do
+            printf "  Enter your OPENROUTER_API_KEY: " >&2
+            read -r api_key
+            if [ -n "$api_key" ]; then
+                sed -i "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$api_key|" "$ENV_FILE"
+                echo "  Key saved to $ENV_FILE" >&2
+                break
+            fi
+            echo "  API key is required. Get one at: https://openrouter.ai/keys" >&2
+        done
+        echo "" >&2
+    fi
+fi
+
+exec "$SCRIPT_DIR/.venv/bin/python" "$SCRIPT_DIR/src/project-memory" "$@"

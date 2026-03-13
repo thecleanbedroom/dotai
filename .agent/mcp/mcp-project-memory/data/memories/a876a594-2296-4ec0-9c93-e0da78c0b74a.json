@@ -1,0 +1,31 @@
+{
+  "id": "a876a594-2296-4ec0-9c93-e0da78c0b74a",
+  "type": "refactor",
+  "summary": "Renamed mcp-server to mcp-project-memory for clarity, updated commit workflow rules to explicitly prohibit auto-commits and pushes, requiring user approval for commits",
+  "confidence": 40,
+  "importance": 70,
+  "source_commits": [
+    "b3c3bc2e735debda7bcc3a17ce820898990777f3"
+  ],
+  "file_paths": [
+    ".agent/memory/mcp-project-memory",
+    ".agent/workflows/commit.md"
+  ],
+  "tags": [
+    "mcp",
+    "workflow",
+    "commit",
+    "rules",
+    "automation"
+  ],
+  "links": [
+    {
+      "source": "a876a594-2296-4ec0-9c93-e0da78c0b74a",
+      "target": "9ed457bb-c1dc-4ca3-b68d-44f687b35904",
+      "relationship": "supersedes",
+      "strength": 85
+    }
+  ],
+  "created_at": "2026-03-10 12:57:38 -0500",
+  "active": true
+}

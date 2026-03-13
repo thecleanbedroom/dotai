@@ -1,0 +1,26 @@
+{
+  "id": "bfc5131d-8b3b-4887-a1f4-7ddf2ce9bdcd",
+  "type": "decision",
+  "summary": "Added architecture skills providing real-world examples for different project scales (MVP e-commerce, SaaS, Enterprise), pattern selection guidelines with decision trees, pattern reference documentation, and ADR templates for documenting architectural decisions with trade-off analysis.",
+  "confidence": 65,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/architecture/examples.md",
+    ".agent/skills/architecture/pattern-selection.md",
+    ".agent/skills/architecture/patterns-reference.md",
+    ".agent/skills/architecture/trade-off-analysis.md"
+  ],
+  "tags": [
+    "architecture",
+    "patterns",
+    "adr",
+    "decision-making",
+    "trade-off-analysis",
+    "pattern-selection",
+    "architecture-examples"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

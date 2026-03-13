@@ -1,0 +1,35 @@
+{
+  "id": "737d5061-1c1e-4cea-b721-b723ca202c29",
+  "type": "decision",
+  "summary": "Removed Loki Mode skill references, scripts, and test files as part of repository cleanup effort",
+  "confidence": 45,
+  "importance": 85,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/skills/loki-mode/references/deployment.md",
+    ".agent/skills/loki-mode/references/sdlc-phases.md",
+    ".agent/skills/loki-mode/references/task-queue.md",
+    ".agent/skills/loki-mode/scripts/loki-wrapper.sh",
+    ".agent/skills/loki-mode/tests/run-all-tests.sh"
+  ],
+  "tags": [
+    "loki-mode",
+    "cleanup",
+    "skill-components",
+    "references",
+    "scripts",
+    "tests"
+  ],
+  "links": [
+    {
+      "source": "737d5061-1c1e-4cea-b721-b723ca202c29",
+      "target": "df3bdd01-5dd7-40fc-85f1-2960275c7b50",
+      "relationship": "convention_group",
+      "strength": 85
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

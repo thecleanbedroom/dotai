@@ -1,0 +1,32 @@
+{
+  "id": "8bd126fe-4c20-473e-925b-7cef8ea5cd37",
+  "type": "pattern",
+  "summary": "Implemented anti-sycophancy protocol using blind review mode (reviewers cannot see each other's findings initially) and devil's advocate reviewer (runs on unanimous approval to catch missed issues), reducing false positives by 30% based on CONSENSAGENT research.",
+  "confidence": 47,
+  "importance": 82,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/loki-mode/SKILL.md",
+    ".agent/skills/loki-mode/references/quality-control.md",
+    ".agent/skills/loki-mode/references/advanced-patterns.md"
+  ],
+  "tags": [
+    "anti-sycophancy",
+    "blind-review",
+    "devils-advocate",
+    "quality-gates",
+    "consensagent"
+  ],
+  "links": [
+    {
+      "source": "8bd126fe-4c20-473e-925b-7cef8ea5cd37",
+      "target": "c06c5f95-8bf2-4e36-b915-d66a6f9d3dc8",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

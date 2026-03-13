@@ -1,0 +1,33 @@
+{
+  "id": "4634bd8c-adac-4191-bb6f-e0a81467220c",
+  "type": "pattern",
+  "summary": "Enhanced AI policy loading mechanism by fixing relative paths (removed leading slashes), adding conditional loading checks to ensure rules are loaded before AI tool responses, and updating system prompts to be more explicit about when to load rules (at start of every session and after rule changes)",
+  "confidence": 84,
+  "importance": 90,
+  "source_commits": [
+    "1e8b849bad2d6ba3b16c22d6bcd4fd5457579216",
+    "829cd1350feb7a0e25b14806e03f353bce168921",
+    "2cd40da26956b05637d347d054b33cb4f9b7ef5f"
+  ],
+  "file_paths": [
+    ".ai/index.md",
+    ".antigravity/config.json",
+    ".cline/config.json",
+    ".codex/config.json",
+    ".continue/config.json",
+    ".copilot/instructions.json",
+    ".cursor/rules.md",
+    ".windsurf/rules.md",
+    "AGENTS.md",
+    ".ai/rules/platform-node.md",
+    ".ai/rules/security.md"
+  ],
+  "tags": [
+    "ai-policy",
+    "rule-loading",
+    "configuration",
+    "system-prompt",
+    "conditional-loading"
+  ],
+  "created_at": "2025-12-16 08:36:25 -0600"
+}

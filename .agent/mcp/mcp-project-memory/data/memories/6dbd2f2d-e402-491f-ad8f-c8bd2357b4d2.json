@@ -1,0 +1,21 @@
+{
+  "id": "6dbd2f2d-e402-491f-ad8f-c8bd2357b4d2",
+  "type": "fix",
+  "summary": "Changed default search matching from AND to OR for broader exploratory results, added search guidance to help agents use effective query strategies",
+  "confidence": 30,
+  "importance": 70,
+  "source_commits": [
+    "e80113156be314338b8c7310ce8217c60d1542e0"
+  ],
+  "file_paths": [
+    ".agent/memory/src/server.py"
+  ],
+  "tags": [
+    "search",
+    "query",
+    "matching",
+    "documentation",
+    "user-guidance"
+  ],
+  "created_at": "2026-03-12 12:30:46 -0500"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "5afaebb9-9d6f-4d62-8346-485744e4e6b7",
+  "type": "decision",
+  "summary": "Removed multiple skill definition files from .agent/skills/ as part of repository cleanup effort (part 13), deleting PostgreSQL, Posthog automation, Postmark automation, PowerShell Windows, PPTX official, and 24 other skills including prompt engineering, Python patterns, and production code audit.",
+  "confidence": 62,
+  "importance": 65,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/skills/postgresql/SKILL.md",
+    ".agent/skills/posthog-automation/SKILL.md",
+    ".agent/skills/postmark-automation/SKILL.md",
+    ".agent/skills/postmortem-writing/SKILL.md",
+    ".agent/skills/powershell-windows/SKILL.md",
+    ".agent/skills/pptx",
+    ".agent/skills/pptx-official/SKILL.md",
+    ".agent/skills/pricing-strategy/SKILL.md",
+    ".agent/skills/prisma-expert/SKILL.md",
+    ".agent/skills/product-manager-toolkit/SKILL.md",
+    ".agent/skills/production-code-audit/SKILL.md",
+    ".agent/skills/programmatic-seo/SKILL.md",
+    ".agent/skills/projection-patterns/SKILL.md",
+    ".agent/skills/prometheus-configuration/SKILL.md",
+    ".agent/skills/prompt-caching/SKILL.md",
+    ".agent/skills/prompt-engineer/SKILL.md",
+    ".agent/skills/prompt-engineering-patterns/SKILL.md",
+    ".agent/skills/prompt-engineering/SKILL.md",
+    ".agent/skills/prompt-library/SKILL.md",
+    ".agent/skills/pypict-skill/SKILL.md",
+    ".agent/skills/python-packaging/SKILL.md",
+    ".agent/skills/python-patterns/SKILL.md",
+    ".agent/skills/python-pro/SKILL.md",
+    ".agent/skills/python-testing-patterns/SKILL.md",
+    ".agent/skills/quant-analyst/SKILL.md"
+  ],
+  "tags": [
+    "skill-removal",
+    "repository-cleanup",
+    "part-13",
+    "agent-skills",
+    "codebase-maintenance"
+  ],
+  "links": [
+    {
+      "source": "5afaebb9-9d6f-4d62-8346-485744e4e6b7",
+      "target": "1455387d-19a0-471a-827c-132b26bfe47d",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

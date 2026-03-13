@@ -1,0 +1,30 @@
+{
+  "id": "28973592-ab7a-4c27-9506-3c3de6362134",
+  "type": "fix",
+  "summary": "Removed Zoho CRM automation skill definition that provided workflows for record management, lead conversion, and tag operations via Rube MCP",
+  "confidence": 30,
+  "importance": 70,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/skills/zoho-crm-automation/SKILL.md"
+  ],
+  "tags": [
+    "zoho",
+    "crm",
+    "automation",
+    "skill",
+    "mcp"
+  ],
+  "links": [
+    {
+      "source": "28973592-ab7a-4c27-9506-3c3de6362134",
+      "target": "da6b6d55-ea8c-4584-8ad7-ef2fb356cf42",
+      "relationship": "supersedes",
+      "strength": 95
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

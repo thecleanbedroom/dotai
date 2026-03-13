@@ -1,0 +1,27 @@
+{
+  "id": "78444886-0aeb-43a8-9fc3-6cafe187eb8f",
+  "type": "refactor",
+  "summary": "Introduced src/config.py with Config dataclass as single source of truth for all settings, migrated settings from multiple files, updated consumers to use Config.from_env()",
+  "confidence": 43,
+  "importance": 40,
+  "source_commits": [
+    "589bbc51c49e7e819c3c2e5a628bf00a9ea12982"
+  ],
+  "file_paths": [
+    ".agent/memory/.env.example",
+    ".agent/memory/src/__init__.py",
+    ".agent/memory/src/build.py",
+    ".agent/memory/src/config.py",
+    ".agent/memory/src/deps.py",
+    ".agent/memory/src/llm.py"
+  ],
+  "tags": [
+    "configuration",
+    "centralization",
+    "config-class",
+    "environment-variables"
+  ],
+  "links": [],
+  "created_at": "2026-03-10 10:24:38 -0500",
+  "active": true
+}

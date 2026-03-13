@@ -1,0 +1,28 @@
+{
+  "id": "b771d33f-32f7-4cef-8139-a8b42cd83443",
+  "type": "decision",
+  "summary": "Added last30days skill that researches topics from the last 30 days on Reddit and X using OpenAI and xAI APIs to generate copy-paste-ready prompts for AI tools like Nano Banana Pro, ChatGPT, and others based on current community discussions and best practices.",
+  "confidence": 65,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/last30days/README.md",
+    ".agent/skills/last30days/SKILL.md",
+    ".agent/skills/last30days/SPEC.md",
+    ".agent/skills/last30days/TASKS.md",
+    ".agent/skills/last30days/scripts/last30days.py"
+  ],
+  "tags": [
+    "last30days",
+    "skill",
+    "research",
+    "prompting",
+    "reddit",
+    "xai",
+    "openai",
+    "ai-tools"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

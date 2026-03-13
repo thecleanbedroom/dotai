@@ -1,0 +1,30 @@
+{
+  "id": "8d83f92f-126c-4b38-be53-518e2e5f0b0e",
+  "type": "fix",
+  "summary": "Removed Zoom automation skill definition that provided workflows for meeting management, recording retrieval, participant tracking, and webinar operations via Rube MCP",
+  "confidence": 30,
+  "importance": 70,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/skills/zoom-automation/SKILL.md"
+  ],
+  "tags": [
+    "zoom",
+    "automation",
+    "skill",
+    "mcp",
+    "meetings"
+  ],
+  "links": [
+    {
+      "source": "8d83f92f-126c-4b38-be53-518e2e5f0b0e",
+      "target": "cac76298-23e4-4e41-a667-f4e24bd148e0",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

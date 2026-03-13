@@ -1,0 +1,32 @@
+{
+  "id": "f3f2bda2-604a-4bb9-a391-96e317662a5a",
+  "type": "decision",
+  "summary": "Added a new skill for Trigger.dev expert guidance on building reliable background jobs with exceptional developer experience. Covers capabilities for trigger-dev-tasks, ai-background-jobs, integration-tasks, scheduled-triggers, webhook-handlers, long-running-tasks, task-queues, and batch-processing. Includes patterns for basic task setup, AI tasks with OpenAI integration, and scheduled tasks with cron. Documents anti-patterns like giant monolithic tasks and ignoring built-in integrations, along with sharp edges including task timeouts, non-serializable payloads, environment variable syncing, SDK version mismatches, task retries causing side effects, high concurrency issues, config file location, and wait.for loops causing memory issues.",
+  "confidence": 53,
+  "importance": 82,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/trigger-dev/SKILL.md"
+  ],
+  "tags": [
+    "trigger-dev",
+    "background-jobs",
+    "ai-workflows",
+    "async-execution",
+    "typescript",
+    "task-queues",
+    "scheduled-tasks"
+  ],
+  "links": [
+    {
+      "source": "f3f2bda2-604a-4bb9-a391-96e317662a5a",
+      "target": "a571fdc0-57b6-49c4-bc52-906d2782ba70",
+      "relationship": "related_to",
+      "strength": 60
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

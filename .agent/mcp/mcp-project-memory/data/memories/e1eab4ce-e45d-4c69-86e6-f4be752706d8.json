@@ -1,0 +1,29 @@
+{
+  "id": "e1eab4ce-e45d-4c69-86e6-f4be752706d8",
+  "type": "pattern",
+  "summary": "Updated the canonical ownership definitions in core-workflow-authoring.md to include 'Create debt doc, Report' as owned by /close and 'Smell checklist, Logging format' as owned by /sniff. This clarifies which workflows are responsible for these shared concerns.",
+  "confidence": 30,
+  "importance": 65,
+  "source_commits": [
+    "0d9b7fe65de1e9eda649eddc1a8e5988e1099430"
+  ],
+  "file_paths": [
+    ".agent/rules/core-workflow-authoring.md"
+  ],
+  "tags": [
+    "workflow-authoring",
+    "canonical-ownership",
+    "debt-doc",
+    "sniff"
+  ],
+  "links": [
+    {
+      "source": "e1eab4ce-e45d-4c69-86e6-f4be752706d8",
+      "target": "8e35da5c-745c-48e7-a6ea-5409a2034705",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-05 07:13:04 -0600",
+  "active": true
+}

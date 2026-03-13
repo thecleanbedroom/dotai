@@ -1,0 +1,31 @@
+{
+  "id": "a9f40d22-95a5-4b81-b3a4-360468b92d5a",
+  "type": "pattern",
+  "summary": "Implemented agent lineage and context preservation system using .agent/sub-agents/ directory structure for per-agent context files, agent context schema with inherited_context (immutable) and agent-specific context (mutable), lineage tracking, decision logging, question tracking, and context handoff protocol.",
+  "confidence": 55,
+  "importance": 75,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/loki-mode/autonomy/CONSTITUTION.md",
+    ".agent/skills/loki-mode/SKILL.md"
+  ],
+  "tags": [
+    "agent-lineage",
+    "context-preservation",
+    "inherited-context",
+    "decision-logging",
+    "handoff-protocol"
+  ],
+  "links": [
+    {
+      "source": "a9f40d22-95a5-4b81-b3a4-360468b92d5a",
+      "target": "c06c5f95-8bf2-4e36-b915-d66a6f9d3dc8",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

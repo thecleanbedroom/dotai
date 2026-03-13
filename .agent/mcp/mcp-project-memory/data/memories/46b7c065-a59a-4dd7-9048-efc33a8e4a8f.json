@@ -1,0 +1,43 @@
+{
+  "id": "46b7c065-a59a-4dd7-9048-efc33a8e4a8f",
+  "type": "decision",
+  "summary": "Established the DotAI policy hub to centralize AI usage rules coding standards and workflow guidelines for VS Code extensions in the workspace",
+  "confidence": 48,
+  "importance": 40,
+  "source_commits": [
+    "5cf79227387d7dbbaadeb7bd0c20f20f508314d5"
+  ],
+  "file_paths": [
+    ".ai/README.md",
+    ".ai/codestyle.json",
+    ".ai/governance-security.md",
+    ".ai/index.md",
+    ".ai/language-php.md",
+    ".ai/meta/CHANGELOG.md",
+    ".ai/meta/CONTRIBUTING.md",
+    ".ai/meta/README.md",
+    ".ai/meta/VERSIONING.md",
+    ".ai/platform-wordpress.md",
+    ".ai/templates/policy-change.md",
+    ".ai/templates/security-issue.md",
+    ".ai/tooling-testing.md",
+    ".ai/workflow-code-review.md",
+    ".cline/config.json",
+    ".codex/config.json",
+    ".continue/config.json",
+    ".copilot/instructions.json",
+    ".cursor/rules.md",
+    ".windsurf/rules.md",
+    "AGENTS.md",
+    "PROJECT.md"
+  ],
+  "tags": [
+    "ai-policy-hub",
+    "initialization",
+    "coding-standards",
+    "workflow"
+  ],
+  "links": [],
+  "created_at": "2025-12-10 12:53:13 -0600",
+  "active": true
+}

@@ -1,0 +1,23 @@
+{
+  "id": "78eb5c50-e435-49d0-9891-1743a4e981ed",
+  "type": "decision",
+  "summary": "Added a new skill for automating Trello boards, cards, and workflows through Composio's Rube MCP integration. Includes setup instructions for connecting Rube MCP and Trello, core workflows for creating cards, managing boards/lists, moving cards, assigning members, searching/filtering cards, and adding comments/attachments. Provides common patterns for ID resolution, pagination, and rate limiting, along with known pitfalls regarding ID requirements, board ID formats, search delays, nested responses, and rate limits.",
+  "confidence": 53,
+  "importance": 80,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/trello-automation/SKILL.md"
+  ],
+  "tags": [
+    "trello",
+    "automation",
+    "rube-mcp",
+    "composio",
+    "card-management",
+    "board-management",
+    "api-integration"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

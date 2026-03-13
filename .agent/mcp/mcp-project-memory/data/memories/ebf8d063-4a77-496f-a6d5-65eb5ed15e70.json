@@ -1,0 +1,41 @@
+{
+  "id": "ebf8d063-4a77-496f-a6d5-65eb5ed15e70",
+  "type": "decision",
+  "summary": "Added batch of skill files under .agent/skills/ directory including senior-fullstack for fullstack development sentry-automation for Sentry automation seo-audit for SEO auditing skill-developer for skill creation guidance and shopify-development for Shopify development",
+  "confidence": 57,
+  "importance": 90,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/senior-fullstack/SKILL.md",
+    ".agent/skills/sentry-automation/SKILL.md",
+    ".agent/skills/seo-audit/SKILL.md",
+    ".agent/skills/skill-developer/SKILL.md",
+    ".agent/skills/shopify-development/SKILL.md"
+  ],
+  "tags": [
+    "fullstack",
+    "sentry",
+    "seo",
+    "skill-development",
+    "shopify",
+    "automation"
+  ],
+  "links": [
+    {
+      "source": "ebf8d063-4a77-496f-a6d5-65eb5ed15e70",
+      "target": "178b9d21-f083-4be2-b180-4c513b26bc2e",
+      "relationship": "related_to",
+      "strength": 80
+    },
+    {
+      "source": "ebf8d063-4a77-496f-a6d5-65eb5ed15e70",
+      "target": "cde38147-aa54-4307-a647-3af7dbb93784",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

@@ -1,0 +1,25 @@
+{
+  "id": "183ed526-1f07-45c9-98c9-7b772a3051ee",
+  "type": "pattern",
+  "summary": "Developed comprehensive quality assurance framework with initiation guidelines (ignore rules until user asks to prepare for production), baseline readiness (all tests green, lint/format clean), code & design principles (single responsibility, input validation at boundaries, typed interfaces), security (capability+nonce checks, output encoding, secrets via environment only), performance (caching, timeouts, deterministic tests), compatibility (WCAG AA, prefers-reduced-motion), documentation (updating README/PROJECT docs), observability (structured logging, metrics), and cleanup (removing temporary files, clean git status)",
+  "confidence": 75,
+  "importance": 85,
+  "source_commits": [
+    "7c717e42d09fe6c8b92709ee2be377eb02edd11a",
+    "b18593fd9a27277afa7b9f67cbacb61106093841",
+    "1a87d5e9d79efdfa23c75e33c7ce6557e1be14d3"
+  ],
+  "file_paths": [
+    ".ai/rules/quality-assurance.md"
+  ],
+  "tags": [
+    "quality-assurance",
+    "guidelines",
+    "code-review",
+    "security",
+    "performance",
+    "documentation",
+    "observability"
+  ],
+  "created_at": "2025-12-13 15:40:15 -0600"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "6a36bc60-6da9-4038-9ab8-e178f63a30e2",
+  "type": "pattern",
+  "summary": "Implemented Constitutional AI principles with Loki Mode constitution containing 8 core principles including 'Never delete production data without explicit backup', 'Never commit secrets or credentials to version control', 'Never bypass quality gates for speed', and 'Prefer simple solutions over clever ones', with self-critique workflow: Generate -> Critique against principles -> Revise.",
+  "confidence": 55,
+  "importance": 72,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/loki-mode/autonomy/CONSTITUTION.md",
+    ".agent/skills/loki-mode/SKILL.md",
+    ".agent/skills/loki-mode/references/lab-research-patterns.md"
+  ],
+  "tags": [
+    "constitutional-ai",
+    "self-critique",
+    "principles",
+    "anthropic",
+    "quality-gates"
+  ],
+  "links": [
+    {
+      "source": "6a36bc60-6da9-4038-9ab8-e178f63a30e2",
+      "target": "c06c5f95-8bf2-4e36-b915-d66a6f9d3dc8",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

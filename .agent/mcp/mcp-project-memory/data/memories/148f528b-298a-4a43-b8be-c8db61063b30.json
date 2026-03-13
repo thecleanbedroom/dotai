@@ -1,0 +1,35 @@
+{
+  "id": "148f528b-298a-4a43-b8be-c8db61063b30",
+  "type": "decision",
+  "summary": "Added comprehensive suite of SEO skills including seo-audit, seo-authority-builder, seo-content-auditor, seo-content-planner, seo-content-refresher, seo-content-writer, seo-fundamentals, seo-keyword-strategist, seo-meta-optimizer, seo-snippet-hunter, and seo-structure-architect. These skills cover SEO auditing, authority building, content planning and creation, fundamentals, keyword strategy, meta optimization, snippet hunting, and content structure optimization.",
+  "confidence": 78,
+  "importance": 80,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/seo-audit/SKILL.md",
+    ".agent/skills/seo-authority-builder/SKILL.md",
+    ".agent/skills/seo-content-auditor/SKILL.md",
+    ".agent/skills/seo-content-planner/SKILL.md",
+    ".agent/skills/seo-content-refresher/SKILL.md",
+    ".agent/skills/seo-content-writer/SKILL.md",
+    ".agent/skills/seo-fundamentals/SKILL.md",
+    ".agent/skills/seo-keyword-strategist/SKILL.md",
+    ".agent/skills/seo-meta-optimizer/SKILL.md",
+    ".agent/skills/seo-snippet-hunter/SKILL.md",
+    ".agent/skills/seo-structure-architect/SKILL.md"
+  ],
+  "tags": [
+    "seo",
+    "skills",
+    "audit",
+    "content",
+    "keywords",
+    "meta-tags",
+    "snippets",
+    "structure",
+    "fundamentals"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

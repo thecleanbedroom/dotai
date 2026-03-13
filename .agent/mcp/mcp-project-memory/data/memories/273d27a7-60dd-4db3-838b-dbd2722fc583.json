@@ -1,0 +1,24 @@
+{
+  "id": "273d27a7-60dd-4db3-838b-dbd2722fc583",
+  "type": "feature",
+  "summary": "Added django-pro skill for Django 5.x development expertise. The skill covers core Django expertise (async views, ORM optimization, signals, admin), architecture (scalable project structure, service layer, DRF, GraphQL), modern features (ASGI deployment, Django Channels, Celery, caching), testing (pytest-django, factory_boy, performance profiling), security (authentication backends, JWT, OAuth2, permissions), database (complex migrations, multi-database, PostgreSQL features), deployment (Docker, Gunicorn/uWSGI, static/media files), frontend integration (HTMX, React/Vue/Angular), and performance optimization (query optimization, caching strategies, connection pooling).",
+  "confidence": 53,
+  "importance": 88,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/django-pro/SKILL.md"
+  ],
+  "tags": [
+    "django",
+    "python",
+    "web-framework",
+    "orm",
+    "async-views",
+    "drf",
+    "celery",
+    "channels"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

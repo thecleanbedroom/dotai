@@ -1,0 +1,36 @@
+{
+  "id": "7724198e-7108-4275-9c49-0f54fae80f4c",
+  "type": "fix",
+  "summary": "Replaced fragile JSON fences stripping with robust _extract_json method that handles three cases: pure JSON responses, markdown code fences (```json ... ```), and dialog-wrapped JSON (model returning explanatory text before/after JSON block). The method tries direct parsing first, then regex extraction from code fences, finally falling back to finding first { to last } braces to extract JSON from surrounding text, addressing OpenRouter's tendency to return dialog + JSON despite response_format: json_object.",
+  "confidence": 45,
+  "importance": 80,
+  "source_commits": [
+    "640a4a4b5d6fd03d3b7f4ebc220ea90c5c2f68cf"
+  ],
+  "file_paths": [
+    ".agent/memory/src/llm.py"
+  ],
+  "tags": [
+    "json",
+    "parsing",
+    "llm",
+    "openrouter",
+    "robustness"
+  ],
+  "links": [
+    {
+      "source": "7724198e-7108-4275-9c49-0f54fae80f4c",
+      "target": "1313daed-132c-4671-a9b8-845c6b8e64ff",
+      "relationship": "implements",
+      "strength": 90
+    },
+    {
+      "source": "7724198e-7108-4275-9c49-0f54fae80f4c",
+      "target": "7f119e80-fcb6-43a2-96f5-605cdb79f9cb",
+      "relationship": "implements",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-12 13:48:09 -0500",
+  "active": true
+}

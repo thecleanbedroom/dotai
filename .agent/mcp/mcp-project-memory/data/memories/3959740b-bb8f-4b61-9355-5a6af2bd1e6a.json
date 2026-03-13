@@ -1,0 +1,22 @@
+{
+  "id": "3959740b-bb8f-4b61-9355-5a6af2bd1e6a",
+  "type": "pattern",
+  "summary": "Added RAG Engineer and RAG Implementation skills for building Retrieval-Augmented Generation systems, covering vector embeddings, document chunking strategies, retrieval optimization, hybrid search, reranking techniques, and evaluation metrics for LLM applications with external knowledge bases.",
+  "confidence": 47,
+  "importance": 80,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/rag-engineer/SKILL.md",
+    ".agent/skills/rag-implementation/SKILL.md"
+  ],
+  "tags": [
+    "rag",
+    "retrieval-augmented-generation",
+    "embeddings",
+    "vector-database",
+    "semantic-search"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

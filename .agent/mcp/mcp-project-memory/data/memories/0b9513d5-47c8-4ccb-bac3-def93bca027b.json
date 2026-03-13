@@ -1,0 +1,23 @@
+{
+  "id": "0b9513d5-47c8-4ccb-bac3-def93bca027b",
+  "type": "decision",
+  "summary": "Split build() into incremental build() (resumes from last build's commit hash using git rev-parse HEAD) and rebuild() (full wipe). Made builds safe to interrupt with Ctrl+C.",
+  "confidence": 47,
+  "importance": 80,
+  "source_commits": [
+    "25fc2fe81a57740a23908df58338b444c84019a4"
+  ],
+  "file_paths": [
+    ".agent/memory/src/build.py",
+    ".agent/memory/project-memory"
+  ],
+  "tags": [
+    "build",
+    "resumable",
+    "incremental",
+    "rebuild",
+    "cli",
+    "git"
+  ],
+  "created_at": "2026-03-12 13:09:04 -0500"
+}

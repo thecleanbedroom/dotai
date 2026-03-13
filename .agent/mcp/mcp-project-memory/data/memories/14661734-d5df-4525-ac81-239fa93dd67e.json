@@ -1,0 +1,22 @@
+{
+  "id": "14661734-d5df-4525-ac81-239fa93dd67e",
+  "type": "pattern",
+  "summary": "Implemented git checkpoint system that creates automatic git commit after every completed task with structured commit message format including agent metadata, [Loki] prefix for easy filtering, and commit SHA tracking in task metadata for rollback strategy on quality gate failures.",
+  "confidence": 47,
+  "importance": 78,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/loki-mode/autonomy/CONSTITUTION.md",
+    ".agent/skills/loki-mode/SKILL.md"
+  ],
+  "tags": [
+    "git-checkpoint",
+    "rollback",
+    "commit-messages",
+    "agent-metadata",
+    "safety"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

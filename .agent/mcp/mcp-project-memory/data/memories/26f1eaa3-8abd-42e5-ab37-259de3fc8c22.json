@@ -1,0 +1,21 @@
+{
+  "id": "26f1eaa3-8abd-42e5-ab37-259de3fc8c22",
+  "type": "decision",
+  "summary": "Added PHP import and aliasing policy prohibiting redundant aliases, requiring local imports, and permitting aliases only for name collisions.",
+  "confidence": 30,
+  "importance": 70,
+  "source_commits": [
+    "ea8e679c0d5279aa5f364d72d6354a13785426cb"
+  ],
+  "file_paths": [
+    ".ai/rules/language-php.md"
+  ],
+  "tags": [
+    "php",
+    "imports",
+    "aliasing",
+    "code-style",
+    "best-practices"
+  ],
+  "created_at": "2026-02-03 14:09:29 -0600"
+}

@@ -44,6 +44,7 @@ for dir in $SYNC_DIRS; do
         mkdir -p "$TARGET_DIR/$dir"
         rsync -av \
             --exclude '.agent/skills' \
+            --exclude '.agent/mcp/mcp-project-memory/data' \
             "$temp_dir/policy/$dir/" "$TARGET_DIR/$dir/"
     fi
 done

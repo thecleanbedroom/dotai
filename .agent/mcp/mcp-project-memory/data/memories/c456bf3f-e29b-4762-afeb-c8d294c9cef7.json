@@ -1,0 +1,30 @@
+{
+  "id": "c456bf3f-e29b-4762-afeb-c8d294c9cef7",
+  "type": "decision",
+  "summary": "Added UI/UX Pro Max skill with BM25 searchable guidelines for 100+ industries (skill components since removed).",
+  "confidence": 73,
+  "importance": 40,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/ui-ux-pro-max/data/ui-reasoning.csv",
+    ".agent/skills/ui-ux-pro-max/data/ux-guidelines.csv",
+    ".agent/skills/ui-ux-pro-max/data/web-interface.csv",
+    ".agent/skills/ui-ux-pro-max/scripts/core.py",
+    ".agent/skills/ui-ux-pro-max/scripts/search.py"
+  ],
+  "tags": [
+    "ui-ux",
+    "design-system",
+    "bm25-search",
+    "style-guidelines",
+    "industry-patterns",
+    "ux-research",
+    "web-interface",
+    "skill-addition"
+  ],
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

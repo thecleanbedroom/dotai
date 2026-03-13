@@ -1,0 +1,26 @@
+{
+  "id": "4866cbbd-d930-4c49-9ed3-23f1ce4e738c",
+  "type": "pattern",
+  "summary": "Split the monolithic /audit-all workflow into three independent sub-audits: /audit-policy (rules effectiveness and system health), /audit-workflows (structural quality), and /audit-knowledge (knowledge item accuracy and integrity). Each sub-audit writes its own artifact report, which is combined by the orchestrator.",
+  "confidence": 65,
+  "importance": 90,
+  "source_commits": [
+    "97ab4cb84784a37c7a305ed6bb6574cf706e5625"
+  ],
+  "file_paths": [
+    ".agent/workflows/audit-all.md",
+    ".agent/workflows/audit-policy.md",
+    ".agent/workflows/audit-workflows.md",
+    ".agent/workflows/audit-knowledge.md",
+    ".agent/workflows/audit-agent.md"
+  ],
+  "tags": [
+    "audit",
+    "restructuring",
+    "modularity",
+    "policy",
+    "workflows",
+    "knowledge"
+  ],
+  "created_at": "2026-03-05 08:07:30 -0600"
+}

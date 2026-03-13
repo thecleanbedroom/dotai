@@ -1,0 +1,33 @@
+{
+  "id": "f6f0d701-a05e-4826-a00f-9e6ca2e26f44",
+  "type": "pattern",
+  "summary": "Added CRO skills for onboarding, page-level optimization, popups, and paywall upgrades to improve user conversion and monetization flows",
+  "confidence": 50,
+  "importance": 75,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/onboarding-cro/SKILL.md",
+    ".agent/skills/page-cro/SKILL.md",
+    ".agent/skills/popup-cro/SKILL.md",
+    ".agent/skills/paywall-upgrade-cro/SKILL.md"
+  ],
+  "tags": [
+    "cro",
+    "onboarding",
+    "page-optimization",
+    "paywall",
+    "popup"
+  ],
+  "links": [
+    {
+      "source": "f6f0d701-a05e-4826-a00f-9e6ca2e26f44",
+      "target": "4456bcd5-9d6a-4f84-954b-01ab8c7dcaa6",
+      "relationship": "related_to",
+      "strength": 70
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

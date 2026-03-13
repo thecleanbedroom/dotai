@@ -1,0 +1,58 @@
+{
+  "id": "9224a91f-bfd3-42e9-94f0-a70cff89c25b",
+  "type": "decision",
+  "summary": "Removed numerous skill files from the repository as part of an ongoing pruning effort (part 12), deleting skill implementations across multiple domains including CRM automation, PDF processing, performance engineering, and payment integration.",
+  "confidence": 62,
+  "importance": 75,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/skills/onboarding-cro/SKILL.md",
+    ".agent/skills/one-drive-automation/SKILL.md",
+    ".agent/skills/openapi-spec-generation/SKILL.md",
+    ".agent/skills/oss-hunter/SKILL.md",
+    ".agent/skills/outlook-automation/SKILL.md",
+    ".agent/skills/outlook-calendar-automation/SKILL.md",
+    ".agent/skills/page-cro/SKILL.md",
+    ".agent/skills/pagerduty-automation/SKILL.md",
+    ".agent/skills/paid-ads/SKILL.md",
+    ".agent/skills/parallel-agents/SKILL.md",
+    ".agent/skills/payment-integration/SKILL.md",
+    ".agent/skills/paypal-integration/SKILL.md",
+    ".agent/skills/paywall-upgrade-cro/SKILL.md",
+    ".agent/skills/pci-compliance/SKILL.md",
+    ".agent/skills/pdf-official/SKILL.md",
+    ".agent/skills/pentest-checklist/SKILL.md",
+    ".agent/skills/pentest-commands/SKILL.md",
+    ".agent/skills/performance-engineer/SKILL.md",
+    ".agent/skills/performance-profiling/SKILL.md",
+    ".agent/skills/personal-tool-builder/SKILL.md",
+    ".agent/skills/php-pro/SKILL.md",
+    ".agent/skills/pipedrive-automation/SKILL.md",
+    ".agent/skills/plaid-fintech/SKILL.md",
+    ".agent/skills/plan-writing/SKILL.md",
+    ".agent/skills/popup-cro/SKILL.md",
+    ".agent/skills/posix-shell-pro/SKILL.md",
+    ".agent/skills/postgres-best-practices/SKILL.md",
+    ".agent/skills/playwright-skill/SKILL.md"
+  ],
+  "tags": [
+    "skill-removal",
+    "repository-pruning",
+    "code-cleanup",
+    "multi-domain",
+    "cleanup-part-12",
+    "agent-skills"
+  ],
+  "links": [
+    {
+      "source": "9224a91f-bfd3-42e9-94f0-a70cff89c25b",
+      "target": "5afaebb9-9d6f-4d62-8346-485744e4e6b7",
+      "relationship": "convention_group",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

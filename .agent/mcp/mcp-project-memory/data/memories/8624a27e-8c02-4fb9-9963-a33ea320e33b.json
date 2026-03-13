@@ -1,0 +1,30 @@
+{
+  "id": "8624a27e-8c02-4fb9-9963-a33ea320e33b",
+  "type": "decision",
+  "summary": "Added PHP namespacing rule requiring use statements at the top of files and short class names, with exceptions for use statements, name collisions, and strings/comments.",
+  "confidence": 30,
+  "importance": 70,
+  "source_commits": [
+    "1867522123328716940a40c34d20cce1949f0c85"
+  ],
+  "file_paths": [
+    ".ai/rules/language-php.md"
+  ],
+  "tags": [
+    "php",
+    "namespacing",
+    "use-statements",
+    "code-style",
+    "best-practices"
+  ],
+  "links": [
+    {
+      "source": "8624a27e-8c02-4fb9-9963-a33ea320e33b",
+      "target": "26f1eaa3-8abd-42e5-ab37-259de3fc8c22",
+      "relationship": "convention_group",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-03 14:00:57 -0600",
+  "active": true
+}

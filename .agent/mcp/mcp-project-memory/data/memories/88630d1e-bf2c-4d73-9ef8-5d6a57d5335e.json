@@ -1,0 +1,24 @@
+{
+  "id": "88630d1e-bf2c-4d73-9ef8-5d6a57d5335e",
+  "type": "feature",
+  "summary": "Added a new skill for Zendesk automation using Rube MCP, detailing workflows for ticket management, user/organization management, and common patterns/pitfalls. (Superseded by removal)",
+  "confidence": 30,
+  "importance": 20,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/zendesk-automation/SKILL.md"
+  ],
+  "tags": [
+    "zendesk",
+    "automation",
+    "mcp",
+    "rube",
+    "composio",
+    "skill"
+  ],
+  "links": [],
+  "created_at": "2026-02-09T19:23:21Z",
+  "active": true
+}

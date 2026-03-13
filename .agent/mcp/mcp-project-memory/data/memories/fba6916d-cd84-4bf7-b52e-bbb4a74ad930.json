@@ -1,0 +1,66 @@
+{
+  "id": "fba6916d-cd84-4bf7-b52e-bbb4a74ad930",
+  "type": "decision",
+  "summary": "Added extensive skill library covering mobile design/development, automation workflows, architecture patterns, technical specializations, and domain-specific expertise for AI agent system. Includes skills for mobile typography/platform guidelines, mobile security, Monday/Notion/n8n automation, monorepo/multi-cloud/Nx architectures, NestJS/networking/observability, JavaScript/Next.js patterns, NFT standards, Neon Postgres, WhatsApp troubleshooting, and on-call handoff procedures.",
+  "confidence": 70,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/mobile-design/mobile-typography.md",
+    ".agent/skills/mobile-design/platform-android.md",
+    ".agent/skills/mobile-design/platform-ios.md",
+    ".agent/skills/mobile-design/touch-psychology.md",
+    ".agent/skills/mobile-developer/SKILL.md",
+    ".agent/skills/mobile-security-coder/SKILL.md",
+    ".agent/skills/modern-javascript-patterns/SKILL.md",
+    ".agent/skills/monday-automation/SKILL.md",
+    ".agent/skills/monorepo-architect/SKILL.md",
+    ".agent/skills/monorepo-management/SKILL.md",
+    ".agent/skills/mtls-configuration/SKILL.md",
+    ".agent/skills/multi-agent-brainstorming/SKILL.md",
+    ".agent/skills/multi-agent-patterns/SKILL.md",
+    ".agent/skills/multi-cloud-architecture/SKILL.md",
+    ".agent/skills/n8n-code-python/SKILL.md",
+    ".agent/skills/n8n-mcp-tools-expert/SKILL.md",
+    ".agent/skills/n8n-node-configuration/SKILL.md",
+    ".agent/skills/nanobanana-ppt-skills/SKILL.md",
+    ".agent/skills/neon-postgres/SKILL.md",
+    ".agent/skills/nestjs-expert/SKILL.md",
+    ".agent/skills/network-101/SKILL.md",
+    ".agent/skills/network-engineer/SKILL.md",
+    ".agent/skills/nextjs-app-router-patterns/SKILL.md",
+    ".agent/skills/nextjs-best-practices/SKILL.md",
+    ".agent/skills/nextjs-supabase-auth/SKILL.md",
+    ".agent/skills/nft-standards/SKILL.md",
+    ".agent/skills/nodejs-backend-patterns/SKILL.md",
+    ".agent/skills/nodejs-best-practices/SKILL.md",
+    ".agent/skills/nosql-expert/SKILL.md",
+    ".agent/skills/notebooklm/SKILL.md",
+    ".agent/skills/notion-automation/SKILL.md",
+    ".agent/skills/notion-template-business/SKILL.md",
+    ".agent/skills/nx-workspace-patterns/SKILL.md",
+    ".agent/skills/observability-engineer/SKILL.md",
+    ".agent/skills/observe-whatsapp/SKILL.md",
+    ".agent/skills/on-call-handoff-patterns/SKILL.md"
+  ],
+  "tags": [
+    "mobile",
+    "automation",
+    "architecture",
+    "development",
+    "javascript",
+    "security"
+  ],
+  "links": [
+    {
+      "source": "fba6916d-cd84-4bf7-b52e-bbb4a74ad930",
+      "target": "da13240f-88d3-42c0-9fae-60b10df8618a",
+      "relationship": "related_to",
+      "strength": 65
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

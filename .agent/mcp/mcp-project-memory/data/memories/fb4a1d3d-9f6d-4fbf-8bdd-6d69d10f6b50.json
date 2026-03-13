@@ -1,0 +1,31 @@
+{
+  "id": "fb4a1d3d-9f6d-4fbf-8bdd-6d69d10f6b50",
+  "type": "pattern",
+  "summary": "Implemented RARV (Reason-Act-Reflect-Verify) cycle in Loki Mode where every iteration follows Reason -> Act -> Reflect -> Verify, with Verify step running automated tests after every change and providing feedback loop for self-verification achieving 2-3x quality improvement.",
+  "confidence": 47,
+  "importance": 90,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/loki-mode/SKILL.md",
+    ".agent/skills/loki-mode/autonomy/run.sh"
+  ],
+  "tags": [
+    "rarv",
+    "reason-act-reflect-verify",
+    "quality-improvement",
+    "self-verification",
+    "testing"
+  ],
+  "links": [
+    {
+      "source": "fb4a1d3d-9f6d-4fbf-8bdd-6d69d10f6b50",
+      "target": "64044c65-e05d-469f-abda-ae44c7c45808",
+      "relationship": "related_to",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

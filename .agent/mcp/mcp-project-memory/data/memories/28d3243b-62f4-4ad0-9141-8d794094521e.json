@@ -1,0 +1,22 @@
+{
+  "id": "28d3243b-62f4-4ad0-9141-8d794094521e",
+  "type": "decision",
+  "summary": "Established code preservation and dependency injection standards added rules to never remove commented-out code never arbitrarily change logic require constructor dependencies unless genuinely optional and prefer constructor injection over service locators",
+  "confidence": 47,
+  "importance": 80,
+  "source_commits": [
+    "bdfc08095947b7c53e1ee4bc38861d7440a20fba"
+  ],
+  "file_paths": [
+    ".ai/rules/language-default.md",
+    ".ai/rules/language-php.md"
+  ],
+  "tags": [
+    "code-preservation",
+    "logic-stability",
+    "constructor-injection",
+    "dependency-injection",
+    "coding-standards"
+  ],
+  "created_at": "2026-02-09 13:39:29 -0600"
+}

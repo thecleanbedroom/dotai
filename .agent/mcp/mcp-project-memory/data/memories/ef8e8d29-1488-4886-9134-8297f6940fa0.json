@@ -1,0 +1,42 @@
+{
+  "id": "ef8e8d29-1488-4886-9134-8297f6940fa0",
+  "type": "fix",
+  "summary": "Removed SDLC workflow files that defined the plan-implement-close process for feature development, including workflows for planning, implementation, closing, and capturing ad-hoc work",
+  "confidence": 55,
+  "importance": 90,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/workflows/plan.md",
+    ".agent/workflows/implement.md",
+    ".agent/workflows/close.md",
+    ".agent/workflows/capture.md",
+    ".agent/workflows/dry-run.md",
+    ".agent/workflows/generate-bundle.md",
+    ".agent/workflows/init.md",
+    ".agent/workflows/qa.md",
+    ".agent/workflows/add-skills.md",
+    ".agent/workflows/audit-agent.md",
+    ".agent/workflows/audit-rules.md",
+    ".agent/workflows/audit-sldc.md"
+  ],
+  "tags": [
+    "sdlc",
+    "workflow",
+    "plan",
+    "implement",
+    "close",
+    "capture"
+  ],
+  "links": [
+    {
+      "source": "ef8e8d29-1488-4886-9134-8297f6940fa0",
+      "target": "4a9a7613-d7ba-4ae2-8e5f-a4e2a0503786",
+      "relationship": "related_to",
+      "strength": 75
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

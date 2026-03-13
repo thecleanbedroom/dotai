@@ -1,0 +1,26 @@
+{
+  "id": "348503cb-3e5d-429f-bf79-13c64b2435c1",
+  "type": "decision",
+  "summary": "Simplified the plan workflow by removing the Timeout column from the parallel groups table and eliminating timeout parameters from gateway commands across multiple configuration files, focusing on model tier selection without timeout specification. Changed from tracking specific timeouts (30|45|90) to just specifying model tier (<quick|fast|think|deep>).",
+  "confidence": 63,
+  "importance": 60,
+  "source_commits": [
+    "566048997d5db23ac6823448a1310e251133ed6c"
+  ],
+  "file_paths": [
+    ".agent/workflows/plan.md",
+    ".codex/config.toml",
+    ".continue/rules/rules.md",
+    ".cursor/rules/policy.mdc",
+    ".gemini/styleguide.md",
+    ".github/copilot-instructions.md",
+    ".windsurf/rules/rules.md"
+  ],
+  "tags": [
+    "plan-workflow",
+    "parallelism",
+    "gateway",
+    "configuration"
+  ],
+  "created_at": "2026-03-04 08:39:56 -0600"
+}

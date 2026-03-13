@@ -1,0 +1,22 @@
+{
+  "id": "386c42b8-85b9-4ee2-a4d5-9e9ba7bb2948",
+  "type": "decision",
+  "summary": "Added documentation to the WordPress platform rules specifying that the root-level testing harness is located in /tests and the coverage report is available at /tests/reports/coverage/index.html.",
+  "confidence": 30,
+  "importance": 50,
+  "source_commits": [
+    "7d3efffcef93a9d060d2585ade71fa89001f3fde"
+  ],
+  "file_paths": [
+    ".ai/rules/platform-wordpress.md"
+  ],
+  "tags": [
+    "testing",
+    "wordpress",
+    "coverage",
+    "harness",
+    "documentation",
+    "platform-rules"
+  ],
+  "created_at": "2025-12-16 08:53:40 -0600"
+}

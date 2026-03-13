@@ -1,0 +1,21 @@
+{
+  "id": "49432fbd-ca22-4682-b529-ee6654a9c16f",
+  "type": "pattern",
+  "summary": "Established consistent skill file structure with name, description, prerequisites, workflows, and quick reference sections across all new skill definitions",
+  "confidence": 33,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/onboarding-cro/SKILL.md",
+    ".agent/skills/one-drive-automation/SKILL.md",
+    ".agent/skills/openapi-spec-generation/SKILL.md"
+  ],
+  "tags": [
+    "skill-structure",
+    "standardization",
+    "documentation"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

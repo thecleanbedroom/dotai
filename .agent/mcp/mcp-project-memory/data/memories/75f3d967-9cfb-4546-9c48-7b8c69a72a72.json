@@ -1,0 +1,52 @@
+{
+  "id": "75f3d967-9cfb-4546-9c48-7b8c69a72a72",
+  "type": "decision",
+  "summary": "Decided to resolve project root from MCP roots at runtime instead of relying on current working directory or CLI arguments, enabling multi-project support where each project has isolated .agent/memory/ storage. Introduced PROJECT_ROOT constant in src/__init__.py as single source of truth, updated db.py, git.py, and llm.py to use it, and made server components lazily initialized via component factory that receives project_root from MCP roots.",
+  "confidence": 65,
+  "importance": 90,
+  "source_commits": [
+    "791af62459de748c0d5a516c3509420795a1ef9f"
+  ],
+  "file_paths": [
+    ".agent/memory/src/__init__.py",
+    ".agent/memory/src/db.py",
+    ".agent/memory/src/git.py",
+    ".agent/memory/src/llm.py",
+    ".agent/memory/src/server.py"
+  ],
+  "tags": [
+    "project-root",
+    "mcp",
+    "multi-project",
+    "architecture",
+    "initialization"
+  ],
+  "links": [
+    {
+      "source": "75f3d967-9cfb-4546-9c48-7b8c69a72a72",
+      "target": "8a0beba1-a449-4394-9797-ac195a3045f8",
+      "relationship": "supersedes",
+      "strength": 90
+    },
+    {
+      "source": "75f3d967-9cfb-4546-9c48-7b8c69a72a72",
+      "target": "8915e6ea-5c4c-4d6b-9bcf-be764bb7777f",
+      "relationship": "supersedes",
+      "strength": 90
+    },
+    {
+      "source": "75f3d967-9cfb-4546-9c48-7b8c69a72a72",
+      "target": "445a793e-f0ac-4f80-8ea9-97e207909174",
+      "relationship": "supersedes",
+      "strength": 90
+    },
+    {
+      "source": "75f3d967-9cfb-4546-9c48-7b8c69a72a72",
+      "target": "9ed457bb-c1dc-4ca3-b68d-44f687b35904",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-09 19:09:27 -0500",
+  "active": true
+}

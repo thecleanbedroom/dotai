@@ -1,0 +1,31 @@
+{
+  "id": "c5e3717a-f88c-479c-9455-732ce89c0569",
+  "type": "pattern",
+  "summary": "Established Integration-First TDD testing guidelines covering approach (red→green→refactor, integration tests first, deterministic tests, tests as design tool), test design (behavioral names, edge cases, security negative tests, purpose-built fixtures), tooling (PHPUnit integration suites, JS runners with DOM/WordPress mocks, WP_UnitTestCase harness), and workflow safeguards (no merging failing tests, fast feedback via parallelization, fixing bugs surfaced by tests)",
+  "confidence": 45,
+  "importance": 85,
+  "source_commits": [
+    "8e58bd13fa7990bf09284d14ed39ef60d9c6d009"
+  ],
+  "file_paths": [
+    ".ai/rules/testing.md"
+  ],
+  "tags": [
+    "testing",
+    "tdd",
+    "integration-testing",
+    "guidelines",
+    "phpunit",
+    "wordpress-testing"
+  ],
+  "links": [
+    {
+      "source": "c5e3717a-f88c-479c-9455-732ce89c0569",
+      "target": "8aef0575-5d3f-405b-ba48-20ad3e95f104",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2025-12-16 08:31:05 -0600",
+  "active": true
+}

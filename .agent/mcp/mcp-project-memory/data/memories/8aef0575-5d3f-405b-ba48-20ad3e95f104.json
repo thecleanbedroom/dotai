@@ -1,0 +1,42 @@
+{
+  "id": "8aef0575-5d3f-405b-ba48-20ad3e95f104",
+  "type": "pattern",
+  "summary": "Expanded and refined project rules across multiple domains: CSS (vanilla only, no SCSS-style nesting), JavaScript (browser/jQuery focus, avoiding Node-specific globals), PHP (SOLID principles, type hints, immutable objects, dependency injection), WordPress (strict permission callbacks for REST, capability+nonce checks for AJAX, i18n with sprintf), Node.js (ES modules, async/await, error handling), security (output escaping, secret handling), and quality assurance (adding integration-first TDD testing rules to index)",
+  "confidence": 90,
+  "importance": 95,
+  "source_commits": [
+    "2b8c39cadeb6a2e759c4f35a0b9359a96894d3fe",
+    "8c9da0bf08f8c4cd6288b8c23ad506774c4e7b44"
+  ],
+  "file_paths": [
+    ".ai/index.md",
+    ".ai/rules/language-css.md",
+    ".ai/rules/language-js.md",
+    ".ai/rules/language-php.md",
+    ".ai/rules/platform-wordpress.md",
+    ".ai/rules/platform-node.md",
+    ".ai/rules/security.md",
+    ".ai/rules/quality-assurance.md"
+  ],
+  "tags": [
+    "rules-expansion",
+    "css",
+    "javascript",
+    "php",
+    "wordpress",
+    "nodejs",
+    "security",
+    "quality-assurance",
+    "testing"
+  ],
+  "links": [
+    {
+      "source": "8aef0575-5d3f-405b-ba48-20ad3e95f104",
+      "target": "183ed526-1f07-45c9-98c9-7b772a3051ee",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2025-12-16 08:30:06 -0600",
+  "active": true
+}

@@ -1,0 +1,38 @@
+{
+  "id": "cfbbe463-3f1e-4a9c-86e6-ad9fd77558c6",
+  "type": "refactor",
+  "summary": "Changed confidence storage from categorical text values (high/medium/low) to numeric integer scores (0-100) in the database schema and Memory model. Updated all related code including confidence calculation, storage, retrieval, and display logic.",
+  "confidence": 62,
+  "importance": 0,
+  "source_commits": [
+    "a262950381c6d9423f6c04a711993e48f16dd0d8"
+  ],
+  "file_paths": [
+    ".agent/memory/src/__init__.py",
+    ".agent/memory/src/build.py",
+    ".agent/memory/src/db.py",
+    ".agent/memory/src/models.py",
+    ".agent/memory/src/openrouter.py",
+    ".agent/memory/src/prompts.py",
+    ".agent/memory/src/server.py",
+    ".agent/memory/src/stores.py"
+  ],
+  "tags": [
+    "confidence",
+    "scoring",
+    "database",
+    "schema",
+    "refactor",
+    "numeric"
+  ],
+  "links": [
+    {
+      "source": "cfbbe463-3f1e-4a9c-86e6-ad9fd77558c6",
+      "target": "05c9a047-5501-42ac-98be-e987752e2170",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-03-12 22:40:59 -0500",
+  "active": true
+}

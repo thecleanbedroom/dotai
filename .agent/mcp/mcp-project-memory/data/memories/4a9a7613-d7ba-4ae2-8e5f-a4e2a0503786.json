@@ -1,0 +1,22 @@
+{
+  "id": "4a9a7613-d7ba-4ae2-8e5f-a4e2a0503786",
+  "type": "pattern",
+  "summary": "Removed the redundant audit-sdlc workflow and renamed audit-memory.md to audit-knowledge.md to standardize terminology. This consolidates audit functionality and eliminates overlap between similar workflows.",
+  "confidence": 40,
+  "importance": 60,
+  "source_commits": [
+    "0d9b7fe65de1e9eda649eddc1a8e5988e1099430"
+  ],
+  "file_paths": [
+    ".agent/workflows/audit-sdlc.md",
+    ".agent/workflows/audit-memory.md",
+    ".agent/workflows/audit-knowledge.md"
+  ],
+  "tags": [
+    "audit",
+    "consolidation",
+    "sdlc",
+    "knowledge"
+  ],
+  "created_at": "2026-03-05 07:13:04 -0600"
+}

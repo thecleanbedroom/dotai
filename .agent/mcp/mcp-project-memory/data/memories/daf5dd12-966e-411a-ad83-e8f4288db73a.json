@@ -1,0 +1,18 @@
+{
+  "id": "daf5dd12-966e-411a-ad83-e8f4288db73a",
+  "type": "decision",
+  "summary": "Deleted numerous skill files from .agent/skills directory as part of repository cleanup effort (part 3), including bullmq-specialist, bun-development, burp-suite-testing, business-analyst, and many other skill definitions",
+  "confidence": 25,
+  "importance": 75,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [],
+  "tags": [
+    "cleanup",
+    "skills",
+    "file-removal",
+    "repository-maintenance"
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "d221bcdc-28e8-4d53-8eb5-b11f8f8bafbc",
+  "type": "decision",
+  "summary": "Added 30+ new skill definition files to .agent/skills/ including penetration testing skills sqlmap-database-pentesting and ssh-penetration-testing test-driven development skills tdd-orchestrator tdd-workflow tdd-workflows-tdd-cycle startup business analysis skills startup-analyst startup-financial-modeling startup-metrics-framework API integration skills square-automation stripe-automation stripe-integration supabase-automation telegram-automation tiktok-automation todoist-automation UI UX design skills stitch-ui-design tailwind-design-system tailwind-patterns theme-factory swiftui-expert-skill infrastructure management skills terraform-module-library terraform-skill terraform-specialist and systematic debugging skills systematic-debugging tool-design",
+  "confidence": 78,
+  "importance": 85,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/sqlmap-database-pentesting/SKILL.md",
+    ".agent/skills/ssh-penetration-testing/SKILL.md",
+    ".agent/skills/tdd-orchestrator/SKILL.md",
+    ".agent/skills/tdd-workflow/SKILL.md",
+    ".agent/skills/tdd-workflows-tdd-cycle/SKILL.md",
+    ".agent/skills/startup-analyst/SKILL.md",
+    ".agent/skills/startup-financial-modeling/SKILL.md",
+    ".agent/skills/startup-metrics-framework/SKILL.md",
+    ".agent/skills/square-automation/SKILL.md",
+    ".agent/skills/stripe-automation/SKILL.md",
+    ".agent/skills/stripe-integration/SKILL.md",
+    ".agent/skills/supabase-automation/SKILL.md",
+    ".agent/skills/stitch-ui-design/SKILL.md",
+    ".agent/skills/tailwind-design-system/SKILL.md",
+    ".agent/skills/terraform-module-library/SKILL.md",
+    ".agent/skills/systematic-debugging/SKILL.md"
+  ],
+  "tags": [
+    "skill-library",
+    "penetration-testing",
+    "tdd",
+    "startup-analysis",
+    "automation",
+    "ui-design",
+    "infrastructure",
+    "debugging"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

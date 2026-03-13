@@ -1,0 +1,29 @@
+{
+  "id": "8d7c71ed-3c29-4d34-a6a3-c9a1d2cb99a0",
+  "type": "decision",
+  "summary": "Added rule to never commit PHPStan stub content into production source files, keeping stubs in dedicated files.",
+  "confidence": 23,
+  "importance": 60,
+  "source_commits": [
+    "51b31c98ed6e2b258260521f10fc767b992dbeaa"
+  ],
+  "file_paths": [
+    ".ai/rules/quality-assurance.md"
+  ],
+  "tags": [
+    "phpstan",
+    "stubs",
+    "production-code",
+    "quality-assurance"
+  ],
+  "links": [
+    {
+      "source": "8d7c71ed-3c29-4d34-a6a3-c9a1d2cb99a0",
+      "target": "a078d5f2-02f5-4a77-8ebe-0fbede4e2b93",
+      "relationship": "convention_group",
+      "strength": 80
+    }
+  ],
+  "created_at": "2025-12-16 15:12:36 -0600",
+  "active": true
+}

@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+"""Project Memory System entrypoint."""
+
+import os as _os, sys as _sys
+
+# Ensure parent directory (memory/) is on path so 'src' package is importable
+_memory_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..")
+_sys.path.insert(0, _memory_dir)
+
+# Route __pycache__ into .venv (fallback if shell wrapper didn't set it)
+_os.environ.setdefault("PYTHONPYCACHEPREFIX", _os.path.join(_memory_dir, ".venv", "pycache"))
+
+import argparse
+import json
+
+from src.build import BuildAgent
+from src.config.settings import Settings
+from src.db import Database
+from src.deps import DependencyChecker
+from src.git import GitLogParser
+from src.inspector import Inspector
+from src.llm.client import LLMClient
+from src.llm.openrouter import OpenRouterAPI
+from src.memory.stores import BuildMetaStore, LinkStore, MemoryStore
+from src.server import McpServer
+
+
+def create_components(db_path=None, repo_path=None, project_root=None):
+    """Create and wire all components. Returns a dict for named access."""
+    config = Settings()
+    openrouter = OpenRouterAPI(config)
+    db = Database(db_path)
+    memory_store = MemoryStore(db)
+    link_store = LinkStore(db)
+    build_meta_store = BuildMetaStore(db)
+    git_parser = GitLogParser(repo_path or project_root)
+    extract_llm = LLMClient(config, model=config.extraction_model(), openrouter=openrouter)
+    extract_fallback_llm = LLMClient(config, model=config.extraction_fallback_model(), openrouter=openrouter)
+    reasoning_llm = LLMClient(config, model=config.synthesis_model(), openrouter=openrouter)
+    inspector = Inspector(db, memory_store, link_store, build_meta_store)
+    return {
+        "config": config,
+        "openrouter": openrouter,
+        "db": db,
+        "memory_store": memory_store,
+        "link_store": link_store,
+        "build_meta_store": build_meta_store,
+        "git_parser": git_parser,
+        "extract_llm": extract_llm,
+        "extract_fallback_llm": extract_fallback_llm,
+        "reasoning_llm": reasoning_llm,
+        "inspector": inspector,
+    }
+
+
+def create_build_agent(components):
+    """Create a BuildAgent from a components dict. Single construction site."""
+    return BuildAgent(
+        components["db"],
+        components["memory_store"],
+        components["link_store"],
+        components["build_meta_store"],
+        components["git_parser"],
+        components["extract_llm"],
+        extract_fallback_llm=components["extract_fallback_llm"],
+        reasoning_llm=components["reasoning_llm"],
+        openrouter=components["openrouter"],
+    )
+
+
+def _build_parser():
+    """Build the argument parser."""
+    parser = argparse.ArgumentParser(
+        description="Project Memory System — persistent project knowledge from git history",
+    )
+    subparsers = parser.add_subparsers(dest="command", help="Command to run")
+
+    # serve
+    subparsers.add_parser("serve", help="Start MCP server (stdio)")
+
+    # build (incremental, resumable)
+    build_parser = subparsers.add_parser("build", help="Incremental build (resumes from last build)")
+    build_parser.add_argument("--limit", type=int, default=None,
+                              help="Max number of commits to process")
+    build_parser.add_argument("-y", "--yes", action="store_true",
+                              help="Skip cost confirmation prompt")
+    build_parser.add_argument("--db", type=str, default=None,
+                              help="Path to database file")
+    build_parser.add_argument("--repo", type=str, default=None,
+                              help="Path to git repository")
+    build_parser.add_argument("--synthesis", action="store_true",
+                              help="Force synthesis pass on all existing memories")
+
+    # reset (full wipe + reprocess)
+    reset_parser = subparsers.add_parser("reset", help="Full wipe and rebuild from scratch")
+    reset_parser.add_argument("--limit", type=int, default=None,
+                              help="Max number of commits to process")
+    reset_parser.add_argument("-y", "--yes", action="store_true",
+                              help="Skip cost confirmation prompt")
+    reset_parser.add_argument("--db", type=str, default=None,
+                              help="Path to database file")
+    reset_parser.add_argument("--repo", type=str, default=None,
+                              help="Path to git repository")
+
+    # inspect
+    inspect_parser = subparsers.add_parser("inspect", help="Debug/inspect raw data")
+    inspect_parser.add_argument("query", nargs="*", default=["help"],
+                                help="Inspect command (tables, memories, memory <id>, etc.)")
+    inspect_parser.add_argument("--db", type=str, default=None,
+                                help="Path to database file")
+    return parser
+
+
+def main():
+    parser = _build_parser()
+    args = parser.parse_args()
+
+    if args.command is None:  # type: ignore[arg-type]
+        parser.print_help()
+        _sys.exit(1)
+
+    # Only check deps that are needed for this command
+    if args.command == "serve":  # type: ignore[arg-type]
+        DependencyChecker.check()
+    elif args.command in ("build", "reset"):  # type: ignore[arg-type]
+        DependencyChecker.check(skip=("mcp",), require_api_key=True)
+    else:
+        DependencyChecker.check(skip=("mcp", "requests"))
+
+    if args.command == "serve":  # type: ignore[arg-type]
+        _run_serve()
+    else:
+        _run_cli(args)
+
+
+def _run_serve():
+    """Start MCP server with lazy component creation."""
+    def component_factory(project_root=None):
+        c = create_components(repo_path=project_root, project_root=project_root)
+        c["build_agent"] = create_build_agent(c)
+        return c
+
+    server = McpServer(component_factory)
+    try:
+        server.run()
+    finally:
+        server.cleanup()
+
+
+def _run_cli(args):
+    """Execute a CLI command (build, rebuild, inspect)."""
+    db_path = getattr(args, "db", None)
+    repo_path = getattr(args, "repo", None)
+    c = create_components(db_path, repo_path)
+    try:
+        if args.command == "build":
+            agent = create_build_agent(c)
+            result = agent.build(
+                limit=args.limit, auto_confirm=args.yes,
+                synthesis=args.synthesis,
+            )
+            print(json.dumps(result, indent=2))
+
+        elif args.command == "reset":
+            agent = create_build_agent(c)
+            result = agent.reset(limit=args.limit, auto_confirm=args.yes)
+            print(json.dumps(result, indent=2))
+
+        elif args.command == "inspect":
+            query_str = " ".join(args.query)
+            print(c["inspector"].inspect(query_str))
+    finally:
+        c["db"].release()
+
+
+if __name__ == "__main__":
+    main()

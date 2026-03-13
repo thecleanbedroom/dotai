@@ -1,0 +1,18 @@
+{
+  "name": "memory_triage",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "accepted_ids": {
+        "type": "array",
+        "items": {"type": "string"}
+      },
+      "rejected_ids": {
+        "type": "array",
+        "items": {"type": "string"}
+      }
+    },
+    "required": ["accepted_ids", "rejected_ids"],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "88ceca30-3f4f-4d5c-9360-bb759f4b0dde",
+  "type": "decision",
+  "summary": "Added a new skill for automating Twitter/X tasks via Rube MCP (Composio) including posts, search, users, bookmarks, lists, and media interactions. Covers prerequisites for Rube MCP and Twitter connection setup, core workflows for creating/managing posts, searching posts, looking up users, managing bookmarks, managing lists, and interacting with posts. Includes common patterns for search query syntax and media upload flow, along with known pitfalls regarding character limits, rate limits by access tier, and non-idempotent post creation requiring deduplication logic.",
+  "confidence": 53,
+  "importance": 79,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/twitter-automation/SKILL.md"
+  ],
+  "tags": [
+    "twitter",
+    "x-automation",
+    "rube-mcp",
+    "composio",
+    "post-management",
+    "search",
+    "bookmarks",
+    "lists",
+    "media-upload"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

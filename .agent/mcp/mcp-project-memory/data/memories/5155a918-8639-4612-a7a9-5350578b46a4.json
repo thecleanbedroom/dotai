@@ -1,0 +1,40 @@
+{
+  "id": "5155a918-8639-4612-a7a9-5350578b46a4",
+  "type": "fix",
+  "summary": "Removed UI/UX Pro Max skill components (CSV data files and Python scripts) and deleted numerous skill definition files (SKILL.md) for multiple skills including ui-visual-validator, unit-testing-test-generate, unity-developer, unreal-engine-cpp-pro, and others as part 18 of ongoing repository skill pruning effort.",
+  "confidence": 70,
+  "importance": 75,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".agent/skills/ui-ux-pro-max/data/ui-reasoning.csv",
+    ".agent/skills/ui-ux-pro-max/data/ux-guidelines.csv",
+    ".agent/skills/ui-ux-pro-max/data/web-interface.csv",
+    ".agent/skills/ui-ux-pro-max/scripts/core.py",
+    ".agent/skills/ui-ux-pro-max/scripts/design_system.py",
+    ".agent/skills/ui-ux-pro-max/scripts/search.py",
+    ".agent/skills/ui-visual-validator/SKILL.md",
+    ".agent/skills/unit-testing-test-generate/SKILL.md",
+    ".agent/skills/unity-developer/SKILL.md",
+    ".agent/skills/unity-ecs-patterns/SKILL.md",
+    ".agent/skills/unreal-engine-cpp-pro/SKILL.md"
+  ],
+  "tags": [
+    "skill-removal",
+    "repository-cleanup",
+    "ui-ux-pro-max",
+    "skill-definitions",
+    "pruning"
+  ],
+  "links": [
+    {
+      "source": "5155a918-8639-4612-a7a9-5350578b46a4",
+      "target": "c456bf3f-e29b-4762-afeb-c8d294c9cef7",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

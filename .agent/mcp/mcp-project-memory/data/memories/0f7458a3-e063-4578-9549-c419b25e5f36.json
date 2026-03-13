@@ -1,0 +1,33 @@
+{
+  "id": "0f7458a3-e063-4578-9549-c419b25e5f36",
+  "type": "decision",
+  "summary": "Decided to remove Composer-managed dependencies in favor of clone-and-copy dependency management deleting the entire .agent/vendor directory",
+  "confidence": 55,
+  "importance": 85,
+  "source_commits": [
+    "4aa39cb1d5d7edae8b7ec53d0e3373fa13e362f0"
+  ],
+  "file_paths": [
+    ".agent/vendor/autoload.php",
+    ".agent/vendor/composer/ClassLoader.php",
+    ".agent/vendor/composer/InstalledVersions.php",
+    ".agent/vendor/composer/LICENSE",
+    ".agent/vendor/composer/autoload_classmap.php",
+    ".agent/vendor/composer/autoload_namespaces.php",
+    ".agent/vendor/composer/autoload_psr4.php",
+    ".agent/vendor/composer/autoload_real.php",
+    ".agent/vendor/composer/autoload_static.php",
+    ".agent/vendor/composer/installed.json",
+    ".agent/vendor/composer/installed.php",
+    ".agent/vendor/sickn33/antigravity-awesome-skills",
+    ".agent/workflows/init.md"
+  ],
+  "tags": [
+    "dependency-management",
+    "composer",
+    "vendor",
+    "removal",
+    "clone-copy"
+  ],
+  "created_at": "2026-02-11 08:56:25 -0600"
+}

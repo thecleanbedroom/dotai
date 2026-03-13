@@ -1,0 +1,20 @@
+{
+  "id": "0e040f12-969e-440a-af12-acb5e5b2df28",
+  "type": "decision",
+  "summary": "Referenced project-specific skills bundle in AI policy index to integrate bundle system with agent rule loading and obedience requirements.",
+  "confidence": 23,
+  "importance": 60,
+  "source_commits": [
+    "caa6bb283526fdbd886b24a9924b8954a3504274"
+  ],
+  "file_paths": [
+    ".ai/index.md"
+  ],
+  "tags": [
+    "ai-policy",
+    "bundle-reference",
+    "configuration",
+    "rule-loading"
+  ],
+  "created_at": "2026-02-05 14:25:24 -0600"
+}

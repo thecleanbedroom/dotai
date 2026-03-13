@@ -1,0 +1,39 @@
+[project]
+name = "project-memory"
+version = "1.0.0"
+description = "Persistent, queryable project knowledge derived from git history"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+cache_dir = ".venv/.pytest_cache"
+addopts = "--cov=src --cov-report=term-missing:skip-covered"
+
+[tool.pyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+extraPaths = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+cache-dir = ".venv/.ruff_cache"
+
+[tool.coverage.run]
+data_file = ".venv/.coverage"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501", "SIM105"]  # E501: line length via formatter; SIM105: contextlib.suppress less readable
+
+[tool.ruff.lint.per-file-ignores]
+"src/__init__.py" = ["E402"]     # module-level code before imports (PROJECT_ROOT detection)
+"tests/conftest.py" = ["E402"]  # sys.path manipulation before imports
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[project.optional-dependencies]
+dev = ["ruff", "pytest-cov"]

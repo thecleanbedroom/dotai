@@ -1,0 +1,31 @@
+{
+  "id": "4b1897d8-eed6-44aa-a55b-83bffb0a9313",
+  "type": "refactor",
+  "summary": "Renamed the core AI policy document from GEMINI.md to index.md and updated all references across the system. This change affects workflows, rules, plugin configurations, and scripts to ensure consistent loading of the central policy file that defines non-negotiable AI agent behaviors including parallelism evaluation, rule reading, and skill scanning.",
+  "confidence": 70,
+  "importance": 90,
+  "source_commits": [
+    "19ef187f6cc843353fd8a6097e1962d7e4478323"
+  ],
+  "file_paths": [
+    ".agent/index.md",
+    ".agent/bin/gemini-gateway",
+    ".agent/rules/core-parallel-evaluation.md",
+    ".agent/workflows/add-skills.md",
+    ".agent/workflows/audit-agent.md",
+    ".codex/config.toml",
+    ".continue/rules/rules.md",
+    ".cursor/rules/policy.mdc",
+    ".gemini/styleguide.md",
+    ".github/copilot-instructions.md",
+    ".windsurf/rules/rules.md"
+  ],
+  "tags": [
+    "documentation",
+    "policy",
+    "configuration",
+    "ai",
+    "refactor"
+  ],
+  "created_at": "2026-02-16 15:13:26 -0600"
+}

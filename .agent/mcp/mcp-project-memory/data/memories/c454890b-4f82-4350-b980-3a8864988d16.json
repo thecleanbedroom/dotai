@@ -1,0 +1,32 @@
+{
+  "id": "c454890b-4f82-4350-b980-3a8864988d16",
+  "type": "decision",
+  "summary": "Project structure reorganized by renaming .ai/ directory to .agent/ and moving all contents including README.md, rules/, and skills/ directories. This change centralizes agent configuration under .agent/ as the new root for AI policy and skill management.",
+  "confidence": 47,
+  "importance": 80,
+  "source_commits": [
+    "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
+  ],
+  "file_paths": [
+    ".ai/README.md",
+    ".ai/rules/",
+    ".ai/skills/"
+  ],
+  "tags": [
+    "directory",
+    "restructure",
+    "ai",
+    "agent",
+    "migration"
+  ],
+  "links": [
+    {
+      "source": "c454890b-4f82-4350-b980-3a8864988d16",
+      "target": "46b7c065-a59a-4dd7-9048-efc33a8e4a8f",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
+}

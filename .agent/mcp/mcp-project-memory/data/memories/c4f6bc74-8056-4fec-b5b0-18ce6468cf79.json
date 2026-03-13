@@ -1,0 +1,25 @@
+{
+  "id": "c4f6bc74-8056-4fec-b5b0-18ce6468cf79",
+  "type": "decision",
+  "summary": "Added a new skill for building communication features with Twilio covering SMS messaging, voice calls, WhatsApp Business API, and user verification (2FA). Includes patterns for SMS sending with E.164 validation, message segmentation, and error handling; Twilio Verify for phone number verification and 2FA with fraud prevention; and TwiML IVR patterns for phone menu systems. Documents sharp edges including opt-out status tracking, retry logic, A2P 10DLC registration, request signature validation, session window tracking, credential hardening, and application-level rate limiting.",
+  "confidence": 53,
+  "importance": 83,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/twilio-communications/SKILL.md"
+  ],
+  "tags": [
+    "twilio",
+    "sms",
+    "voice-calls",
+    "whatsapp",
+    "2fa",
+    "verification",
+    "ivr",
+    "twiml",
+    "communication-apis"
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600"
+}

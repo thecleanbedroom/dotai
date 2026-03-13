@@ -1,0 +1,11 @@
+.env
+.venv/
+
+# Database — disposable runtime cache, rebuilt from JSON
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Build response logs — debug artifacts, not project knowledge
+data/build/
+data/build.lock

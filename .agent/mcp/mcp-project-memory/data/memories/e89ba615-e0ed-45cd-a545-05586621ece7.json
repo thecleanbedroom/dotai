@@ -1,0 +1,33 @@
+{
+  "id": "e89ba615-e0ed-45cd-a545-05586621ece7",
+  "type": "feature",
+  "summary": "Added the skills directory structure with individual skill folders each containing SKILL.md files and optional subdirectories like scripts/, examples/, and resources/. Each skill follows a standardized structure where only SKILL.md is required. This enables skills to be discovered and used via the @skill-name syntax in AI chats.",
+  "confidence": 55,
+  "importance": 90,
+  "source_commits": [
+    "1bcd36acb2f90853b015377d7057a71639c686e6"
+  ],
+  "file_paths": [
+    ".agent/skills/README.md",
+    ".agent/skills/3d-web-experience/SKILL.md",
+    ".agent/skills/ab-test-setup/SKILL.md"
+  ],
+  "tags": [
+    "skills",
+    "directory-structure",
+    "organization",
+    "skill-modules",
+    "ai-agent",
+    "documentation"
+  ],
+  "links": [
+    {
+      "source": "e89ba615-e0ed-45cd-a545-05586621ece7",
+      "target": "4e3fd800-cd8a-4d2b-86c3-a1f3b7ea8fab",
+      "relationship": "implements",
+      "strength": 85
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
+}

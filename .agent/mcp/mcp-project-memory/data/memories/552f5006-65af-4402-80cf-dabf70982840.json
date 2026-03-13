@@ -1,0 +1,36 @@
+{
+  "id": "552f5006-65af-4402-80cf-dabf70982840",
+  "type": "refactor",
+  "summary": "Implemented two-pass architecture with fast extraction model and reasoning synthesis model; added model escalation on finish_reason=length truncation; expanded MEMORY_TYPES to include refactor, fix, feature; replaced LLM-assigned confidence with mathematical scoring based on evidence signals; improved synthesis prompt with self-check instruction and raised link expectation",
+  "confidence": 65,
+  "importance": 0,
+  "source_commits": [
+    "897e9e9da331f58e36eb718efedf610f2e4fe5a8"
+  ],
+  "file_paths": [
+    ".agent/memory/src/build.py",
+    ".agent/memory/src/llm.py",
+    ".agent/memory/src/models.py",
+    ".agent/memory/src/prompts.py",
+    ".agent/memory/src/server.py",
+    ".agent/memory/src/stores.py"
+  ],
+  "tags": [
+    "two-pass",
+    "synthesis",
+    "confidence-scoring",
+    "memory-types",
+    "linking",
+    "model-escalation"
+  ],
+  "links": [
+    {
+      "source": "552f5006-65af-4402-80cf-dabf70982840",
+      "target": "05c9a047-5501-42ac-98be-e987752e2170",
+      "relationship": "implements",
+      "strength": 85
+    }
+  ],
+  "created_at": "2026-03-12 16:03:44 -0500",
+  "active": true
+}
