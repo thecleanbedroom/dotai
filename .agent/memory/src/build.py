@@ -170,6 +170,7 @@ class BuildAgent:
         """Compute (batch_budget, max_output_tokens) from model capabilities.
 
         Uses config batch_token_budget. Output tokens auto-tuned from model.
+        Budget is capped so input + output + overhead fits within context.
         """
         info = self._llm.get_model_info()
         ctx = info["context_length"]
@@ -179,7 +180,11 @@ class BuildAgent:
         max_output = min(model_max_output, ctx // 3)
         max_output = max(max_output, self._MIN_OUTPUT_TOKENS)
 
-        return self._config.MEMORY_BATCH_TOKEN_BUDGET, max_output
+        # Input budget: never exceed what the model can actually handle
+        max_input = ctx - max_output - self._OVERHEAD_TOKENS
+        budget = min(self._config.MEMORY_BATCH_TOKEN_BUDGET, max_input)
+
+        return budget, max_output
 
     def _run_build(
         self,
@@ -312,9 +317,10 @@ class BuildAgent:
             )
             return batch_num, result
 
-        # Fire all LLM calls concurrently — RateLimiter paces RPM
+        # Workers capped at RPM — more threads just pile up on the pacer lock
         llm_results: list[Optional[dict]] = []
-        with ThreadPoolExecutor(max_workers=len(batches)) as executor:
+        max_workers = min(len(batches), rate_limiter.rpm)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
                 executor.submit(_llm_extract, (i, batch))
                 for i, batch in enumerate(batches, 1)
@@ -480,7 +486,15 @@ class BuildAgent:
         for f in commit.files:
             file_diff = diff_by_file.get(f, "")
             file_chars = len(f) + len(file_diff) + 2
-            if current_files and current_chars + file_chars > available_chars // 2:
+
+            # Truncate individual file diffs that exceed the budget
+            if file_chars > available_chars:
+                max_diff_chars = available_chars - len(f) - 100
+                if max_diff_chars > 0 and file_diff:
+                    file_diff = file_diff[:max_diff_chars] + "\n... [diff truncated]"
+                    file_chars = len(f) + len(file_diff) + 2
+
+            if current_files and current_chars + file_chars > available_chars:
                 # Create sub-commit with current files
                 sub_commits.append(ParsedCommit(
                     hash=commit.hash,
