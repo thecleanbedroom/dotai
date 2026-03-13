@@ -332,6 +332,8 @@ class RateLimiter:
         """Call when a 429 is received. Writes cooldown to shared file.
 
         All processes and threads will block until cooldown expires.
+        RPM is NOT reduced — the sliding window already paces correctly,
+        and dead processes' timestamps age out in 60s naturally.
         """
         with self._brake_lock:
             self._total_429s += 1
@@ -350,14 +352,8 @@ class RateLimiter:
                     fcntl.flock(f, fcntl.LOCK_EX)
                     try:
                         state = self._read_state(f)
-                        # Only extend cooldown, never shorten
                         if cooldown_until > state.get("cooldown_until", 0):
                             state["cooldown_until"] = cooldown_until
-                            # Also halve RPM in shared state
-                            current_rpm = state.get("rpm", self._rpm)
-                            new_rpm = max(current_rpm // 2, 5)
-                            state["rpm"] = new_rpm
-                            self._rpm = new_rpm
                             self._write_state(f, state)
                     finally:
                         fcntl.flock(f, fcntl.LOCK_UN)
@@ -368,8 +364,8 @@ class RateLimiter:
             self._gate.clear()
 
             print(
-                f"      rate limited — pausing {wait:.0f}s, "
-                f"RPM → {self._rpm} (429 #{self._total_429s})",
+                f"      rate limited — pausing {wait:.0f}s "
+                f"(429 #{self._total_429s})",
                 file=sys.stderr, flush=True,
             )
 
