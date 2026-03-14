@@ -1,11 +1,18 @@
+# Build output
+mcp-project-memory
+
+# Data directory (SQLite + memory JSON files)
+data/
+
+# Environment
 .env
-.venv/
 
-# Database — disposable runtime cache, rebuilt from JSON
-data/*.db
-data/*.db-wal
-data/*.db-shm
+# Coverage artifacts
+coverage.out
+coverage.html
 
-# Build response logs — debug artifacts, not project knowledge
-data/build/
-data/build.lock
+# Air hot-reload
+tmp/
+
+# OS
+.DS_Store

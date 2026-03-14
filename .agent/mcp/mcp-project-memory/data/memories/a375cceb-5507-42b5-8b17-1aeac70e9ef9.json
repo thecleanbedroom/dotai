@@ -2,7 +2,7 @@
   "id": "a375cceb-5507-42b5-8b17-1aeac70e9ef9",
   "type": "pattern",
   "summary": "Implemented ToolOrchestra-inspired efficiency metrics system tracking wall time, agent count, retry count per task and three-reward signal framework: Outcome Reward (+1.0 success | 0.0 partial | -1.0 failure), Efficiency Reward (0.0-1.0 based on resources vs baseline), Preference Reward (inferred from user actions), with weighted aggregation: 60% outcome, 25% efficiency, 15% preference.",
-  "confidence": 55,
+  "confidence": 80,
   "importance": 70,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -18,5 +18,7 @@
     "dynamic-agent-selection",
     "continuous-improvement"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

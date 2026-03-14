@@ -2,8 +2,8 @@
   "id": "662f7ecb-a78e-48bc-b3d6-b1a46d56d663",
   "type": "decision",
   "summary": "Deleted the static PROJECT.md file and replaced it with the dynamic /project-md workflow for generating project documentation. Updated the project-md.md workflow to use descriptive headings instead of numbered steps and fixed stale references to be conditional.",
-  "confidence": 40,
-  "importance": 40,
+  "confidence": 85,
+  "importance": 70,
   "source_commits": [
     "97ab4cb84784a37c7a305ed6bb6574cf706e5625"
   ],
@@ -21,6 +21,12 @@
     {
       "source": "662f7ecb-a78e-48bc-b3d6-b1a46d56d663",
       "target": "bd19fa68-6764-4122-94f6-71565ccef51a",
+      "relationship": "supersedes",
+      "strength": 90
+    },
+    {
+      "source": "662f7ecb-a78e-48bc-b3d6-b1a46d56d663",
+      "target": "0e2ed6d6-7fd7-4485-af83-8636d741fa3e",
       "relationship": "supersedes",
       "strength": 90
     }

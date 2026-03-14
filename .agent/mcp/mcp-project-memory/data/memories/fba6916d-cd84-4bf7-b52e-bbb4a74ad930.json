@@ -2,7 +2,7 @@
   "id": "fba6916d-cd84-4bf7-b52e-bbb4a74ad930",
   "type": "decision",
   "summary": "Added extensive skill library covering mobile design/development, automation workflows, architecture patterns, technical specializations, and domain-specific expertise for AI agent system. Includes skills for mobile typography/platform guidelines, mobile security, Monday/Notion/n8n automation, monorepo/multi-cloud/Nx architectures, NestJS/networking/observability, JavaScript/Next.js patterns, NFT standards, Neon Postgres, WhatsApp troubleshooting, and on-call handoff procedures.",
-  "confidence": 70,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

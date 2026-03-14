@@ -2,7 +2,7 @@
   "id": "8bd126fe-4c20-473e-925b-7cef8ea5cd37",
   "type": "pattern",
   "summary": "Implemented anti-sycophancy protocol using blind review mode (reviewers cannot see each other's findings initially) and devil's advocate reviewer (runs on unanimous approval to catch missed issues), reducing false positives by 30% based on CONSENSAGENT research.",
-  "confidence": 47,
+  "confidence": 80,
   "importance": 82,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

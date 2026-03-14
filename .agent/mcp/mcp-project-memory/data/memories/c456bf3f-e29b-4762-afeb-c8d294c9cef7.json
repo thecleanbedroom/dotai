@@ -2,7 +2,7 @@
   "id": "c456bf3f-e29b-4762-afeb-c8d294c9cef7",
   "type": "decision",
   "summary": "Added UI/UX Pro Max skill with BM25 searchable guidelines for 100+ industries (skill components since removed).",
-  "confidence": 73,
+  "confidence": 80,
   "importance": 40,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

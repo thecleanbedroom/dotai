@@ -2,7 +2,7 @@
   "id": "5fd5a3b4-d0fb-440c-a7eb-fb54ac035fea",
   "type": "fix",
   "summary": "Fixed 429 rate limiting by removing permanent RPM reduction; determined sliding window already handles pacing correctly as dead processes' timestamps age out in 60s naturally; concluded cooldown pause alone is sufficient for 429 recovery; changed RateLimiter.handle_429() to only update cooldown_until without modifying RPM.",
-  "confidence": 38,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "c3582959c852da7693941f7ceb84bb19e15b1f60"

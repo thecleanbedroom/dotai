@@ -2,7 +2,7 @@
   "id": "f1e81793-0ce9-4465-877d-c7f6aff56da6",
   "type": "refactor",
   "summary": "Restructured the DotAI policy hub by moving rule files into a rules subdirectory and updating the manifest to reflect the new structure",
-  "confidence": 48,
+  "confidence": 85,
   "importance": 80,
   "source_commits": [
     "986655c10dc4c764e13024da60419e878a2c59b6"

@@ -2,7 +2,7 @@
   "id": "28d3243b-62f4-4ad0-9141-8d794094521e",
   "type": "decision",
   "summary": "Established code preservation and dependency injection standards added rules to never remove commented-out code never arbitrarily change logic require constructor dependencies unless genuinely optional and prefer constructor injection over service locators",
-  "confidence": 47,
+  "confidence": 85,
   "importance": 80,
   "source_commits": [
     "bdfc08095947b7c53e1ee4bc38861d7440a20fba"
@@ -18,5 +18,14 @@
     "dependency-injection",
     "coding-standards"
   ],
-  "created_at": "2026-02-09 13:39:29 -0600"
+  "links": [
+    {
+      "source": "28d3243b-62f4-4ad0-9141-8d794094521e",
+      "target": "8cafb4b1-e98e-46fa-b6cb-1959f1b84fcc",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-09 13:39:29 -0600",
+  "active": true
 }

@@ -2,7 +2,7 @@
   "id": "81782748-f051-40be-9e81-a17500bbbbc1",
   "type": "decision",
   "summary": "Decided to remove multiple skill definition files from .agent/skills/ directory as part 4 of repository pruning effort, deleting skills for conductor operations, content creation, context management, database operations, DevOps automation, and other specialized functionalities.",
-  "confidence": 70,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

@@ -2,7 +2,7 @@
   "id": "e7777d45-199e-4f10-a365-93c09b2e89f8",
   "type": "feature",
   "summary": "Added 40+ new skills to the AI agent system covering domains like observability (Grafana dashboards), API development (GraphQL), infrastructure (Kubernetes, Helm), AI/ML (Hugging Face, LangChain), security testing, and business automation. Each skill provides detailed guidance in a standardized format for the agent to follow when handling related tasks.",
-  "confidence": 70,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

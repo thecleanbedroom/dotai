@@ -2,7 +2,7 @@
   "id": "49432fbd-ca22-4682-b529-ee6654a9c16f",
   "type": "pattern",
   "summary": "Established consistent skill file structure with name, description, prerequisites, workflows, and quick reference sections across all new skill definitions",
-  "confidence": 33,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -17,5 +17,14 @@
     "standardization",
     "documentation"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [
+    {
+      "source": "49432fbd-ca22-4682-b529-ee6654a9c16f",
+      "target": "e89ba615-e0ed-45cd-a545-05586621ece7",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

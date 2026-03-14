@@ -2,7 +2,7 @@
   "id": "5afc8166-0a50-4641-9d48-1aa0fc067ec0",
   "type": "refactor",
   "summary": "Centralized commit message format in /commit workflow, replacing inline templates in close, testcoverage, and deadcode workflows with cross-references to ensure consistent git trailers for project memory system",
-  "confidence": 57,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "c2da2900a0b5d07c3cfd7b5ca20d939708107039"

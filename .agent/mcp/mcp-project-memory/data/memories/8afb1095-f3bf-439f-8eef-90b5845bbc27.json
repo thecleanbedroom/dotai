@@ -2,7 +2,7 @@
   "id": "8afb1095-f3bf-439f-8eef-90b5845bbc27",
   "type": "decision",
   "summary": "Enabled Anthropic prompt caching through OpenRouter by adding cache_control: {\"type\": \"ephemeral\"} to LLM requests, which provides 90% savings on cache reads (0.1x input price) for cached system prompt prefix. Fixed HTTP headers per OpenRouter documentation: changed HTTP-Referer from https://github.com/project-memory to http://localhost (appropriate for local CLI tools) and X-Title from 'Project Memory Build' to 'project-memory'.",
-  "confidence": 45,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "f7ae0026685022016288ec66deb0548727cfe0e8"

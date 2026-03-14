@@ -2,7 +2,7 @@
   "id": "77c487a3-054e-4334-baef-50c63cf73ee8",
   "type": "feature",
   "summary": "Added docx-official skill for comprehensive DOCX creation, editing, and analysis. The skill provides workflows for text extraction (pandoc), raw XML access, creating new documents (docx-js), editing existing documents (Document library), and redlining workflow for tracked changes. Includes detailed OOXML technical reference, Document Library (Python) for tracked changes and comments, code style guidelines, dependencies (pandoc, docx, LibreOffice, Poppler, defusedxml), and critical issues/common mistakes for proper DOCX manipulation.",
-  "confidence": 53,
+  "confidence": 80,
   "importance": 82,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -20,5 +20,7 @@
     "pandoc",
     "xml-manipulation"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

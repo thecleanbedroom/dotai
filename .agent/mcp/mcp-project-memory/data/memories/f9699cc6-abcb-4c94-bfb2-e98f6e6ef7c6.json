@@ -2,7 +2,7 @@
   "id": "f9699cc6-abcb-4c94-bfb2-e98f6e6ef7c6",
   "type": "pattern",
   "summary": "Added automation skills for OneDrive, Outlook, PagerDuty, and Pipedrive via Rube MCP integration for enterprise tool automation",
-  "confidence": 50,
+  "confidence": 80,
   "importance": 80,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

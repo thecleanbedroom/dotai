@@ -2,8 +2,8 @@
   "id": "5719211d-9e60-4f14-8f99-e9eac358aa23",
   "type": "feature",
   "summary": "Implemented smart routing for oversized commit batches with three-tier approach: 1) fits primary model → send with full diff, 2) too big for primary but fits fallback → skip primary and send to fallback with full diff, 3) too big for fallback → truncate diff to fallback's max context. Added truncation_limit to _compute_budget and routing logic in _llm_call_with_retries.",
-  "confidence": 45,
-  "importance": 0,
+  "confidence": 85,
+  "importance": 85,
   "source_commits": [
     "ddd23132e362f63c1c61c4e0db85727c86a6eb29"
   ],

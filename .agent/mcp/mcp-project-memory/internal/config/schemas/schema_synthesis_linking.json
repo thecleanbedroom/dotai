@@ -1,0 +1,38 @@
+{
+  "name": "memory_linking",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "update_existing": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {"type": "string"},
+            "summary": {"type": "string"},
+            "importance": {"type": "integer"},
+            "confidence": {"type": "integer"}
+          },
+          "required": ["id", "summary", "importance", "confidence"],
+          "additionalProperties": false
+        }
+      },
+      "new_links": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "source": {"type": "string"},
+            "target": {"type": "string"},
+            "relationship": {"type": "string"},
+            "strength": {"type": "integer"}
+          },
+          "required": ["source", "target", "relationship", "strength"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["update_existing", "new_links"],
+    "additionalProperties": false
+  }
+}

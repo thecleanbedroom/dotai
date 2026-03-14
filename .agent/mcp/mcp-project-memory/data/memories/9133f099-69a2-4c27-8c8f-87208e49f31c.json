@@ -2,7 +2,7 @@
   "id": "9133f099-69a2-4c27-8c8f-87208e49f31c",
   "type": "feature",
   "summary": "Decided to implement OpenRouter integration with dynamic concurrency and cost estimation, adding centralized OpenRouterAPI class for model info, pricing, and rate limits; set 3 workers for free models (20 req/min limit) and 8 for paid models; added cost estimation display before extraction with confirmation prompt; implemented binary diff filtering to exclude non-text content from LLM processing; configured 3-tier extraction model setup (nvidia/nemotron-3-super-120b:free primary, gemini-2.5-flash-lite fallback, gemini-3.1-pro synthesis); increased token budget from 15K to 100K for diff-heavy batches; added /commit fast mode to skip approval step.",
-  "confidence": 78,
+  "confidence": 90,
   "importance": 90,
   "source_commits": [
     "b28808f22dce9695dd5374849c5e7144e8c7e131"
@@ -25,5 +25,7 @@
     "token-budget",
     "commit-fast-mode"
   ],
-  "created_at": "2026-03-12 17:44:00 -0500"
+  "links": [],
+  "created_at": "2026-03-12 17:44:00 -0500",
+  "active": true
 }

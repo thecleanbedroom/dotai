@@ -2,7 +2,7 @@
   "id": "4456bcd5-9d6a-4f84-954b-01ab8c7dcaa6",
   "type": "pattern",
   "summary": "Added 30+ new skill files covering automation, CRO, development, security, and business domains to expand the agent's capability library (part 12 of ongoing skill addition effort)",
-  "confidence": 55,
+  "confidence": 85,
   "importance": 90,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -45,5 +45,7 @@
     "development",
     "security"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

@@ -2,7 +2,7 @@
   "id": "c76821e6-3da5-455a-9490-32ba5dc366c0",
   "type": "fix",
   "summary": "Fixed binary content handling in git output by using bytes mode instead of text=True in subprocess.run; added errors='replace' decoding to prevent UnicodeDecodeError when processing repositories containing binary files like images or compiled assets; modified GitLogParser._run_git_command() to handle raw bytes output properly.",
-  "confidence": 45,
+  "confidence": 85,
   "importance": 65,
   "source_commits": [
     "5bb5e3b814f10d9712dd87682cb9e3272baee92f"

@@ -2,7 +2,7 @@
   "id": "5c5f615f-b658-4b98-9cc3-ebebf563c5e1",
   "type": "decision",
   "summary": "Added workflow for generating project-specific skill bundles by analyzing codebase, listing available skills, matching skills to needs, creating bundle file, and verifying skill references.",
-  "confidence": 30,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "7083d8c17670cf2db5f6ceaa3e423abd30c4ce41"
@@ -23,6 +23,12 @@
       "target": "ac0fa781-08bc-4744-b4d1-98bb001a5d6e",
       "relationship": "related_to",
       "strength": 70
+    },
+    {
+      "source": "5c5f615f-b658-4b98-9cc3-ebebf563c5e1",
+      "target": "1ab283d7-9d29-4e47-9014-e90e7991651d",
+      "relationship": "related_to",
+      "strength": 80
     }
   ],
   "created_at": "2026-02-09 12:40:35 -0600",

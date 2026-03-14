@@ -2,7 +2,7 @@
   "id": "8624a27e-8c02-4fb9-9963-a33ea320e33b",
   "type": "decision",
   "summary": "Added PHP namespacing rule requiring use statements at the top of files and short class names, with exceptions for use statements, name collisions, and strings/comments.",
-  "confidence": 30,
+  "confidence": 80,
   "importance": 70,
   "source_commits": [
     "1867522123328716940a40c34d20cce1949f0c85"

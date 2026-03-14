@@ -2,7 +2,7 @@
   "id": "d12efe43-d5af-4e3f-8043-6c369b0fda15",
   "type": "feature",
   "summary": "Added 50+ new skill files to .agent/skills/ directory covering domains including firmware analysis (firmware-analyst), code review (fix-review), Flutter development (flutter-expert), form optimization (form-cro), functional programming (fp-ts-errors, fp-ts-pragmatic, fp-ts-react), free tool strategy, helpdesk automation (freshdesk, freshservice), frontend development (design, dev-guidelines, developer, security-coder, slides), game development (2d, 3d, art, audio, pc, vr, web), DevOps (gcp-cloud-run, gdpr, geo, git workflows, GitHub, GitLab, gitops), Google Workspace automation (gmail, analytics, calendar, drive, sheets), and Go concurrency patterns.",
-  "confidence": 78,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -62,5 +62,7 @@
     "devops",
     "fp-ts"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

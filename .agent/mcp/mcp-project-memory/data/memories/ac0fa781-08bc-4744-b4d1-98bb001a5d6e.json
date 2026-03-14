@@ -2,7 +2,7 @@
   "id": "ac0fa781-08bc-4744-b4d1-98bb001a5d6e",
   "type": "decision",
   "summary": "Established AI agent skills system with Composer dependency management, symlink installer for skills library, and documentation for skills and bundles structure including config/bundles/, skills/, workflows/, and rules/ directories.",
-  "confidence": 62,
+  "confidence": 85,
   "importance": 30,
   "source_commits": [
     "7083d8c17670cf2db5f6ceaa3e423abd30c4ce41"

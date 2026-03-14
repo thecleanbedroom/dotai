@@ -2,7 +2,7 @@
   "id": "d221bcdc-28e8-4d53-8eb5-b11f8f8bafbc",
   "type": "decision",
   "summary": "Added 30+ new skill definition files to .agent/skills/ including penetration testing skills sqlmap-database-pentesting and ssh-penetration-testing test-driven development skills tdd-orchestrator tdd-workflow tdd-workflows-tdd-cycle startup business analysis skills startup-analyst startup-financial-modeling startup-metrics-framework API integration skills square-automation stripe-automation stripe-integration supabase-automation telegram-automation tiktok-automation todoist-automation UI UX design skills stitch-ui-design tailwind-design-system tailwind-patterns theme-factory swiftui-expert-skill infrastructure management skills terraform-module-library terraform-skill terraform-specialist and systematic debugging skills systematic-debugging tool-design",
-  "confidence": 78,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -35,5 +35,7 @@
     "infrastructure",
     "debugging"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

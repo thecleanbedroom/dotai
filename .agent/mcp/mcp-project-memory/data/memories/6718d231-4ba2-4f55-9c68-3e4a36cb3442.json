@@ -2,7 +2,7 @@
   "id": "6718d231-4ba2-4f55-9c68-3e4a36cb3442",
   "type": "feature",
   "summary": "Added cross-process rate limiting via shared file lock using fcntl.flock on a shared JSON file. Coordinated with ThreadPoolExecutor RPM limits to prevent overwhelming the pacer.",
-  "confidence": 37,
+  "confidence": 85,
   "importance": 80,
   "source_commits": [
     "6321c69c47ae8f5070780996d64f3cc33c347cc0"

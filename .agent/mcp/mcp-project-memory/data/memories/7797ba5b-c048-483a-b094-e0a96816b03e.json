@@ -2,7 +2,7 @@
   "id": "7797ba5b-c048-483a-b094-e0a96816b03e",
   "type": "decision",
   "summary": "Deleted SKILL.md files for 20+ skills including mailchimp-automation, make-automation, malware-analyst, and market-sizing-analysis as part of repository pruning",
-  "confidence": 55,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

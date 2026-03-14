@@ -2,7 +2,7 @@
   "id": "9dccb4cf-5a25-4476-b542-f8fab1ee22db",
   "type": "refactor",
   "summary": "Renamed Config fields to match env var names exactly (uppercase), removed env_map dict, simplified from_env() to iterate dataclass fields directly",
-  "confidence": 43,
+  "confidence": 85,
   "importance": 70,
   "source_commits": [
     "4d446db0cc755588e9a61b014f281689e6117292"

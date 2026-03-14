@@ -2,7 +2,7 @@
   "id": "3bc0b08d-601d-4070-9f83-51756ee44ec0",
   "type": "fix",
   "summary": "Removed project documentation files including AGENTS.md, AGENTS.sh, and PROJECT.md that contained agent usage instructions and project-specific guidelines",
-  "confidence": 33,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
@@ -18,5 +18,14 @@
     "project",
     "guidelines"
   ],
-  "created_at": "2026-02-16 13:31:04 -0600"
+  "links": [
+    {
+      "source": "3bc0b08d-601d-4070-9f83-51756ee44ec0",
+      "target": "292f4d7f-379c-4660-adba-af3a541d1619",
+      "relationship": "related_to",
+      "strength": 70
+    }
+  ],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
 }

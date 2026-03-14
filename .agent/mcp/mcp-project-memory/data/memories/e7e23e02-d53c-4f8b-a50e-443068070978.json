@@ -2,8 +2,8 @@
   "id": "e7e23e02-d53c-4f8b-a50e-443068070978",
   "type": "decision",
   "summary": "Switched SQLite journal mode from WAL to DELETE to eliminate SHM/WAL sidecar files that blocked clean git commits. Added Database context manager to ensure connections are closed after each tool call, making the DB file always committable.",
-  "confidence": 47,
-  "importance": 8,
+  "confidence": 85,
+  "importance": 85,
   "source_commits": [
     "25fc2fe81a57740a23908df58338b444c84019a4"
   ],

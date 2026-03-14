@@ -2,7 +2,7 @@
   "id": "cac76298-23e4-4e41-a667-f4e24bd148e0",
   "type": "feature",
   "summary": "Added a new skill for Zoom automation using Rube MCP (since removed).",
-  "confidence": 38,
+  "confidence": 80,
   "importance": 40,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

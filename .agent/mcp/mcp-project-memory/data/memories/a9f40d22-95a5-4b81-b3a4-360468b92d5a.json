@@ -2,7 +2,7 @@
   "id": "a9f40d22-95a5-4b81-b3a4-360468b92d5a",
   "type": "pattern",
   "summary": "Implemented agent lineage and context preservation system using .agent/sub-agents/ directory structure for per-agent context files, agent context schema with inherited_context (immutable) and agent-specific context (mutable), lineage tracking, decision logging, question tracking, and context handoff protocol.",
-  "confidence": 55,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

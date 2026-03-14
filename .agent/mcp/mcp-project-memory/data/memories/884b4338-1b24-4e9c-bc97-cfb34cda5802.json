@@ -2,7 +2,7 @@
   "id": "884b4338-1b24-4e9c-bc97-cfb34cda5802",
   "type": "feature",
   "summary": "Added Zendesk, Zoho CRM, and Zoom automation skills via Rube MCP, along with a script to update skills from GitHub.",
-  "confidence": 50,
+  "confidence": 80,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -21,5 +21,7 @@
     "automation",
     "skill-management"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

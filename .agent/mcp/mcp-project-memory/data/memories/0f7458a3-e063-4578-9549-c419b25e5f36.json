@@ -2,7 +2,7 @@
   "id": "0f7458a3-e063-4578-9549-c419b25e5f36",
   "type": "decision",
   "summary": "Decided to remove Composer-managed dependencies in favor of clone-and-copy dependency management deleting the entire .agent/vendor directory",
-  "confidence": 55,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "4aa39cb1d5d7edae8b7ec53d0e3373fa13e362f0"
@@ -29,5 +29,14 @@
     "removal",
     "clone-copy"
   ],
-  "created_at": "2026-02-11 08:56:25 -0600"
+  "links": [
+    {
+      "source": "0f7458a3-e063-4578-9549-c419b25e5f36",
+      "target": "ac0fa781-08bc-4744-b4d1-98bb001a5d6e",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-02-11 08:56:25 -0600",
+  "active": true
 }

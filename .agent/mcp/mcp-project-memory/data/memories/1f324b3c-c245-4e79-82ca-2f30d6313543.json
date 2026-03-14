@@ -2,7 +2,7 @@
   "id": "1f324b3c-c245-4e79-82ca-2f30d6313543",
   "type": "decision",
   "summary": "Removed skill definition files for Radix UI Design System, RAG Engineering, React Best Practices, and 30+ other skills from .agent/skills/ directory as part 14 of repository pruning operation",
-  "confidence": 18,
+  "confidence": 85,
   "importance": 80,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

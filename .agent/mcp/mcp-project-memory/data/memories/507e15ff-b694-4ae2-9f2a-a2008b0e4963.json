@@ -2,8 +2,8 @@
   "id": "507e15ff-b694-4ae2-9f2a-a2008b0e4963",
   "type": "decision",
   "summary": "Decided to restructure agent skills management moved project bundle location to .agent/rules/project-bundle.md added workflow to initialize AI policy context from .ai/index.md and updated skill file references accordingly",
-  "confidence": 57,
-  "importance": 30,
+  "confidence": 85,
+  "importance": 70,
   "source_commits": [
     "f58c8b90ff7715631e81b00666d5ac88dcad0d6f"
   ],

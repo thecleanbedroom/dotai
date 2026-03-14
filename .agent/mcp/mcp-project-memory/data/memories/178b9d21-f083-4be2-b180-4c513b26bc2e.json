@@ -2,7 +2,7 @@
   "id": "178b9d21-f083-4be2-b180-4c513b26bc2e",
   "type": "decision",
   "summary": "Added senior-fullstack skill providing comprehensive fullstack development toolkit for building web applications with React, Next.js, Node.js, GraphQL, and PostgreSQL. Includes project scaffolding, code quality analysis, architecture patterns, and tech stack guidance through three core capabilities: Fullstack Scaffolder, Project Scaffolder, and Code Quality Analyzer.",
-  "confidence": 78,
+  "confidence": 80,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -27,5 +27,7 @@
     "nodejs",
     "postgresql"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

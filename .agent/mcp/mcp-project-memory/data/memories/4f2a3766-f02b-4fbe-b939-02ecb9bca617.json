@@ -2,7 +2,7 @@
   "id": "4f2a3766-f02b-4fbe-b939-02ecb9bca617",
   "type": "decision",
   "summary": "Added a new skill for creating step-by-step tutorials and educational content from code, transforming complex concepts into progressive learning experiences with hands-on examples. Details the tutorial development process including learning objective definition, concept decomposition, and exercise design. Covers tutorial structure with opening, progressive, and closing sections, writing principles (show don't tell, fail forward, incremental complexity), content elements (code examples, explanations, visual aids), exercise types (fill-in-the-blank, debug challenges, extension tasks, from scratch, refactoring), common tutorial formats, and quality checklist for beginner-friendliness, concept sequencing, runnable examples, error addressing, difficulty progression, and practice opportunities.",
-  "confidence": 53,
+  "confidence": 80,
   "importance": 78,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -19,5 +19,7 @@
     "pedagogical-design",
     "content-creation"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

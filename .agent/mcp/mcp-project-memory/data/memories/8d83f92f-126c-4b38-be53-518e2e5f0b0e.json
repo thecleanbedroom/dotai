@@ -2,7 +2,7 @@
   "id": "8d83f92f-126c-4b38-be53-518e2e5f0b0e",
   "type": "fix",
   "summary": "Removed Zoom automation skill definition that provided workflows for meeting management, recording retrieval, participant tracking, and webinar operations via Rube MCP",
-  "confidence": 30,
+  "confidence": 85,
   "importance": 70,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

@@ -2,7 +2,7 @@
   "id": "cde38147-aa54-4307-a647-3af7dbb93784",
   "type": "decision",
   "summary": "Added sentry-automation skill for automating Sentry error tracking and monitoring operations through Composio's Sentry toolkit via Rube MCP. Provides workflows for issue investigation, project issue management, alert rule configuration, release management, organization/team monitoring, and cron monitor updates.",
-  "confidence": 53,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -19,5 +19,7 @@
     "error-tracking",
     "rube"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

@@ -2,8 +2,8 @@
   "id": "552f5006-65af-4402-80cf-dabf70982840",
   "type": "refactor",
   "summary": "Implemented two-pass architecture with fast extraction model and reasoning synthesis model; added model escalation on finish_reason=length truncation; expanded MEMORY_TYPES to include refactor, fix, feature; replaced LLM-assigned confidence with mathematical scoring based on evidence signals; improved synthesis prompt with self-check instruction and raised link expectation",
-  "confidence": 65,
-  "importance": 0,
+  "confidence": 85,
+  "importance": 85,
   "source_commits": [
     "897e9e9da331f58e36eb718efedf610f2e4fe5a8"
   ],

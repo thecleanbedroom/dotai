@@ -2,7 +2,7 @@
   "id": "3a91d973-8f91-49b2-8c1f-0aaeba84a10e",
   "type": "decision",
   "summary": "Continued repository cleanup effort marked as 'part 10' in ongoing series of skill and file removal operations",
-  "confidence": 18,
+  "confidence": 85,
   "importance": 60,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
@@ -14,5 +14,7 @@
     "part-10",
     "repository-maintenance"
   ],
-  "created_at": "2026-02-16 13:31:04 -0600"
+  "links": [],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
 }

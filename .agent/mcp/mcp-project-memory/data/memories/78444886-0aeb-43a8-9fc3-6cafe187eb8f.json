@@ -2,8 +2,8 @@
   "id": "78444886-0aeb-43a8-9fc3-6cafe187eb8f",
   "type": "refactor",
   "summary": "Introduced src/config.py with Config dataclass as single source of truth for all settings, migrated settings from multiple files, updated consumers to use Config.from_env()",
-  "confidence": 43,
-  "importance": 40,
+  "confidence": 85,
+  "importance": 70,
   "source_commits": [
     "589bbc51c49e7e819c3c2e5a628bf00a9ea12982"
   ],

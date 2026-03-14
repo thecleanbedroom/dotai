@@ -2,7 +2,7 @@
   "id": "f8db6d56-c31c-4d27-a5a7-73c03e2b6b6b",
   "type": "fix",
   "summary": "Synchronized .env.example with actual configuration variables by adding missing MEMORY_* variables",
-  "confidence": 18,
+  "confidence": 80,
   "importance": 30,
   "source_commits": [
     "b08aa7e69ecb133b5c47f26a9a47240fe1a6cfce"

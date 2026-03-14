@@ -2,7 +2,7 @@
   "id": "4b1897d8-eed6-44aa-a55b-83bffb0a9313",
   "type": "refactor",
   "summary": "Renamed the core AI policy document from GEMINI.md to index.md and updated all references across the system. This change affects workflows, rules, plugin configurations, and scripts to ensure consistent loading of the central policy file that defines non-negotiable AI agent behaviors including parallelism evaluation, rule reading, and skill scanning.",
-  "confidence": 70,
+  "confidence": 90,
   "importance": 90,
   "source_commits": [
     "19ef187f6cc843353fd8a6097e1962d7e4478323"
@@ -27,5 +27,7 @@
     "ai",
     "refactor"
   ],
-  "created_at": "2026-02-16 15:13:26 -0600"
+  "links": [],
+  "created_at": "2026-02-16 15:13:26 -0600",
+  "active": true
 }

@@ -2,7 +2,7 @@
   "id": "8835f6b2-fd67-4b6c-81b6-cc82919fbec4",
   "type": "feature",
   "summary": "Introduced a bash script to automate the updating of agent skills by cloning a remote GitHub repository and replacing the local skills directory.",
-  "confidence": 30,
+  "confidence": 80,
   "importance": 20,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

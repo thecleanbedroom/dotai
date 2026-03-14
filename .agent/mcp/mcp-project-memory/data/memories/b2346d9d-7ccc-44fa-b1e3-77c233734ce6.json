@@ -2,7 +2,7 @@
   "id": "b2346d9d-7ccc-44fa-b1e3-77c233734ce6",
   "type": "decision",
   "summary": "Cleaned up obsolete bundle configuration deleted .agent/config/bundles/project-bundle.md after moving bundle definitions to .agent/rules/project-bundle.md",
-  "confidence": 23,
+  "confidence": 85,
   "importance": 60,
   "source_commits": [
     "2751ecb892703de86b51c41e05c84b2b8121313d"
@@ -21,6 +21,12 @@
       "target": "507e15ff-b694-4ae2-9f2a-a2008b0e4963",
       "relationship": "supersedes",
       "strength": 85
+    },
+    {
+      "source": "b2346d9d-7ccc-44fa-b1e3-77c233734ce6",
+      "target": "507e15ff-b694-4ae2-9f2a-a2008b0e4963",
+      "relationship": "related_to",
+      "strength": 80
     }
   ],
   "created_at": "2026-02-09 13:24:01 -0600",

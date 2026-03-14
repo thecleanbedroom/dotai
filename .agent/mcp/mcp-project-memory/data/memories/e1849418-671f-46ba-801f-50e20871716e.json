@@ -2,7 +2,7 @@
   "id": "e1849418-671f-46ba-801f-50e20871716e",
   "type": "decision",
   "summary": "Changed how technical debt documents are tracked by updating their status from 'Debt' to 'Draft' when created during workflows. This affects the close and implement workflows where debt docs are generated for code smells, ensuring they follow the standard draft status workflow rather than a special debt status.",
-  "confidence": 55,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "05f786d25d6d1266f1af259d4aa4df42d9a0b9a4",

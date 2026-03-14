@@ -2,7 +2,7 @@
   "id": "192ce63b-d5b1-4fb7-aff5-902e7f020a69",
   "type": "decision",
   "summary": "Added dispatching-parallel-agents skill for running multiple AI agents concurrently on independent tasks. The skill provides a pattern for identifying independent domains, creating focused agent tasks, dispatching in parallel, and reviewing results. Includes TypeScript examples for task dispatch and guidelines for agent prompt structure with focus on specificity, context, constraints, and clear output expectations.",
-  "confidence": 45,
+  "confidence": 80,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -17,5 +17,7 @@
     "independent-domains",
     "ai-agents"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

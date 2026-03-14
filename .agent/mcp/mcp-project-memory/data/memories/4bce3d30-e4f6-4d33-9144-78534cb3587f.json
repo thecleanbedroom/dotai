@@ -2,7 +2,7 @@
   "id": "4bce3d30-e4f6-4d33-9144-78534cb3587f",
   "type": "pattern",
   "summary": "Added skills evaluation step (step 0) to all SDLC workflows to ensure relevant skills are identified and applied before executing workflow steps. Each workflow now begins by scanning installed skills, determining relevance to the task, reading applicable SKILL.md files, and reporting active skills before proceeding.",
-  "confidence": 92,
+  "confidence": 90,
   "importance": 85,
   "source_commits": [
     "1654fd7f2efe7ade2f6f2f673ad13c6691d6a7bb",
@@ -26,5 +26,14 @@
     "automation",
     "evaluation"
   ],
-  "created_at": "2026-03-02 15:53:52 -0600"
+  "links": [
+    {
+      "source": "4bce3d30-e4f6-4d33-9144-78534cb3587f",
+      "target": "797ad659-e717-4a61-989b-94144cd41d9a",
+      "relationship": "supersedes",
+      "strength": 90
+    }
+  ],
+  "created_at": "2026-03-02 15:53:52 -0600",
+  "active": true
 }

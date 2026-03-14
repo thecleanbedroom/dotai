@@ -2,7 +2,7 @@
   "id": "7ed210ee-f578-4e00-92f5-9a22b51e62cc",
   "type": "decision",
   "summary": "Added Loki Mode skill for Claude Code - a multi-agent autonomous startup system that orchestrates 100+ specialized agents across engineering, QA, DevOps, security, data/ML, business operations, marketing, HR, and customer success to take a PRD to fully deployed, revenue-generating product with zero human intervention.",
-  "confidence": 55,
+  "confidence": 80,
   "importance": 20,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

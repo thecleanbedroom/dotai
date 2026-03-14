@@ -2,7 +2,7 @@
   "id": "a90a95a5-7207-414a-9dea-92580b0717b1",
   "type": "feature",
   "summary": "Added distributed-tracing skill for implementing observability with Jaeger and Tempo. The skill covers trace structure, key components (trace, span, context, tags, logs), Jaeger setup (Kubernetes and Docker Compose), application instrumentation (Python/Flask, Node.js/Express, Go), context propagation, Tempo setup, sampling strategies, trace analysis, best practices, and integration with logging. Includes code examples for instrumentation and configuration templates.",
-  "confidence": 53,
+  "confidence": 80,
   "importance": 90,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -19,5 +19,7 @@
     "microservices",
     "tracing"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

@@ -2,7 +2,7 @@
   "id": "c06c5f95-8bf2-4e36-b915-d66a6f9d3dc8",
   "type": "decision",
   "summary": "Implemented Loki Mode autonomous agent system with 8-phase SDLC (Bootstrap to Growth Loop), multi-cloud deployment strategies (AWS/GCP/Azure/Kubernetes), distributed task queue with priority handling and circuit breakers, and autonomous wrapper script with exponential backoff retry logic for rate limit handling",
-  "confidence": 73,
+  "confidence": 80,
   "importance": 95,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -25,5 +25,7 @@
     "azure",
     "kubernetes"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

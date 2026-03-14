@@ -2,7 +2,7 @@
   "id": "cb3001bb-90a6-4052-9d91-a41d87d44381",
   "type": "decision",
   "summary": "Decided to prune and remove multiple skill files from the .agent/skills directory as part 5 of a cleanup effort, deleting skills for deployment procedures, design systems, DevOps troubleshooting, Discord automation, and numerous other domains including docx handling, dotnet development, and email systems.",
-  "confidence": 40,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

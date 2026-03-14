@@ -2,7 +2,7 @@
   "id": "a078d5f2-02f5-4a77-8ebe-0fbede4e2b93",
   "type": "decision",
   "summary": "Added language-specific checks section to quality-assurance.md requiring PHPUnit and PHPStan/Psalm for PHP and project-configured test/lint commands for JS/CSS.",
-  "confidence": 30,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "53845bacf1ba0cef4247110a1611a3c37ae932e2"

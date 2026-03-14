@@ -2,7 +2,7 @@
   "id": "d0b5f5a3-670c-422a-95cc-b24d7cb0bb62",
   "type": "decision",
   "summary": "Added a new skill for TypeScript and JavaScript expertise covering type-level programming, performance optimization, monorepo management, migration strategies, and modern tooling. Includes advanced type system expertise in branded types, conditional types, type inference techniques, and performance optimization strategies for type checking and build performance. Covers real-world problem resolution for complex error patterns, migration expertise for JavaScript to TypeScript and tool migrations, monorepo management with Nx vs Turborepo decision matrix, modern tooling expertise with Biome vs ESLint and type testing strategies, debugging mastery with CLI tools and custom error classes, and current best practices for strict TypeScript configuration, ESM-first approach, and AI-assisted development.",
-  "confidence": 53,
+  "confidence": 80,
   "importance": 90,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -20,5 +20,7 @@
     "debugging",
     "best-practices"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

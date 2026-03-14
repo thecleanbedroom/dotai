@@ -2,7 +2,7 @@
   "id": "8bf9a7f5-a7d7-4508-9345-3da047659d9a",
   "type": "pattern",
   "summary": "Defined 37 specialized agent types organized into 7 swarms: Engineering (8 types), Operations (8 types), Business (8 types), Data (3 types), Product (3 types), Growth (4 types), and Review (3 types), with dynamic spawning based on project needs.",
-  "confidence": 55,
+  "confidence": 80,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

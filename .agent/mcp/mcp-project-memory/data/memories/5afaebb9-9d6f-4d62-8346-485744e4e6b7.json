@@ -2,7 +2,7 @@
   "id": "5afaebb9-9d6f-4d62-8346-485744e4e6b7",
   "type": "decision",
   "summary": "Removed multiple skill definition files from .agent/skills/ as part of repository cleanup effort (part 13), deleting PostgreSQL, Posthog automation, Postmark automation, PowerShell Windows, PPTX official, and 24 other skills including prompt engineering, Python patterns, and production code audit.",
-  "confidence": 62,
+  "confidence": 85,
   "importance": 65,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

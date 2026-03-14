@@ -2,7 +2,7 @@
   "id": "b17362fa-2215-46a0-acec-4f2d417e756e",
   "type": "decision",
   "summary": "Added prompt conflict guard to index.md requiring to stop and ask for guidance if a user prompt conflicts with the rules.",
-  "confidence": 23,
+  "confidence": 80,
   "importance": 65,
   "source_commits": [
     "7f458a1a065aa3f9261fecf39006b85cbd812fc7"

@@ -2,7 +2,7 @@
   "id": "2f5df539-e694-4cf1-b8c0-f7dcb049878f",
   "type": "decision",
   "summary": "Added a new skill for configuring Turborepo for efficient monorepo builds with local and remote caching. Covers core concepts including Turborepo architecture, pipeline concepts (dependsOn, cache, outputs, inputs, persistent), and provides templates for turbo.json configuration, package-specific pipelines, remote caching with Vercel, self-hosted remote cache, filtering and scoping, advanced pipeline configuration, and root package.json setup. Includes debugging techniques, best practices for defining explicit inputs, using workspace protocol, enabling remote caching, filtering in CI, and caching build outputs.",
-  "confidence": 53,
+  "confidence": 80,
   "importance": 88,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -20,5 +20,7 @@
     "pipeline-configuration",
     "workspace-protocol"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

@@ -2,7 +2,7 @@
   "id": "4e3fd800-cd8a-4d2b-86c3-a1f3b7ea8fab",
   "type": "decision",
   "summary": "Decided to remove Composer dependency for skills management and store skills directly in the repository. Removed composer.json, composer.lock, composer-installer.php, and the symlinked skills directory. Skills are now vendored directly in .agent/skills/ rather than being symlinked from vendor/sickn33/antigravity-awesome-skills/skills.",
-  "confidence": 65,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

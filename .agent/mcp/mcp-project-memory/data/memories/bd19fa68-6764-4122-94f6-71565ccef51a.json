@@ -2,7 +2,7 @@
   "id": "bd19fa68-6764-4122-94f6-71565ccef51a",
   "type": "pattern",
   "summary": "Enhanced documentation system by revising PROJECT.md to be a detailed generation prompt (PROJECT.md since replaced by dynamic workflow).",
-  "confidence": 77,
+  "confidence": 85,
   "importance": 40,
   "source_commits": [
     "8af2c32e5dc04b70013cff0245077e82ab825226",

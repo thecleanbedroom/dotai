@@ -2,7 +2,7 @@
   "id": "7724198e-7108-4275-9c49-0f54fae80f4c",
   "type": "fix",
   "summary": "Replaced fragile JSON fences stripping with robust _extract_json method that handles three cases: pure JSON responses, markdown code fences (```json ... ```), and dialog-wrapped JSON (model returning explanatory text before/after JSON block). The method tries direct parsing first, then regex extraction from code fences, finally falling back to finding first { to last } braces to extract JSON from surrounding text, addressing OpenRouter's tendency to return dialog + JSON despite response_format: json_object.",
-  "confidence": 45,
+  "confidence": 85,
   "importance": 80,
   "source_commits": [
     "640a4a4b5d6fd03d3b7f4ebc220ea90c5c2f68cf"

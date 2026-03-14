@@ -2,7 +2,7 @@
   "id": "ebf8d063-4a77-496f-a6d5-65eb5ed15e70",
   "type": "decision",
   "summary": "Added batch of skill files under .agent/skills/ directory including senior-fullstack for fullstack development sentry-automation for Sentry automation seo-audit for SEO auditing skill-developer for skill creation guidance and shopify-development for Shopify development",
-  "confidence": 57,
+  "confidence": 85,
   "importance": 90,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

@@ -2,8 +2,8 @@
   "id": "05c9a047-5501-42ac-98be-e987752e2170",
   "type": "refactor",
   "summary": "Redesigned confidence scoring algorithm to use weighted-structural approach (V3) that values structural signals over cosmetic signals. Implemented via mathematical scoring based on evidence signals.",
-  "confidence": 45,
-  "importance": 30,
+  "confidence": 80,
+  "importance": 70,
   "source_commits": [
     "7aa7dd54648644e2c44dde07df3ca1a44b37df31"
   ],

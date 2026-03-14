@@ -2,7 +2,7 @@
   "id": "7365e91a-6ddc-4e24-b19c-f7314a1e424a",
   "type": "refactor",
   "summary": "Removed meta guidance and template files from the ai directory to streamline the policy hub",
-  "confidence": 38,
+  "confidence": 85,
   "importance": 60,
   "source_commits": [
     "e4435f9cf11c2429240b0371af7d25cbc0bdcb1e"

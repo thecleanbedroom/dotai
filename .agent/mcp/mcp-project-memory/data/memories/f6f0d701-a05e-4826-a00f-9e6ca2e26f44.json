@@ -2,7 +2,7 @@
   "id": "f6f0d701-a05e-4826-a00f-9e6ca2e26f44",
   "type": "pattern",
   "summary": "Added CRO skills for onboarding, page-level optimization, popups, and paywall upgrades to improve user conversion and monetization flows",
-  "confidence": 50,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

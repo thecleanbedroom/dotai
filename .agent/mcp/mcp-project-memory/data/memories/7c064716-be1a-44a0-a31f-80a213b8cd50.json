@@ -2,8 +2,8 @@
   "id": "7c064716-be1a-44a0-a31f-80a213b8cd50",
   "type": "fix",
   "summary": "Fixed critical bug where incremental build re-processed all commits due to last_commit being stored as empty string from phantom commits; changed to use git rev-parse HEAD for recording last_commit; fixed git log parser to skip chunks without 'commit ' line; restructured batch output to show summary upfront and results as they complete",
-  "confidence": 55,
-  "importance": 0,
+  "confidence": 85,
+  "importance": 85,
   "source_commits": [
     "200cfa7b64b96cf2ef0ad506da86aaf39a04bb90"
   ],

@@ -2,8 +2,8 @@
   "id": "46b7c065-a59a-4dd7-9048-efc33a8e4a8f",
   "type": "decision",
   "summary": "Established the DotAI policy hub to centralize AI usage rules coding standards and workflow guidelines for VS Code extensions in the workspace",
-  "confidence": 48,
-  "importance": 40,
+  "confidence": 85,
+  "importance": 80,
   "source_commits": [
     "5cf79227387d7dbbaadeb7bd0c20f20f508314d5"
   ],

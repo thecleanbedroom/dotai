@@ -2,7 +2,7 @@
   "id": "8cafb4b1-e98e-46fa-b6cb-1959f1b84fcc",
   "type": "decision",
   "summary": "Decided to adopt error handling and security standards added rule to prefer exceptions over silent fallbacks in language-default.md and rule to manage environment variables via .env files in security.md",
-  "confidence": 47,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "7783ad910a1539159abaf2f60a6525a5220d0140"
@@ -18,5 +18,7 @@
     "coding-standards",
     "language-rules"
   ],
-  "created_at": "2026-02-11 12:40:01 -0600"
+  "links": [],
+  "created_at": "2026-02-11 12:40:01 -0600",
+  "active": true
 }

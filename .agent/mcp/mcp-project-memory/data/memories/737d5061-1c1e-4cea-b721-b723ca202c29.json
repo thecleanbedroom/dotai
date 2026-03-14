@@ -2,7 +2,7 @@
   "id": "737d5061-1c1e-4cea-b721-b723ca202c29",
   "type": "decision",
   "summary": "Removed Loki Mode skill references, scripts, and test files as part of repository cleanup effort",
-  "confidence": 45,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

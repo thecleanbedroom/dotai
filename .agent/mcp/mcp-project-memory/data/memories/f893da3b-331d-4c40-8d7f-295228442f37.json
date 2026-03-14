@@ -2,7 +2,7 @@
   "id": "f893da3b-331d-4c40-8d7f-295228442f37",
   "type": "fix",
   "summary": "Removed AI policy configuration files that defined rules for AI tool usage, including prompt aliases, security guidelines, and workflow orchestration rules",
-  "confidence": 40,
+  "confidence": 85,
   "importance": 80,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

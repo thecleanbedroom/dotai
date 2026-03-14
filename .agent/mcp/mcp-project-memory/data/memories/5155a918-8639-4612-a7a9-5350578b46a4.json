@@ -2,7 +2,7 @@
   "id": "5155a918-8639-4612-a7a9-5350578b46a4",
   "type": "fix",
   "summary": "Removed UI/UX Pro Max skill components (CSV data files and Python scripts) and deleted numerous skill definition files (SKILL.md) for multiple skills including ui-visual-validator, unit-testing-test-generate, unity-developer, unreal-engine-cpp-pro, and others as part 18 of ongoing repository skill pruning effort.",
-  "confidence": 70,
+  "confidence": 85,
   "importance": 75,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
@@ -31,6 +31,12 @@
     {
       "source": "5155a918-8639-4612-a7a9-5350578b46a4",
       "target": "c456bf3f-e29b-4762-afeb-c8d294c9cef7",
+      "relationship": "supersedes",
+      "strength": 90
+    },
+    {
+      "source": "5155a918-8639-4612-a7a9-5350578b46a4",
+      "target": "d9e7f185-fd56-48af-9884-9a3931ae1afb",
       "relationship": "supersedes",
       "strength": 90
     }

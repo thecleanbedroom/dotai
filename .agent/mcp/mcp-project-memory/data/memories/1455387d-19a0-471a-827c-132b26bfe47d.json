@@ -2,7 +2,7 @@
   "id": "1455387d-19a0-471a-827c-132b26bfe47d",
   "type": "decision",
   "summary": "Expanded the project's skill library with guidance files for multiple domains (part 13 of an ongoing skill addition effort, many since removed).",
-  "confidence": 78,
+  "confidence": 80,
   "importance": 40,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

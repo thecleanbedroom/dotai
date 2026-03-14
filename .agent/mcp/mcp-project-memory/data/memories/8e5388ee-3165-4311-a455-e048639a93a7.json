@@ -2,7 +2,7 @@
   "id": "8e5388ee-3165-4311-a455-e048639a93a7",
   "type": "decision",
   "summary": "Established a mandatory parallelism rule requiring evaluation of all work for parallelism before starting any task. Work must be split into independent parallel tasks dispatched via run_command to the Gemini gateway whenever possible. The rule defines a 4-step process: list discrete tasks, build dependency graph, group into parallel batches, and dispatch/work/validate. It emphasizes the orchestrator role of the agent in managing parallel execution.",
-  "confidence": 45,
+  "confidence": 85,
   "importance": 95,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

@@ -2,7 +2,7 @@
   "id": "46bf48fc-e4e8-4e23-ab73-12c5b5ccb198",
   "type": "refactor",
   "summary": "Moved project-memory entrypoint to src/ directory, added shell wrapper at top level for Antigravity integration that execs into venv Python",
-  "confidence": 33,
+  "confidence": 85,
   "importance": 70,
   "source_commits": [
     "146d5436d7fb2057c0eb31450fc6fac588293cfd"
@@ -17,5 +17,14 @@
     "shell-wrapper",
     "antigravity"
   ],
-  "created_at": "2026-03-10 12:28:13 -0500"
+  "links": [
+    {
+      "source": "46bf48fc-e4e8-4e23-ab73-12c5b5ccb198",
+      "target": "9ed457bb-c1dc-4ca3-b68d-44f687b35904",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-10 12:28:13 -0500",
+  "active": true
 }

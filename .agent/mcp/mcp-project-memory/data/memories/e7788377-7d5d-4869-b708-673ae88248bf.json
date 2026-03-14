@@ -2,8 +2,8 @@
   "id": "e7788377-7d5d-4869-b708-673ae88248bf",
   "type": "decision",
   "summary": "Replaced fragile predicted-ID linking with string key system where new memories get short_snake_case keys and links reference new memories by key and existing memories by integer ID. Removed DecayEngine entirely. Implemented auto-deactivation of superseded memories when a 'supersedes' link is created, eliminating the need for explicit deactivation in LLM output.",
-  "confidence": 55,
-  "importance": 9,
+  "confidence": 85,
+  "importance": 95,
   "source_commits": [
     "dd248e732be5c7a9f7072e0e2e21e0a468c1d20c"
   ],

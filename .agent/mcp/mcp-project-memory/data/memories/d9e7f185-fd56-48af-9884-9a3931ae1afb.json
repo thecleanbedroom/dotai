@@ -2,7 +2,7 @@
   "id": "d9e7f185-fd56-48af-9884-9a3931ae1afb",
   "type": "decision",
   "summary": "Added a new skill providing UI/UX design intelligence with 50+ styles, 97 color palettes, 57 font pairings, 99 UX guidelines, and 25 chart types across 9 technology stacks. Includes rule categories by priority (accessibility, touch/interaction, performance, layout/responsive, typography/color, animation, style selection, charts/data), quick reference guides for accessibility, touch targets, performance optimization, layout/responsive design, typography/color, animation, style selection, and charts/data. Provides workflow for analyzing user requirements, generating design systems, supplementing with detailed searches, and applying stack-specific guidelines. Includes extensive data files for charts, colors, icons, landing patterns, products, prompts, and technology stacks (html-tailwind, react, nextjs, vue, svelte, swiftui, react-native, flutter, shadcn).",
-  "confidence": 78,
+  "confidence": 85,
   "importance": 92,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -35,5 +35,7 @@
     "technology-stacks",
     "design-intelligence"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

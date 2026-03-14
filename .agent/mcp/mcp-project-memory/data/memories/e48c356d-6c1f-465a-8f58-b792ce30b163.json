@@ -2,7 +2,7 @@
   "id": "e48c356d-6c1f-465a-8f58-b792ce30b163",
   "type": "feature",
   "summary": "Added .agent/skills/.gitignore to support local skill disabling for lean configuration. The .gitignore pattern allows keeping skills in the repository while disabling them locally by placing them in a .disabled/ directory. This enables teams to maintain all skills in version control while only enabling subsets needed for specific projects or environments.",
-  "confidence": 45,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -18,5 +18,7 @@
     "lean-configuration",
     "dependency-management"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

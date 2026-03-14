@@ -2,7 +2,7 @@
   "id": "2bf31c69-50f0-4007-8997-b3d7ac0b88f7",
   "type": "decision",
   "summary": "Added scope restriction to quality-assurance.md limiting action to code existing in .gitmodules.",
-  "confidence": 18,
+  "confidence": 80,
   "importance": 70,
   "source_commits": [
     "f09f58be60a7bc826a0f33188fb20175a9d9791a"
@@ -16,5 +16,14 @@
     "gitmodules",
     "owned-code"
   ],
-  "created_at": "2025-12-16 10:24:46 -0600"
+  "links": [
+    {
+      "source": "2bf31c69-50f0-4007-8997-b3d7ac0b88f7",
+      "target": "183ed526-1f07-45c9-98c9-7b772a3051ee",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2025-12-16 10:24:46 -0600",
+  "active": true
 }

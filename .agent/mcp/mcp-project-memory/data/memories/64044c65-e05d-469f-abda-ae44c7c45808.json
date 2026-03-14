@@ -2,7 +2,7 @@
   "id": "64044c65-e05d-469f-abda-ae44c7c45808",
   "type": "feature",
   "summary": "Loki Mode benchmark results show 98.78% Pass@1 on HumanEval (multi-agent with RARV cycle) and 99.67% patch generation on SWE-bench, matching single-agent Claude performance while adding verification through multi-agent pipeline.",
-  "confidence": 47,
+  "confidence": 80,
   "importance": 88,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"

@@ -2,8 +2,8 @@
   "id": "cfbbe463-3f1e-4a9c-86e6-ad9fd77558c6",
   "type": "refactor",
   "summary": "Changed confidence storage from categorical text values (high/medium/low) to numeric integer scores (0-100) in the database schema and Memory model. Updated all related code including confidence calculation, storage, retrieval, and display logic.",
-  "confidence": 62,
-  "importance": 0,
+  "confidence": 85,
+  "importance": 85,
   "source_commits": [
     "a262950381c6d9423f6c04a711993e48f16dd0d8"
   ],
@@ -30,6 +30,12 @@
       "source": "cfbbe463-3f1e-4a9c-86e6-ad9fd77558c6",
       "target": "05c9a047-5501-42ac-98be-e987752e2170",
       "relationship": "supersedes",
+      "strength": 90
+    },
+    {
+      "source": "cfbbe463-3f1e-4a9c-86e6-ad9fd77558c6",
+      "target": "05c9a047-5501-42ac-98be-e987752e2170",
+      "relationship": "related_to",
       "strength": 90
     }
   ],

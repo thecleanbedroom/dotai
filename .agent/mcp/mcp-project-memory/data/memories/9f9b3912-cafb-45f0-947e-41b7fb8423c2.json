@@ -2,7 +2,7 @@
   "id": "9f9b3912-cafb-45f0-947e-41b7fb8423c2",
   "type": "pattern",
   "summary": "Added numerous font files to canvas-fonts directory and various asset files under skills/last30days and .agent/skills directories, including TTF fonts, images, audio, PDF, and cached bytecode",
-  "confidence": 63,
+  "confidence": 80,
   "importance": 55,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -87,5 +87,7 @@
     "ttf",
     "images"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

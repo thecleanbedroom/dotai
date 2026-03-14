@@ -2,7 +2,7 @@
   "id": "797ad659-e717-4a61-989b-94144cd41d9a",
   "type": "decision",
   "summary": "Implemented a critical pre-flight checklist (now automated as step 0 in SDLC workflows) that must be completed before starting ANY task, requiring reading rules and scanning skills.",
-  "confidence": 45,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"

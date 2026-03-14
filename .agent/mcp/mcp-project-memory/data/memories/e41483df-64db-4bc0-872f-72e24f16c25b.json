@@ -2,7 +2,7 @@
   "id": "e41483df-64db-4bc0-872f-72e24f16c25b",
   "type": "feature",
   "summary": "Added automation skills for Cal.com and Calendly scheduling services via Rube MCP. These skills enable managing bookings, checking availability, configuring webhooks, and handling teams through Composio's toolkits, extending the agent's capability to interact with scheduling platforms.",
-  "confidence": 47,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -18,5 +18,7 @@
     "calendly",
     "rube-mcp"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

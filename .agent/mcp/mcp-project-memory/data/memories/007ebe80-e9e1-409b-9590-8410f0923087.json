@@ -2,7 +2,7 @@
   "id": "007ebe80-e9e1-409b-9590-8410f0923087",
   "type": "pattern",
   "summary": "Defined model selection strategy: Opus 4.5 for planning and architecture ONLY, Sonnet 4.5 for development and functional testing (default), Haiku 4.5 for unit tests, monitoring, and simple tasks - with extensive parallelization using Haiku for 8x faster unit testing.",
-  "confidence": 47,
+  "confidence": 80,
   "importance": 80,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -19,5 +19,7 @@
     "parallelization",
     "unit-testing"
   ],
-  "created_at": "2026-02-09 13:23:21 -0600"
+  "links": [],
+  "created_at": "2026-02-09 13:23:21 -0600",
+  "active": true
 }

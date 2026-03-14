@@ -2,7 +2,7 @@
   "id": "df111880-da97-4c91-be03-a019c98d58e4",
   "type": "decision",
   "summary": "Added coverage expectations to testing.md targeting ~80% line coverage overall, ~100% on new/changed code, and 100% of branches/lines in security-critical flows.",
-  "confidence": 23,
+  "confidence": 80,
   "importance": 75,
   "source_commits": [
     "d4b89f2ab93cc1ce98e7ecdc21c949c0978efd84"

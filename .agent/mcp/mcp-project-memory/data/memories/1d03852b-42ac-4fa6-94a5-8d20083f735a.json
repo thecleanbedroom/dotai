@@ -2,7 +2,7 @@
   "id": "1d03852b-42ac-4fa6-94a5-8d20083f735a",
   "type": "fix",
   "summary": "Corrected .env.example to properly comment out default values for MEMORY_COMMIT_LIMIT and MEMORY_BATCH_TOKEN_BUDGET",
-  "confidence": 23,
+  "confidence": 80,
   "importance": 30,
   "source_commits": [
     "560c4e250bd8045b2dcf22f436b1b06169f3ae0f"
@@ -15,5 +15,7 @@
     "documentation",
     "env-example"
   ],
-  "created_at": "2026-03-10 14:10:33 -0500"
+  "links": [],
+  "created_at": "2026-03-10 14:10:33 -0500",
+  "active": true
 }

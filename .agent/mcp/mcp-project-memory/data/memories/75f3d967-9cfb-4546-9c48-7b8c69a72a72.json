@@ -2,7 +2,7 @@
   "id": "75f3d967-9cfb-4546-9c48-7b8c69a72a72",
   "type": "decision",
   "summary": "Decided to resolve project root from MCP roots at runtime instead of relying on current working directory or CLI arguments, enabling multi-project support where each project has isolated .agent/memory/ storage. Introduced PROJECT_ROOT constant in src/__init__.py as single source of truth, updated db.py, git.py, and llm.py to use it, and made server components lazily initialized via component factory that receives project_root from MCP roots.",
-  "confidence": 65,
+  "confidence": 85,
   "importance": 90,
   "source_commits": [
     "791af62459de748c0d5a516c3509420795a1ef9f"

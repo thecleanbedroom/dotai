@@ -2,7 +2,7 @@
   "id": "0b9513d5-47c8-4ccb-bac3-def93bca027b",
   "type": "decision",
   "summary": "Split build() into incremental build() (resumes from last build's commit hash using git rev-parse HEAD) and rebuild() (full wipe). Made builds safe to interrupt with Ctrl+C.",
-  "confidence": 47,
+  "confidence": 85,
   "importance": 80,
   "source_commits": [
     "25fc2fe81a57740a23908df58338b444c84019a4"
@@ -19,5 +19,14 @@
     "cli",
     "git"
   ],
-  "created_at": "2026-03-12 13:09:04 -0500"
+  "links": [
+    {
+      "source": "0b9513d5-47c8-4ccb-bac3-def93bca027b",
+      "target": "1824b46e-0214-45ea-991a-29f5efdc504e",
+      "relationship": "related_to",
+      "strength": 100
+    }
+  ],
+  "created_at": "2026-03-12 13:09:04 -0500",
+  "active": true
 }

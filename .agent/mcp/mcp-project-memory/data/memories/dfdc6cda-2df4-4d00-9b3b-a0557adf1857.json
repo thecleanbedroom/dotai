@@ -2,7 +2,7 @@
   "id": "dfdc6cda-2df4-4d00-9b3b-a0557adf1857",
   "type": "refactor",
   "summary": "Removed numerous skill files from .agent/skills/ directory as part of cleanup effort (part 6), deleting skill definitions for FastAPI, Figma automation, file organization, security testing, Firebase, Flutter, frontend development, game development, Git workflows, and more.",
-  "confidence": 25,
+  "confidence": 85,
   "importance": 70,
   "source_commits": [
     "2bce47d87ec6d258d2a3af82b5e9d19667745c6e"
@@ -14,5 +14,7 @@
     "repository-maintenance",
     "code-pruning"
   ],
-  "created_at": "2026-02-16 13:31:04 -0600"
+  "links": [],
+  "created_at": "2026-02-16 13:31:04 -0600",
+  "active": true
 }

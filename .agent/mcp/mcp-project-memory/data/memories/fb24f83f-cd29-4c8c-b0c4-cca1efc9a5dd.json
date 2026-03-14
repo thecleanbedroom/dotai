@@ -2,7 +2,7 @@
   "id": "fb24f83f-cd29-4c8c-b0c4-cca1efc9a5dd",
   "type": "pattern",
   "summary": "Consolidated plugin configuration files for various AI coding assistants into a dedicated .agent/plugins/ directory (since removed).",
-  "confidence": 55,
+  "confidence": 85,
   "importance": 40,
   "source_commits": [
     "97ab4cb84784a37c7a305ed6bb6574cf706e5625"
@@ -28,6 +28,12 @@
       "target": "758d0273-df58-430e-84ab-96aa6246166e",
       "relationship": "supersedes",
       "strength": 90
+    },
+    {
+      "source": "fb24f83f-cd29-4c8c-b0c4-cca1efc9a5dd",
+      "target": "f893da3b-331d-4c40-8d7f-295228442f37",
+      "relationship": "related_to",
+      "strength": 80
     }
   ],
   "created_at": "2026-03-05 08:07:30 -0600",

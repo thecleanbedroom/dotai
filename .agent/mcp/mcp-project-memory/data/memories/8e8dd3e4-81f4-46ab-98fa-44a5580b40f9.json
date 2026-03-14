@@ -2,8 +2,8 @@
   "id": "8e8dd3e4-81f4-46ab-98fa-44a5580b40f9",
   "type": "refactor",
   "summary": "Replaced static 3-workers-for-free / 8-for-paid heuristic with reactive RateLimiter that fires all workers and throttles only when server pushes back; all threads call rate_limiter.acquire() before each API request; on 429, closes threading.Event gate that blocks ALL threads; reads Retry-After header for cooldown with exponential backoff fallback",
-  "confidence": 55,
-  "importance": 0,
+  "confidence": 85,
+  "importance": 85,
   "source_commits": [
     "455e998e867a11508ef3b96559ce1886f79b238d"
   ],

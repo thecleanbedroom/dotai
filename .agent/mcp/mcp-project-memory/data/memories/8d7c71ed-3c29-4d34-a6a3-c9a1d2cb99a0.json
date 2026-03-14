@@ -2,7 +2,7 @@
   "id": "8d7c71ed-3c29-4d34-a6a3-c9a1d2cb99a0",
   "type": "decision",
   "summary": "Added rule to never commit PHPStan stub content into production source files, keeping stubs in dedicated files.",
-  "confidence": 23,
+  "confidence": 80,
   "importance": 60,
   "source_commits": [
     "51b31c98ed6e2b258260521f10fc767b992dbeaa"
@@ -21,6 +21,12 @@
       "source": "8d7c71ed-3c29-4d34-a6a3-c9a1d2cb99a0",
       "target": "a078d5f2-02f5-4a77-8ebe-0fbede4e2b93",
       "relationship": "convention_group",
+      "strength": 80
+    },
+    {
+      "source": "8d7c71ed-3c29-4d34-a6a3-c9a1d2cb99a0",
+      "target": "a078d5f2-02f5-4a77-8ebe-0fbede4e2b93",
+      "relationship": "related_to",
       "strength": 80
     }
   ],

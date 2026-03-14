@@ -2,7 +2,7 @@
   "id": "e89ba615-e0ed-45cd-a545-05586621ece7",
   "type": "feature",
   "summary": "Added the skills directory structure with individual skill folders each containing SKILL.md files and optional subdirectories like scripts/, examples/, and resources/. Each skill follows a standardized structure where only SKILL.md is required. This enables skills to be discovered and used via the @skill-name syntax in AI chats.",
-  "confidence": 55,
+  "confidence": 85,
   "importance": 90,
   "source_commits": [
     "1bcd36acb2f90853b015377d7057a71639c686e6"
@@ -26,6 +26,12 @@
       "target": "4e3fd800-cd8a-4d2b-86c3-a1f3b7ea8fab",
       "relationship": "implements",
       "strength": 85
+    },
+    {
+      "source": "e89ba615-e0ed-45cd-a545-05586621ece7",
+      "target": "5fd5a3b4-d0fb-440c-a7eb-fb54ac035fea",
+      "relationship": "related_to",
+      "strength": 80
     }
   ],
   "created_at": "2026-02-09 13:23:21 -0600",

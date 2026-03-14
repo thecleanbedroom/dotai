@@ -2,7 +2,7 @@
   "id": "1313daed-132c-4671-a9b8-845c6b8e64ff",
   "type": "fix",
   "summary": "Switched LLM response parsing from json_object to json_schema with strict: true to guarantee pure JSON output; added separate retry backoff: 15/30/60s for 429 rate limits vs 1/2/3s for transient errors; implemented CRITICAL git discipline rule: git commit FORBIDDEN without explicit /commit invocation, git push ALWAYS FORBIDDEN; enhanced _extract_json() to handle dialog-wrapped JSON responses from LLMs.",
-  "confidence": 65,
+  "confidence": 85,
   "importance": 85,
   "source_commits": [
     "23a1a3639d0ecc83630133d3895e6a2ed00cb610"
@@ -20,5 +20,14 @@
     "structured-outputs",
     "retry-logic"
   ],
-  "created_at": "2026-03-12 13:55:31 -0500"
+  "links": [
+    {
+      "source": "1313daed-132c-4671-a9b8-845c6b8e64ff",
+      "target": "01a3b224-fa70-40ab-993c-03923696f386",
+      "relationship": "related_to",
+      "strength": 80
+    }
+  ],
+  "created_at": "2026-03-12 13:55:31 -0500",
+  "active": true
 }
