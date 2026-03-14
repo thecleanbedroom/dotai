@@ -13,16 +13,16 @@ Run a comprehensive health check of the project memory system. Tests all MCP end
 
 ### Verify MCP server is running
 
-Call `memory_stats`. If it fails, stop and report that the MCP server is not running.
+Call `project_memory_overview`. If it fails, stop and report that the MCP server is not running.
 
 ### Gather baseline stats
 
-Record from `memory_stats`:
+Record from `project_memory_overview`:
 - Total memories, type distribution, confidence distribution
 - Average importance
 - Last build info (type, commit count, date)
 
-If total memories is 0, note that a build is needed (`./project-memory rebuild`).
+If total memories is 0, note that a build is needed (`make build-memories` from the Go project).
 
 ### Run database health checks
 
@@ -36,7 +36,7 @@ Check for WAL/SHM file presence:
 
 // turbo
 ```bash
-ls -la .agent/mcp/mcp-project-memory/data/project_memory.db* 2>/dev/null
+ls -la .agent/mcp/mcp-project-memory/data/mcp-project-memory.sqlite* 2>/dev/null
 ```
 
 If `-shm` or `-wal` files exist and the MCP server is not actively running as a separate process, flag as ⚠️ warning.
@@ -44,61 +44,57 @@ If `-shm` or `-wal` files exist and the MCP server is not actively running as a 
 ### Run FTS search tests
 
 First, fetch a known memory to use as test data:
-- Call `memory_query_file` with a path from `top_files` in the stats
+- Call `search_file_memory_by_path` with a path from `top_files` in the overview
 - Extract a distinctive word from the first result's summary to use as the search term
 
-Then execute these searches:
+Then execute these searches using `search_project_memory_by_topic`:
 
 | Test | How | Expected |
 |---|---|---|
 | Positive match | Search for the extracted word | ≥1 result |
 | Negative match | Search for `"xyznonexistent"` | 0 results |
 | Type filter | Search with `type=` set to a type from the stats distribution | ≥1 result |
-| Importance ceiling | Search with `min_importance=0.99` | 0 results |
+| Importance ceiling | Search with `min_importance=99` | 0 results |
 
 For each, record: query, filters, result count, pass/fail.
 
 ### Run file path query tests
 
-Use paths from `top_files` in the stats:
+Use paths from `top_files` in the overview:
 
 | Test | How | Expected |
 |---|---|---|
-| Exact file | Query a file path from `top_files` | ≥1 result |
-| Directory prefix | Strip the filename from a `top_files` entry, query the directory with trailing `/` | ≥1 result |
+| Exact file | `search_file_memory_by_path` with a file path from `top_files` | ≥1 result |
+| Directory prefix | Strip the filename, query the directory with trailing `/` | ≥1 result |
 | Nonexistent path | Query `nonexistent/path/foo.md` | 0 results |
 
 ### Run memory retrieval tests
 
 Use a memory ID obtained from a previous query result:
 
-1. Call `memory_get(id=<id>, include_links=true)`. Verify the response contains: `id`, `summary`, `type`, `confidence`, `importance`, `files`, `source_commits`.
-2. Call `memory_get(id=999999)`. Verify it returns an error.
+1. Call `recall_memory(memory_id=<id>, include_links=true)`. Verify the response contains: `id`, `summary`, `type`, `confidence`, `importance`, `files`, `source_commits`.
+2. Call `recall_memory(memory_id="00000000-0000-0000-0000-000000000000")`. Verify it returns an error.
 3. If the retrieved memory has links, verify `linked_memories` is populated and each entry has a valid `id`.
 
 ### Run link integrity tests
 
 Call `memory_inspect` with query `links`. For each link verify:
-- `memory_id_a` and `memory_id_b` are valid (exist within the total memory count range)
-- `relationship` is a known type (check against the types defined in `src/models.py` RELATIONSHIP_TYPES)
-- `strength` is between 0.0 and 1.0
+- `memory_id_a` and `memory_id_b` are valid UUIDs
+- `relationship` is a known type
+- `strength` is between 0 and 100
 
 Also report the relationship type distribution and flag if `related_to` exceeds 80% of all links.
 
 ### Estimate build cost
 
-Find the most recent build response log:
+Check the data directory for build logs:
 
 // turbo
 ```bash
-ls -t .agent/mcp/mcp-project-memory/data/build_responses/*.json 2>/dev/null | head -1
+ls -la .agent/mcp/mcp-project-memory/data/ 2>/dev/null
 ```
 
-If a response file exists, parse token usage. The log file structure is `{request, response}` — usage is at `response.usage`. Extract `prompt_tokens` and `completion_tokens`.
-
-Report the `upstream_inference_cost` from `response.usage.cost_details` if available. If not, estimate using the model's current pricing from OpenRouter.
-
-Also estimate costs for alternative models listed in `.env` comments.
+If build metadata is available via `memory_inspect` with query `builds`, review the last build's commit count and estimate cost based on the configured model's pricing.
 
 ### Compile audit report
 

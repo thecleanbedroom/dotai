@@ -1,5 +1,5 @@
 ---
-description: "CRITICAL: All work MUST be parallelized. Split into gateway agents via run_command whenever possible."
+description: "CRITICAL: All work MUST be parallelized. Split into gateway agents via MCP tools whenever possible."
 ---
 
 # Parallel Evaluation
@@ -12,15 +12,7 @@ This applies to **all work** — implementation, edits, analysis, research, test
 
 ## Mechanism
 
-`run_command` dispatching to `.agent/bin/gemini-gateway` is the ONLY parallel mechanism.
-
-```bash
-# Single dispatch — agent reads source and writes files directly
-run_command("echo '...' | .agent/bin/gemini-gateway --model <lite|quick|fast|think|deep> --label 'description'")
-
-# Batch dispatch — multiple jobs from JSON stdin
-run_command("echo '[{\"model\":\"fast\",\"prompt\":\"...\",\"label\":\"job-A\"},{\"model\":\"fast\",\"prompt\":\"...\",\"label\":\"job-B\"}]' | .agent/bin/gemini-gateway --batch")
-```
+The `gemini-gateway` MCP server is the ONLY parallel mechanism. It exposes MCP tools for dispatching work to Gemini CLI subagents. The server provides full tool docs and model tiers via its MCP instructions on connect.
 
 ## Parallelism Decision
 
@@ -41,10 +33,10 @@ run_command("echo '[{\"model\":\"fast\",\"prompt\":\"...\",\"label\":\"job-A\"},
 ## Orchestrator Role
 
 1. **Evaluate** parallelism graph before work starts
-2. **Dispatch** independent tasks to gateway
+2. **Dispatch** independent tasks via `gateway_dispatch` or `gateway_batch_dispatch`
 3. **Work** on your own tasks (never idle-wait)
 4. **Review** agent output via `git diff` and `git status` — agents write files directly
-5. **Fix** minor issues inline; on retry, **improve the prompt or gateway first** (max 2 retries, then do it yourself)
+5. **Fix** minor issues inline; on retry, **improve the prompt first** (max 2 retries, then do it yourself)
 6. **Never cancel** a running job — the model may still be working. Wait for completion.
 
 > [!IMPORTANT]
@@ -52,34 +44,32 @@ run_command("echo '[{\"model\":\"fast\",\"prompt\":\"...\",\"label\":\"job-A\"},
 
 ## Model Selection
 
-| Tier    | Use for                                           |
-| ------- | ------------------------------------------------- |
-| `lite`  | Spot-checks, single reads, config lookups         |
-| `quick` | Config edits, one-liners, small analysis          |
-| `fast`  | Code generation, tests, refactoring, log analysis |
-| `think` | Multi-file refactors, complex validation          |
-| `deep`  | Architecture review, complex reasoning            |
+Two tiers — each auto-rebalances across multiple internal models for max parallelism:
 
-> 5 tiers = capability selection. Jobs run serially (one at a time).
+- **`fast`**: code generation, tests, refactoring, config edits, spot-checks, log analysis
+- **`deep`**: architecture review, complex reasoning, multi-file refactors, complex validation
 
 ## Dispatch Modes
 
 ### Single dispatch
 
-```bash
-echo 'Write tests for MyService.php' | \
-  .agent/bin/gemini-gateway --model fast --label 'MyService-tests'
+```
+gateway_dispatch(
+  model: "fast",
+  prompt: "Write tests for MyService.php",
+  label: "MyService-tests"
+)
 ```
 
 ### Batch dispatch
 
 Multiple independent jobs in one call. Each job runs through the queue sequentially.
 
-```bash
-echo '[
-  {"model":"fast", "prompt":"Extract MetafieldWriter from ShopifyService.php", "label":"extract-metafields"},
-  {"model":"fast", "prompt":"Extract InventoryManager from ShopifyService.php", "label":"extract-inventory"}
-]' | .agent/bin/gemini-gateway --batch --cwd /path/to/codebase
+```
+gateway_batch_dispatch(jobs: [
+  {"model": "fast", "prompt": "Extract MetafieldWriter from ShopifyService.php", "label": "extract-metafields"},
+  {"model": "fast", "prompt": "Extract InventoryManager from ShopifyService.php", "label": "extract-inventory"}
+], cwd: "/path/to/codebase")
 ```
 
 ### Prompt tips
@@ -96,8 +86,8 @@ echo '[
 
 ## Health Check
 
-```bash
-.agent/bin/gemini-gateway --status
+```
+gateway_status()
 ```
 
 `ok` → dispatch freely · `slow` → 1 at a time · `saturated` → do it yourself
@@ -112,7 +102,7 @@ echo '[
 
 ## When NOT to Split
 
-Same file edits, output dependencies, singular tasks (one grep/one edit), gateway saturated, gateway binary not installed — proceed single-threaded without parallelism reporting.
+Same file edits, output dependencies, singular tasks (one grep/one edit), gateway saturated, gateway MCP not available — proceed single-threaded without parallelism reporting.
 
 ## Mandatory Reporting
 

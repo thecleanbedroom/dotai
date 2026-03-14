@@ -24,8 +24,10 @@ Follow `/skills`'s _Evaluate skills_ step.
 
 ### Check parallelism gateway
 
-```bash
-.agent/bin/gemini-gateway --status
+Call the gateway MCP tool:
+
+```
+gateway_status()
 ```
 
 Report the result:
@@ -34,7 +36,22 @@ Report the result:
 - `slow` → "Gateway slow — will limit to 1 dispatch at a time"
 - `saturated` or error → "Gateway unavailable — will work single-threaded"
 
-If the binary is missing, report: "Gateway not installed — parallelism disabled."
+If the MCP server is not connected, report: "Gateway not available — parallelism disabled."
+
+### Check project memory
+
+Call the project-memory MCP tool:
+
+```
+project_memory_overview()
+```
+
+Report the result:
+
+- `total_memories > 0` → "Memory available — <N> memories loaded, last build: <date>"
+- `total_memories == 0` → "Memory empty — run `make build-memories` in `.agent/mcp/mcp-project-memory/` to populate"
+
+If the MCP server is not connected, report: "Project memory not available — will rely on Knowledge Items only."
 
 ### Report to user
 
@@ -51,7 +68,11 @@ Confirm with a structured summary:
 
 ### Parallelism
 - Gateway: ok / slow / unavailable
-- Model: will dispatch via `.agent/bin/gemini-gateway`
+- Model: will dispatch via `gateway_dispatch` / `gateway_batch_dispatch` MCP tools
+
+### Project Memory
+- Status: <N> memories / empty / unavailable
+- Last build: <date> or "never"
 
 ### Ready
 Awaiting task.

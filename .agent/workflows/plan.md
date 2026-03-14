@@ -163,9 +163,9 @@ Table of remaining items (done items excluded). Include files and parallelism:
 
 ### Subagent Dispatch Plan
 
-For each parallel group, specify dispatch strategy (read by `/implement`). Include the gateway binary path:
+For each parallel group, specify dispatch strategy (read by `/implement`). Include the dispatch tool:
 
-**Gateway**: `.agent/bin/gemini-gateway`
+**Dispatch**: `gateway_dispatch` / `gateway_batch_dispatch` MCP tools
 
 | Group | Phases | Model Tier | Rationale      |
 | ----- | ------ | ---------- | -------------- |
