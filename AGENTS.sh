@@ -10,7 +10,7 @@ else
     SCRIPT_DIR="$(pwd)"
 fi
 
-UPDATE_URL="https://raw.githubusercontent.com/thecleanbedroom/dotai/refs/heads/main/.agent/bin/update"
+UPDATE_URL="https://raw.githubusercontent.com/thecleanbedroom/dotai/refs/heads/main/.agent/agent-update"
 
 temp_script="$(mktemp)"
 curl -fsSL "$UPDATE_URL" -o "$temp_script" || { rm -f "$temp_script"; echo "Error: failed to fetch update script" >&2; exit 1; }
