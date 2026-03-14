@@ -1,0 +1,18 @@
+# Binary
+mcp-gemini-gateway
+
+# Runtime data
+data/
+tmp/
+
+# Environment
+.env
+
+# Coverage
+coverage.out
+coverage.html
+
+# IDE
+.idea/
+.vscode/
+*.swp
