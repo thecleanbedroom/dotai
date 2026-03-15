@@ -13,7 +13,7 @@ Rules for writing and modifying `.agent/workflows/` files.
   - Append walkthrough, Finalize, Move to finished, Create debt doc, Report → `/close`
   - Clone skills repo, Extract catalog → `/skillsfinder`
   - Smell checklist, Logging format → `/sniff`
-  - Document format, Resolve input, Requirement item format → `/plan`
+  - Document format, Resolve input, Requirement item format, Research, Tracing, Classification, QA Verification, Risk Analysis, Persona definitions → `/lib`
   - Commit message format, Git trailers → `/commit`
 - **Platform-agnostic language**: Workflows must not contain hardcoded commands, language-specific patterns, or tool-specific names. Use generic terms ("run the test suite", "run static analysis") and let `.agent/rules/platform-*.md` or `language-*.md` supply the specifics.
 - **Unique step names**: Every step heading within a workflow must be unique. Duplicate names make references ambiguous.

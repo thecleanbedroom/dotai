@@ -1,5 +1,5 @@
 ---
-description: "Canonical code smell checklist — used standalone for targeted scans or referenced by /plan, /implement, /sweep for continuous observation"
+description: "Canonical code smell checklist — used standalone for targeted scans or referenced by /plan, /implement, /sweep-eval for continuous observation"
 ---
 
 # /sniff — Code Smell Detection
@@ -7,10 +7,10 @@ description: "Canonical code smell checklist — used standalone for targeted sc
 Canonical checklist for identifying code smells, structural issues, and quality concerns. Used two ways:
 
 **Standalone** — `/sniff path/to/area` — targeted scan of a specific area, outputs findings to a debt doc
-**Embedded** — referenced by `/plan`, `/implement`, `/sweep`, and `/testcoverage` for continuous observation while working
+**Embedded** — referenced by `/plan`, `/implement`, `/sweep-eval`, and `/testcoverage` for continuous observation while working
 
 > [!IMPORTANT]
-> Sniff is **eyes-only observation**. You notice things while reading code — you don't run commands, tools, or analysis. For active scanning (running tests, coverage, linters), use `/sweep`.
+> Sniff is **eyes-only observation**. You notice things while reading code — you don't run commands, tools, or analysis. For active scanning (running tests, coverage, linters), use `/sweep-eval`.
 
 ### Smell checklist
 
@@ -113,7 +113,7 @@ Follow `/skills`'s _Evaluate skills_ step.
 
 // turbo
 
-Read all files in the specified path. Apply every category in the _Smell checklist_ above.
+Follow `/lib`'s _Research Deep_ level for the specified path. Apply every category in the _Smell checklist_ above.
 
 #### Write findings
 

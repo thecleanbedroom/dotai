@@ -28,7 +28,7 @@ Follow `/skills`'s _Evaluate skills_ step.
 
 ### Resolve input
 
-Follow `/plan`'s _Resolve Input_ step with this override:
+Follow `/lib`'s _Resolve Input_ step with this override:
 
 - **Initial status**: `In Progress` (capture documents work that is already done or about to be done)
 
@@ -36,7 +36,7 @@ Follow `/plan`'s _Resolve Input_ step with this override:
 
 // turbo
 
-Using `/plan`'s _Canonical Document Format_, populate the resolved doc with:
+Using `/lib`'s _Canonical Document Format_, populate the resolved doc with:
 
 - **`## Requirement` items**: what was broken or needed changing — each item follows the standard fields (What, Where, Why, How, Priority, Effort — include what's known)
 - Apply `/sniff`'s _Smell checklist_ to touched files; log findings to a `## Debt` section using `/sniff`'s _Logging format_

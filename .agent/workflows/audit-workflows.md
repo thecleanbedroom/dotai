@@ -114,7 +114,7 @@ Flag `file:///` URIs or absolute paths. All must be relative. Exclude descriptiv
 
 #### File size (M)
 
-Flag any rule or workflow file over **12,000 bytes** — condense without losing meaning.
+Flag any rule or workflow file over **12,000 bytes** — condense without losing meaning. Exempt `lib.md` and `lib-*.md` (reference-only files loaded on demand, not at startup).
 
 #### Canonical ownership and DRY (AI)
 
@@ -126,13 +126,13 @@ Verify referencing workflows don't inline canonical logic. Owners:
 | Walkthrough, Finalize, Move to finished, Debt doc, Report | `/close` |
 | Clone skills repo, Extract catalog | `/skillsfinder` |
 | Smell checklist, Logging format | `/sniff` |
-| Document format, Resolve input, Requirement item format | `/plan` |
+| Document format, Resolve input, Requirement item format, Research, Tracing, Classification, QA Verification, Risk Analysis, Persona definitions | `/lib` |
 
 #### Document format and input resolution (AI)
 
-All doc-creating workflows must use `/plan`'s _Canonical Document Format_. Entry-point workflows must reference _Resolve Input_. Verify:
+All doc-creating workflows must use `/lib`'s _Canonical Document Format_. Entry-point workflows must reference _Resolve Input_. Verify:
 
-- No inline templates (only `/plan` defines the template)
+- No inline templates (only `/lib` defines the template)
 - Requirement items use standard fields (What, Where, Why, How, Priority, Effort)
 - Debt docs reference `/close`'s _Create debt doc_, use `> Status: Debt`
 - Source docs include `> Status:` and `> Created:` frontmatter

@@ -26,7 +26,7 @@ Follow `/skills`'s _Evaluate skills_ step.
 
 ### Resolve input
 
-Follow `/plan`'s _Resolve Input_ step.
+Follow `/lib`'s _Resolve Input_ step.
 
 ### Plan
 

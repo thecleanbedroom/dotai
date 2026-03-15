@@ -19,47 +19,11 @@ Research the codebase, reconcile intent against reality, surface questions, and 
 
 ## Canonical Document Format
 
-Every workflow creates and consumes this format. This is the single source of truth for doc structure.
-
-```markdown
-# <Title>
-
-> Created: YYYY-MM-DD HH:MM (local)
-> Status: Draft
-
-## Requirement
-
-### <Item Title>
-
-- **What**: what needs to change
-- **Where**: file(s) or area affected
-- **Why**: why it matters — impact, risk, or motivation
-- **How**: concrete, actionable suggestion
-- **Priority**: High | Medium | Low
-- **Effort**: Low | Medium | High
-
-### <Additional items...>
-```
-
-**Naming**: `docs/YYYY-MM-DDTHHMM--<slug>.md`
-
-**Status flow**: `Draft` → `Planned` → `Approved` → `In Progress` → `Done`
-
-**`## Requirement` is a list of items.** Each item is an `h3` with structured fields. All fields are optional — include what's known, omit what isn't.
+See `/lib`'s _Canonical Document Format_.
 
 ## Resolve Input
 
-Universal first step for every workflow. Determines the source doc to work against.
-
-// turbo
-
-| Input | Action |
-|-------|--------|
-| **Existing doc** | Validate frontmatter, use as source doc. If filename doesn't follow `YYYY-MM-DDTHHMM--<slug>.md`, rename using `> Created:` datetime. |
-| **Description** | Create new doc using _Canonical Document Format_ with description as `## Requirement` items. |
-| **No explicit input** | Scan conversation context (files edited, commands run, topics discussed). Create doc or locate existing in-progress doc in `docs/`. |
-
-Result: **a resolved doc path.** All subsequent steps use this path.
+See `/lib`'s _Resolve Input_.
 
 ## Steps
 
@@ -101,16 +65,13 @@ Read the resolved source doc. Check frontmatter `> Status:`:
 
 Identify: **Goal**, **Scope**, **Constraints**, **Referenced code**. If intent is unclear, batch all questions into one ask.
 
-### Research the codebase (deep)
+### Research the codebase
 
 // turbo
 
-Investigate actual code for each area the plan touches. **Do NOT make assumptions** — verify everything.
+Follow `/lib`'s _Research Standard_ level for the areas the plan touches. Then:
 
-- Read relevant files, classes, interfaces; check for existing patterns
-- **Trace construction sites**: find all instantiation/injection points for modified classes
-- **Trace internal deps**: for moved methods, verify dependencies exist on destination
-- **Identify affected tests**: search for tests that mock/instantiate/assert on changed classes
+- Follow `/lib`'s _Trace construction sites_, _Trace internal dependencies_, and _Trace affected tests_ for modified classes
 - **Sniff while you research**: apply `/sniff`'s _Smell checklist_ to files you read. Log findings to the source doc's `## Debt` section using `/sniff`'s _Logging format_.
 
 ### Create the implementation plan artifact
