@@ -6,7 +6,7 @@ description: "Run any sweep workflow through 10 personas with iteration. Usage: 
 
 Run any workflow through `/lib`'s 10 personas with mandatory iteration until clean. Two modes control output format.
 
-**Input**: `<workflow> [--work] @<target>` — e.g., `sweep-eval @src/` or `sweep-design --work @src/`
+**Input**: `<workflow> [--work] @<target>` — e.g., `sweep @src/` or `sweep --work @src/`
 **Output**: Clean codebase + report (both modes iterate until clean)
 
 > [!IMPORTANT]
@@ -23,9 +23,22 @@ Both modes use the **same iteration loop**, the **same exit condition**, and run
 
 ## Steps
 
-### Research
+### Research & Skills
 
 Follow `/lib`'s _Research Deep_ level for the target path. Run **once** before the persona loop — all personas share the same loaded context.
+
+> [!IMPORTANT]
+> **Skills are MANDATORY.** After research, follow `/skills` to scan available skills and `view_file` on every SKILL.md that matches the target codebase's language, platform, or the sweep type being performed. Build a **matched skills list** (e.g., `clean-code`, `golang-pro`, `uncle-bob-craft`). This list is injected into each persona's perspective preamble below. The inner workflow's own "Evaluate skills" step is skipped (already done here).
+
+**Print matched skills** immediately after building the list:
+
+```
+--- Matched Skills ---
+• clean-code — Clean Code principles (naming, functions, comments)
+• golang-pro — Go 1.21+ modern patterns and idioms
+• uncle-bob-craft — SOLID, clean architecture, design principles
+---
+```
 
 ### The Iteration Loop
 
@@ -60,6 +73,27 @@ loop:
 #### Compose perspective
 
 Follow `/lib`'s _Perspective Composition_ to compose a context-aware preamble for this persona. Use `/lib`'s _Context Reordering_ to direct attention based on the persona's Reading Order dimension.
+
+**Inject matched skills**: Include the matched skills list from Research in the preamble. Reference each skill by name (e.g., "Apply `/clean-code` naming rules, `/golang-pro` idioms, and `/uncle-bob-craft` design principles"). This ensures skill guidance is actively part of every persona's analysis context.
+
+#### Print perspective (MANDATORY)
+
+> [!IMPORTANT]
+> **You MUST print the composed perspective before running the inner workflow.** This makes persona analysis visible and auditable. Use this exact format:
+
+```
+═══ Persona {N}/10: {Persona Name} ═══
+
+Perspective:
+{The full composed preamble — 2-3 paragraphs from Perspective Composition}
+
+Skills applied: {comma-separated matched skills list}
+Entry point: {the concrete entry point being traced}
+Driving question: "{the persona's driving question}"
+═══════════════════════════════════════
+```
+
+This block must appear in the output for every persona in every iteration. Do NOT abbreviate or skip it even if the persona produces zero findings.
 
 #### Run the inner workflow
 
