@@ -1,6 +1,7 @@
 package build_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +30,7 @@ func TestCallWithRetries_Success(t *testing.T) {
 	srv, client := mockLLMServer(t, `{"memories":[]}`)
 	defer srv.Close()
 
-	result, err := build.CallWithRetries(client, func(caller domain.LLMCaller) (string, error) {
+	result, err := build.CallWithRetries(context.Background(), client, func(caller domain.LLMCaller) (string, error) {
 		return caller.Chat(
 			[]domain.Message{{Role: "user", Content: "test"}},
 			domain.ChatOpts{Label: "test"},
@@ -51,7 +52,7 @@ func TestCallWithRetries_FatalError(t *testing.T) {
 	defer srv.Close()
 
 	client := llm.NewClient(srv.URL, "test-key", "test-model", "")
-	_, err := build.CallWithRetries(client, func(caller domain.LLMCaller) (string, error) {
+	_, err := build.CallWithRetries(context.Background(), client, func(caller domain.LLMCaller) (string, error) {
 		return caller.Chat(
 			[]domain.Message{{Role: "user", Content: "test"}},
 			domain.ChatOpts{Label: "test"},

@@ -1,0 +1,32 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 30,
+  "created_at": "2026-03-14T16:11:56Z",
+  "file_paths": [
+    ".agent/mcp/mcp-project-memory/internal/domain/interfaces.go",
+    ".agent/mcp/mcp-project-memory/internal/domain/models.go",
+    ".agent/mcp/mcp-project-memory/internal/build/agent.go",
+    ".agent/mcp/mcp-project-memory/internal/config/config.go",
+    ".agent/mcp/mcp-project-memory/internal/llm/client.go",
+    ".agent/mcp/mcp-project-memory/internal/inspector/inspector.go",
+    ".agent/mcp/mcp-project-memory/go.mod"
+  ],
+  "id": "c3cbc648-9cfa-42bb-be35-5744941db491",
+  "importance": 95,
+  "source_commits": [
+    "97f3cee5f689c506b4335b1d3ac5eaa68aaa9e68"
+  ],
+  "summary": "Ported project-memory server from Python to Go with interface-driven architecture following SOLID/DRY principles. Implemented 10 packages (domain, config, storage, server, inspector, git, llm, build) with segregated Reader/Writer/Searcher interfaces, pure Go SQLite via modernc.org/sqlite (no CGO), dual transport MCP server (stdio default, --http for dev), and 6-phase build pipeline.",
+  "tags": [
+    "go",
+    "port",
+    "mcp",
+    "interface-driven",
+    "solid",
+    "sqlite",
+    "architecture"
+  ],
+  "type": "architecture"
+}

@@ -145,42 +145,4 @@ func TestClient_GetModelInfo(t *testing.T) {
 	}
 }
 
-func TestClient_ValidateModel_TooSmall(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{
-			"data": map[string]any{
-				"id":             "tiny/model",
-				"name":           "Tiny",
-				"context_length": 4096,
-				"pricing":        map[string]any{"prompt": "0", "completion": "0"},
-			},
-		})
-	}))
-	defer srv.Close()
 
-	client := llm.NewClient(srv.URL, "test-key", "tiny/model", "")
-	err := client.ValidateModel()
-	if err == nil {
-		t.Error("expected error for context < 32000")
-	}
-}
-
-func TestClient_ValidateModel_OK(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{
-			"data": map[string]any{
-				"id":             "big/model",
-				"name":           "Big",
-				"context_length": 128000,
-				"pricing":        map[string]any{"prompt": "0", "completion": "0"},
-			},
-		})
-	}))
-	defer srv.Close()
-
-	client := llm.NewClient(srv.URL, "test-key", "big/model", "")
-	err := client.ValidateModel()
-	if err != nil {
-		t.Fatalf("ValidateModel: %v", err)
-	}
-}

@@ -9,14 +9,7 @@ import (
 
 // RebuildDBFromJSON drops all tables and reloads from JSON memory files.
 // Returns the number of memories loaded.
-func RebuildDBFromJSON(
-	db *Database,
-	memStore *MemoryStore,
-	linkStore *LinkStore,
-	jsonStore domain.JSONStore,
-	dataDir string,
-	filterFn func(*domain.Memory) bool,
-) (int, error) {
+func RebuildDBFromJSON(db *Database, memStore *MemoryStore, linkStore *LinkStore, jsonStore domain.JSONStore, filterFn func(*domain.Memory) bool) (int, error) {
 	if err := db.DropAll(); err != nil {
 		return 0, fmt.Errorf("drop all: %w", err)
 	}
@@ -24,7 +17,7 @@ func RebuildDBFromJSON(
 		return 0, fmt.Errorf("init schema: %w", err)
 	}
 
-	memories, err := jsonStore.ReadAll(dataDir)
+	memories, err := jsonStore.ReadAll()
 	if err != nil {
 		return 0, fmt.Errorf("read all: %w", err)
 	}
@@ -69,15 +62,32 @@ func RebuildDBFromJSON(
 					Relationship: stringFromMapDefault(linkData, "relationship", "related_to"),
 					Strength:     floatFromMap(linkData, "strength", 0.5),
 				}
-				_ = linkStore.CreateLink(link)
+				if err := linkStore.CreateLink(link); err != nil {
+					fmt.Fprintf(os.Stderr, "  warning: create link %s→%s: %v\n", link.MemoryIDA, link.MemoryIDB, err)
+				}
 			}
 		}
 	}
 
 	// Update fingerprint
-	fp, err := jsonStore.ComputeFingerprint(dataDir)
+	fp, err := jsonStore.ComputeFingerprint()
 	if err == nil && fp != "" {
-		_ = db.SetFingerprint(fp)
+		if err := db.SetFingerprint(fp); err != nil {
+			fmt.Fprintf(os.Stderr, "  warning: set fingerprint: %v\n", err)
+		}
+	}
+
+	// Seed processed_commits from memory source_commits
+	commitSet := map[string]bool{}
+	for _, m := range memories {
+		for _, h := range m.SourceCommits {
+			commitSet[h] = true
+		}
+	}
+	if len(commitSet) > 0 {
+		if err := db.AddProcessed(commitSet); err != nil {
+			fmt.Fprintf(os.Stderr, "  warning: seed processed commits: %v\n", err)
+		}
 	}
 
 	return len(memories), nil

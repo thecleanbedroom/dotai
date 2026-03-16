@@ -1,11 +1,11 @@
-// Package build provides the build pipeline — extraction + synthesis orchestration.
-// All dependencies are domain interfaces, injected by cmd/main.go.
 package build
 
 import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 
@@ -13,17 +13,17 @@ import (
 	"github.com/dotai/mcp-project-memory/internal/domain"
 )
 
-// Agent orchestrates the build pipeline: commit discovery → batching → extraction → synthesis → DB rebuild.
+// Agent orchestrates the build pipeline: extract → synthesize → persist.
 type Agent struct {
 	memWriter domain.MemoryWriter
 	memReader domain.MemoryReader
 	links     domain.LinkStore
 	buildMeta domain.BuildMetaStore
+	processed domain.ProcessedTracker
 	jsonStore domain.JSONStore
 	git       domain.GitParser
 	llm       domain.LLMCaller
 	cfg       *config.Settings
-	dataDir   string
 }
 
 // NewAgent creates a BuildAgent with domain-interface dependencies.
@@ -32,22 +32,22 @@ func NewAgent(
 	memReader domain.MemoryReader,
 	links domain.LinkStore,
 	buildMeta domain.BuildMetaStore,
+	processed domain.ProcessedTracker,
 	jsonStore domain.JSONStore,
 	git domain.GitParser,
 	llm domain.LLMCaller,
 	cfg *config.Settings,
-	dataDir string,
 ) *Agent {
 	return &Agent{
 		memWriter: memWriter,
 		memReader: memReader,
 		links:     links,
 		buildMeta: buildMeta,
+		processed: processed,
 		jsonStore: jsonStore,
 		git:       git,
 		llm:       llm,
 		cfg:       cfg,
-		dataDir:   dataDir,
 	}
 }
 
@@ -59,7 +59,21 @@ func (a *Agent) Run(ctx context.Context, limit int, synthesis bool) error {
 		return fmt.Errorf("get hashes: %w", err)
 	}
 
-	processed, err := a.jsonStore.ReadProcessed(a.dataDir)
+	// Build hash lookup set
+	hashSet := make(map[string]bool, len(allHashes))
+	for _, h := range allHashes {
+		hashSet[h] = true
+	}
+
+	// 1b. Prune orphaned memories (source_commits no longer in git history)
+	pruned, err := a.pruneOrphans(hashSet)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "  warning: orphan pruning failed: %v\n", err)
+	} else if pruned > 0 {
+		fmt.Fprintf(os.Stderr, "  pruned %d orphaned memory files\n", pruned)
+	}
+
+	processed, err := a.processed.ReadProcessed()
 	if err != nil {
 		return fmt.Errorf("read processed: %w", err)
 	}
@@ -78,22 +92,39 @@ func (a *Agent) Run(ctx context.Context, limit int, synthesis bool) error {
 	fmt.Fprintf(os.Stderr, "  found %d unprocessed commits (of %d total)\n", len(unprocessed), len(allHashes))
 
 	// 2. Run extraction if there are new commits
+	var newMemoryIDs []string
 	if len(unprocessed) > 0 {
-		if err := a.extract(ctx, unprocessed); err != nil {
+		ids, err := a.extract(ctx, unprocessed)
+		if err != nil {
 			return fmt.Errorf("extraction: %w", err)
+		}
+		newMemoryIDs = ids
+	}
+
+	// 3. Run incremental synthesis on NEW memories (automatic)
+	if len(newMemoryIDs) > 0 {
+		fmt.Fprintf(os.Stderr, "  pass 2: synthesizing %d new memories...\n", len(newMemoryIDs))
+		synth := NewSynthesisAgent(a.llm, a.jsonStore)
+		if err := synth.RunIncremental(ctx, newMemoryIDs); err != nil {
+			fmt.Fprintf(os.Stderr, "  warning: synthesis failed: %v\n", err)
+			// Non-fatal — memories are already saved from extraction
 		}
 	}
 
-	// 3. Run synthesis if requested
+	// 4. Full re-synthesis if --synthesis flag
 	if synthesis {
-		fmt.Fprintln(os.Stderr, "  running synthesis pass...")
-		if err := a.runSynthesis(ctx); err != nil {
+		fmt.Fprintln(os.Stderr, "  running full re-synthesis pass...")
+		synth := NewSynthesisAgent(a.llm, a.jsonStore)
+		if err := synth.RunFull(ctx); err != nil {
 			return fmt.Errorf("synthesis: %w", err)
 		}
 	}
 
-	// 4. Record build metadata
-	memCount, _ := a.memReader.Count(true)
+	// 5. Record build metadata
+	memCount, err := a.memReader.Count(true)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "  warning: count memories: %v\n", err)
+	}
 	a.buildMeta.Record(&domain.BuildMetaEntry{
 		BuildType:   "incremental",
 		CommitCount: len(unprocessed),
@@ -103,11 +134,12 @@ func (a *Agent) Run(ctx context.Context, limit int, synthesis bool) error {
 	return nil
 }
 
-func (a *Agent) extract(ctx context.Context, hashes []string) error {
+// extract processes unprocessed commit hashes and returns new memory IDs.
+func (a *Agent) extract(ctx context.Context, hashes []string) ([]string, error) {
 	// Get commits
 	commits, err := a.git.GetCommitsByHashes(hashes)
 	if err != nil {
-		return fmt.Errorf("get commits: %w", err)
+		return nil, fmt.Errorf("get commits: %w", err)
 	}
 
 	// Apply path filter
@@ -120,7 +152,10 @@ func (a *Agent) extract(ctx context.Context, hashes []string) error {
 		for _, h := range hashes {
 			processMap[h] = true
 		}
-		return a.jsonStore.AddProcessed(processMap, a.dataDir)
+		if err := a.processed.AddProcessed(processMap); err != nil {
+			fmt.Fprintf(os.Stderr, "  warning: failed to mark commits as processed: %v\n", err)
+		}
+		return nil, nil
 	}
 
 	// Batch commits
@@ -130,96 +165,161 @@ func (a *Agent) extract(ctx context.Context, hashes []string) error {
 
 	// Extract in parallel with errgroup
 	g, gctx := errgroup.WithContext(ctx)
-	rpm := 10 // default concurrent extraction limit
-	g.SetLimit(rpm)
+	maxConcurrent := a.cfg.ExtractConcurrency()
+	g.SetLimit(maxConcurrent)
 
-	for _, batch := range batches {
-		batch := batch // capture
+	var mu sync.Mutex
+	var allNewIDs []string
+	processedHashes := make(map[string]bool) // track only successfully extracted commits
+
+	for i, batch := range batches {
+		batchIdx := i + 1
+		batchTotal := len(batches)
 		g.Go(func() error {
 			select {
 			case <-gctx.Done():
 				return gctx.Err()
 			default:
 			}
-			return a.extractBatch(batch)
+			fmt.Fprintf(os.Stderr, "  batch %d/%d (%d commits)...\n", batchIdx, batchTotal, len(batch))
+			ids, err := a.extractBatch(gctx, batch)
+			if err != nil {
+				return err
+			}
+			mu.Lock()
+			allNewIDs = append(allNewIDs, ids...)
+			for _, c := range batch {
+				processedHashes[c.Hash] = true
+			}
+			mu.Unlock()
+			return nil
 		})
 	}
 
 	if err := g.Wait(); err != nil {
-		return err
+		// Mark only successfully processed commits — failed batches can be retried
+		if len(processedHashes) > 0 {
+			if markErr := a.processed.AddProcessed(processedHashes); markErr != nil {
+				fmt.Fprintf(os.Stderr, "  warning: failed to mark commits as processed: %v\n", markErr)
+			}
+		}
+		return allNewIDs, err
 	}
 
-	// Mark all as processed
+	// All batches succeeded — mark all hashes as processed
 	processMap := make(map[string]bool, len(hashes))
 	for _, h := range hashes {
 		processMap[h] = true
 	}
-	return a.jsonStore.AddProcessed(processMap, a.dataDir)
+	if err := a.processed.AddProcessed(processMap); err != nil {
+		fmt.Fprintf(os.Stderr, "  warning: failed to mark commits as processed: %v\n", err)
+	}
+	return allNewIDs, nil
 }
 
-func (a *Agent) extractBatch(commits []*domain.ParsedCommit) error {
+// extractBatch extracts memories from a batch and returns new memory IDs.
+func (a *Agent) extractBatch(ctx context.Context, commits []*domain.ParsedCommit) ([]string, error) {
 	// Build prompt
 	prompt := FormatCommitsForExtraction(commits)
 
-	result, err := CallWithRetries(a.llm, func(caller domain.LLMCaller) (string, error) {
+	result, err := CallWithRetries(ctx, a.llm, func(caller domain.LLMCaller) (string, error) {
 		return caller.Chat(
 			[]domain.Message{
 				{Role: "system", Content: config.ExtractionSystemPrompt()},
 				{Role: "user", Content: prompt},
 			},
 			domain.ChatOpts{
+				Ctx:            ctx,
 				ResponseSchema: config.ExtractionSchema(),
 				Label:          "extraction",
 			},
 		)
 	}, nil)
 	if err != nil {
-		return fmt.Errorf("extraction LLM call: %w", err)
+		return nil, fmt.Errorf("extraction LLM call: %w", err)
 	}
 
 	// Parse and validate
 	memories, err := ValidateExtraction(result)
 	if err != nil {
-		return fmt.Errorf("validate extraction: %w", err)
+		return nil, fmt.Errorf("validate extraction: %w", err)
 	}
 
 	// Score and save
 	factory := NewMemoryFactory()
+	var newIDs []string
 	for _, m := range memories {
 		scored := factory.Score(m)
-		if err := a.jsonStore.Write(scored, a.dataDir); err != nil {
+
+		if err := a.jsonStore.Write(scored); err != nil {
 			fmt.Fprintf(os.Stderr, "  warning: failed to write memory %s: %v\n", scored.ID, err)
+			continue
 		}
+		newIDs = append(newIDs, scored.ID)
 	}
 
-	return nil
-}
-
-func (a *Agent) runSynthesis(ctx context.Context) error {
-	synth := NewSynthesisAgent(a.llm, a.jsonStore, a.dataDir)
-	return synth.Run(ctx)
+	fmt.Fprintf(os.Stderr, "    → %d memories extracted\n", len(memories))
+	return newIDs, nil
 }
 
 // FormatCommitsForExtraction formats commits as a user prompt for the LLM.
 func FormatCommitsForExtraction(commits []*domain.ParsedCommit) string {
-	var result string
+	var sb strings.Builder
 	for _, c := range commits {
-		result += fmt.Sprintf("## Commit %s\n", c.Hash[:8])
-		result += fmt.Sprintf("Author: %s\nDate: %s\n", c.Author, c.Date)
-		result += fmt.Sprintf("Message: %s\n", c.Message)
+		fmt.Fprintf(&sb, "## Commit %s\n", c.Hash)
+		fmt.Fprintf(&sb, "Author: %s\nDate: %s\n", c.Author, c.Date)
+		fmt.Fprintf(&sb, "Message: %s\n", c.Message)
 		if c.Body != "" {
-			result += fmt.Sprintf("Body: %s\n", c.Body)
+			fmt.Fprintf(&sb, "Body: %s\n", c.Body)
+		}
+		if len(c.Files) > 0 {
+			fmt.Fprintf(&sb, "Files: %v\n", c.Files)
 		}
 		if len(c.Trailers) > 0 {
-			result += "Trailers:\n"
+			sb.WriteString("Trailers:\n")
 			for k, v := range c.Trailers {
-				result += fmt.Sprintf("  %s: %s\n", k, v)
+				fmt.Fprintf(&sb, "  %s: %s\n", k, v)
 			}
 		}
 		if c.Diff != "" {
-			result += fmt.Sprintf("\n```diff\n%s\n```\n", c.Diff)
+			fmt.Fprintf(&sb, "\n```diff\n%s\n```\n", c.Diff)
 		}
-		result += "\n---\n\n"
+		sb.WriteString("\n---\n\n")
 	}
-	return result
+	return sb.String()
 }
+
+// pruneOrphans removes memory files whose source_commits are all absent from
+// the current git history (e.g., after rebases or squashes).
+func (a *Agent) pruneOrphans(gitHashes map[string]bool) (int, error) {
+	memories, err := a.jsonStore.ReadAll()
+	if err != nil {
+		return 0, err
+	}
+
+	pruned := 0
+	for _, m := range memories {
+		if len(m.SourceCommits) == 0 {
+			continue // no source commits → keep
+		}
+
+		// Check if ANY source_commit exists in git
+		found := false
+		for _, h := range m.SourceCommits {
+			if gitHashes[h] {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			if ok, err := a.jsonStore.Delete(m.ID); err == nil && ok {
+				pruned++
+				fmt.Fprintf(os.Stderr, "    pruned orphan %s (%s)\n", m.ID[:min(8, len(m.ID))], m.Summary[:min(60, len(m.Summary))])
+			}
+		}
+	}
+
+	return pruned, nil
+}
+

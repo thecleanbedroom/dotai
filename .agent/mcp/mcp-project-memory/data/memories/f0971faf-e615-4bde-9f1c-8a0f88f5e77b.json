@@ -1,0 +1,23 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-16T19:29:13Z",
+  "file_paths": [],
+  "id": "f0971faf-e615-4bde-9f1c-8a0f88f5e77b",
+  "importance": 85,
+  "source_commits": [
+    "0db54d1b03268e6157b2494b35d99369d6c7736b"
+  ],
+  "summary": "Changed workflow cross-reference syntax from backtick-wrapped '/workflow'_'s _Section_ format to a colon-hash delimited format '/workflow:#Section Title#'. This new format is used consistently across all workflow files. The change also reorganized canonical ownership in core-workflow-authoring.md, moving responsibilities like 'Evaluate Skills' and 'Document Format' from '/skills' and '/plan' to '/lib' respectively. The diff also shows a parameterization pattern: '/lib:#Create Debt Document#(source=/close)'.",
+  "tags": [
+    "workflow-references",
+    "syntax-change",
+    "canonical-ownership",
+    "lib",
+    "cross-referencing",
+    "convention"
+  ],
+  "type": "convention"
+}

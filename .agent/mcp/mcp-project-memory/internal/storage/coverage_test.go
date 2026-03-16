@@ -206,20 +206,7 @@ func TestLinkStore_ListAll(t *testing.T) {
 	}
 }
 
-func TestDatabase_HoldRelease(t *testing.T) {
-	db, err := storage.NewDatabase(":memory:")
-	if err != nil {
-		t.Fatalf("NewDatabase: %v", err)
-	}
-	defer db.Close()
 
-	if err := db.Hold(); err != nil {
-		t.Fatalf("Hold: %v", err)
-	}
-	if err := db.Release(); err != nil {
-		t.Fatalf("Release: %v", err)
-	}
-}
 
 func TestMemoryStore_Search_SinceUntil(t *testing.T) {
 	mem, _, db := setupTestStore(t)

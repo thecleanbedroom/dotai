@@ -1,8 +1,11 @@
 # Build output
-mcp-project-memory
+/mcp-project-memory
 
-# Data directory (SQLite + memory JSON files)
-data/
+# Data (project-specific, regenerable)
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal
+data/llm_logs
 
 # Environment
 .env
@@ -11,8 +14,6 @@ data/
 coverage.out
 coverage.html
 
-# Air hot-reload
-tmp/
 
 # OS
 .DS_Store

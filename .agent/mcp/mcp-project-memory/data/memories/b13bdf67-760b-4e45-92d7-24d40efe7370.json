@@ -1,0 +1,22 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-16T19:29:13Z",
+  "file_paths": [],
+  "id": "b13bdf67-760b-4e45-92d7-24d40efe7370",
+  "importance": 80,
+  "source_commits": [
+    "0db54d1b03268e6157b2494b35d99369d6c7736b"
+  ],
+  "summary": "Refactored the 'Create debt doc' step out of '/close' and into '/lib' as a new canonical building block '/lib:#Create Debt Document#'. All workflows that previously referenced '/close'_'s _Create debt doc_ step now reference the '/lib' section. The '/lib' section defines the standard debt document format and rules (status always Debt, one doc per finding, self-contained items). This makes debt creation a reusable primitive.",
+  "tags": [
+    "debt-document",
+    "canonical-step",
+    "lib",
+    "refactor",
+    "technical-debt"
+  ],
+  "type": "refactor"
+}

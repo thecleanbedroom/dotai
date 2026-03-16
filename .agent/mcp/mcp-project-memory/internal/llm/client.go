@@ -3,11 +3,14 @@ package llm
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/dotai/mcp-project-memory/internal/domain"
@@ -21,6 +24,10 @@ type Client struct {
 	router  *OpenRouter
 	logDir  string
 }
+
+// llmHTTPClient is the shared HTTP client for LLM API calls.
+// Package-level to enable connection reuse; 120s timeout prevents indefinite hangs.
+var llmHTTPClient = &http.Client{Timeout: 120 * time.Second}
 
 // NewClient creates an LLM client for the given model.
 func NewClient(apiURL, apiKey, model, logDir string) *Client {
@@ -92,7 +99,12 @@ func (c *Client) Chat(messages []domain.Message, opts domain.ChatOpts) (string, 
 		return "", fmt.Errorf("marshal request: %w", err)
 	}
 
-	httpReq, err := http.NewRequest("POST", c.apiURL, bytes.NewReader(body))
+	ctx := opts.Ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", c.apiURL, bytes.NewReader(body))
 	if err != nil {
 		return "", fmt.Errorf("create request: %w", err)
 	}
@@ -100,7 +112,7 @@ func (c *Client) Chat(messages []domain.Message, opts domain.ChatOpts) (string, 
 	httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
 
 	start := time.Now()
-	resp, err := http.DefaultClient.Do(httpReq)
+	resp, err := llmHTTPClient.Do(httpReq)
 	if err != nil {
 		return "", fmt.Errorf("http request: %w", err)
 	}
@@ -115,10 +127,17 @@ func (c *Client) Chat(messages []domain.Message, opts domain.ChatOpts) (string, 
 	c.logExchange(opts.Label, body, respBody, time.Since(start), resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
-		return "", &APIError{
+		apiErr := &APIError{
 			StatusCode: resp.StatusCode,
 			Body:       string(respBody),
 		}
+		// Capture Retry-After header for rate limit responses
+		if ra := resp.Header.Get("Retry-After"); ra != "" {
+			if secs, err := strconv.Atoi(ra); err == nil {
+				apiErr.RetryAfter = time.Duration(secs) * time.Second
+			}
+		}
+		return "", apiErr
 	}
 
 	var chatResp chatResponse
@@ -145,23 +164,14 @@ func (c *Client) GetModelInfo() (domain.ModelInfo, error) {
 	return c.router.GetModelInfo(c.model)
 }
 
-// ValidateModel checks that the configured model meets minimum requirements.
-func (c *Client) ValidateModel() error {
-	info, err := c.GetModelInfo()
-	if err != nil {
-		return fmt.Errorf("validate model %s: %w", c.model, err)
-	}
-	if info.ContextLength < 32000 {
-		return fmt.Errorf("model %s context length %d below minimum 32000", c.model, info.ContextLength)
-	}
-	return nil
-}
-
 func (c *Client) logExchange(label string, reqBody, respBody []byte, duration time.Duration, statusCode int) {
 	if c.logDir == "" {
 		return
 	}
-	os.MkdirAll(c.logDir, 0o755)
+	if err := os.MkdirAll(c.logDir, 0o755); err != nil {
+		slog.Warn("llm log: mkdir", "err", err)
+		return
+	}
 
 	ts := time.Now().Format("2006-01-02T15-04-05")
 	filename := fmt.Sprintf("%s/%s_%s.json", c.logDir, ts, label)
@@ -175,19 +185,30 @@ func (c *Client) logExchange(label string, reqBody, respBody []byte, duration ti
 	}
 
 	var reqMap, respMap map[string]any
-	json.Unmarshal(reqBody, &reqMap)
-	json.Unmarshal(respBody, &respMap)
+	if err := json.Unmarshal(reqBody, &reqMap); err != nil {
+		slog.Warn("llm log: unmarshal request", "err", err)
+	}
+	if err := json.Unmarshal(respBody, &respMap); err != nil {
+		slog.Warn("llm log: unmarshal response", "err", err)
+	}
 	entry["request"] = reqMap
 	entry["response"] = respMap
 
-	data, _ := json.MarshalIndent(entry, "", "  ")
-	os.WriteFile(filename, data, 0o644)
+	data, err := json.MarshalIndent(entry, "", "  ")
+	if err != nil {
+		slog.Warn("llm log: marshal", "err", err)
+		return
+	}
+	if err := os.WriteFile(filename, data, 0o644); err != nil {
+		slog.Warn("llm log: write", "err", err)
+	}
 }
 
 // APIError represents an HTTP API error from OpenRouter.
 type APIError struct {
 	StatusCode int
 	Body       string
+	RetryAfter time.Duration // from Retry-After header, 0 if not present
 }
 
 func (e *APIError) Error() string {

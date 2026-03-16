@@ -1,39 +1,46 @@
-// Package storage implements domain interfaces using SQLite (modernc.org/sqlite).
+// Package storage implements domain interfaces using SQLite (ncruces/go-sqlite3).
 // This file provides the low-level Database wrapper implementing domain.DatabaseManager.
 package storage
 
 import (
 	"database/sql"
 	"fmt"
-	"sync"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 // Database wraps a SQLite connection with schema management, bulk-operation
-// scoping (Hold/Release), and fingerprinting for stale-cache detection.
+// scoping and fingerprinting for stale-cache detection.
 // Implements domain.DatabaseManager.
 type Database struct {
 	path       string
-	mu         sync.Mutex
 	db         *sql.DB
-	held       bool
 	schemaInit bool
 }
 
 // NewDatabase opens (or creates) a SQLite database at the given path.
 // Use ":memory:" for in-memory databases (testing).
 func NewDatabase(path string) (*Database, error) {
-	db, err := sql.Open("sqlite", path)
+	dsn := path
+	if path != ":memory:" {
+		dsn = "file:" + path
+	}
+
+	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite %s: %w", path, err)
 	}
 
+	// Pin to one connection: ensures PRAGMAs persist on the same connection.
+	db.SetMaxOpenConns(1)
+
 	// Pragmas for performance
 	for _, pragma := range []string{
-		"PRAGMA journal_mode=DELETE",
-		"PRAGMA busy_timeout=5000",
+		"PRAGMA journal_mode=WAL",
+		"PRAGMA busy_timeout=10000",
 		"PRAGMA foreign_keys=ON",
+		"PRAGMA synchronous=NORMAL",
 		"PRAGMA cache_size=-64000",
 		"PRAGMA temp_store=MEMORY",
 	} {
@@ -57,20 +64,6 @@ func (d *Database) DB() *sql.DB { return d.db }
 
 // Close closes the database connection.
 func (d *Database) Close() error { return d.db.Close() }
-
-// Hold keeps the connection in a transaction for bulk operations.
-func (d *Database) Hold() error {
-	d.mu.Lock()
-	d.held = true
-	return nil
-}
-
-// Release commits and ends the bulk-operation scope.
-func (d *Database) Release() error {
-	d.held = false
-	d.mu.Unlock()
-	return nil
-}
 
 // InitSchema creates all tables, indexes, FTS5, and triggers.
 func (d *Database) InitSchema() error {
@@ -110,6 +103,10 @@ func (d *Database) InitSchema() error {
 		CREATE TABLE IF NOT EXISTS db_meta (
 			key   TEXT PRIMARY KEY,
 			value TEXT NOT NULL
+		);
+
+		CREATE TABLE IF NOT EXISTS processed_commits (
+			hash TEXT PRIMARY KEY
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_memories_type ON memories(type);
@@ -171,6 +168,7 @@ func (d *Database) DropAll() error {
 		DROP TABLE IF EXISTS memories;
 		DROP TABLE IF EXISTS build_meta;
 		DROP TABLE IF EXISTS db_meta;
+		DROP TABLE IF EXISTS processed_commits;
 	`
 	if _, err := d.db.Exec(drops); err != nil {
 		return fmt.Errorf("drop all: %w", err)
@@ -194,5 +192,53 @@ func (d *Database) SetFingerprint(fp string) error {
 	_, err := d.db.Exec(
 		"INSERT OR REPLACE INTO db_meta (key, value) VALUES ('json_fingerprint', ?)", fp,
 	)
+	return err
+}
+
+// ReadProcessed returns all commit hashes marked as processed.
+func (d *Database) ReadProcessed() (map[string]bool, error) {
+	rows, err := d.db.Query("SELECT hash FROM processed_commits")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := map[string]bool{}
+	for rows.Next() {
+		var h string
+		if err := rows.Scan(&h); err != nil {
+			return nil, err
+		}
+		result[h] = true
+	}
+	return result, rows.Err()
+}
+
+// AddProcessed inserts commit hashes, ignoring duplicates.
+func (d *Database) AddProcessed(hashes map[string]bool) error {
+	if len(hashes) == 0 {
+		return nil
+	}
+	tx, err := d.db.Begin()
+	if err != nil {
+		return err
+	}
+	stmt, err := tx.Prepare("INSERT OR IGNORE INTO processed_commits (hash) VALUES (?)")
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+	for h := range hashes {
+		if _, err := stmt.Exec(h); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// ClearProcessed removes all processed commit records.
+func (d *Database) ClearProcessed() error {
+	_, err := d.db.Exec("DELETE FROM processed_commits")
 	return err
 }

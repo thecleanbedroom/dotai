@@ -57,10 +57,3 @@ func (f *MemoryFactory) Score(m *domain.Memory) *domain.Memory {
 
 	return m
 }
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}

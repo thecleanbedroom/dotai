@@ -12,65 +12,131 @@ import (
 
 // SynthesisAgent handles the two-phase synthesis pass: triage + linking.
 type SynthesisAgent struct {
-	llm     domain.LLMCaller
-	json    domain.JSONStore
-	dataDir string
+	llm  domain.LLMCaller
+	json domain.JSONStore
 }
 
 // NewSynthesisAgent creates a synthesis agent.
-func NewSynthesisAgent(llm domain.LLMCaller, jsonStore domain.JSONStore, dataDir string) *SynthesisAgent {
+func NewSynthesisAgent(llm domain.LLMCaller, jsonStore domain.JSONStore) *SynthesisAgent {
 	return &SynthesisAgent{
-		llm:     llm,
-		json:    jsonStore,
-		dataDir: dataDir,
+		llm:  llm,
+		json: jsonStore,
 	}
 }
 
-// Run executes the full synthesis pass.
-func (s *SynthesisAgent) Run(ctx context.Context) error {
-	// Read all memories
-	memories, err := s.json.ReadAll(s.dataDir)
+// RunIncremental runs synthesis on NEW memories against existing corpus.
+// Phase 1 (Triage): accept/reject new memories.
+// Phase 2 (Linking): find relationships between accepted new and existing.
+func (s *SynthesisAgent) RunIncremental(ctx context.Context, newMemoryIDs []string) error {
+	// Read all memories from disk
+	allMemories, err := s.json.ReadAll()
 	if err != nil {
 		return fmt.Errorf("read memories: %w", err)
 	}
-	if len(memories) == 0 {
-		fmt.Fprintln(os.Stderr, "  no memories to synthesize")
-		return nil
+
+	// Split into new vs existing
+	newIDSet := make(map[string]bool, len(newMemoryIDs))
+	for _, id := range newMemoryIDs {
+		newIDSet[id] = true
 	}
 
-	fmt.Fprintf(os.Stderr, "  synthesis: processing %d memories\n", len(memories))
-
-	// Phase 1: Triage
-	triageResult, err := s.triage(ctx, memories)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "  triage failed: %v\n", err)
-		// Continue with linking even if triage fails
-	} else {
-		if err := s.applyTriage(triageResult, memories); err != nil {
-			fmt.Fprintf(os.Stderr, "  apply triage failed: %v\n", err)
+	var newMemories, existingMemories []*domain.Memory
+	for _, m := range allMemories {
+		if newIDSet[m.ID] {
+			newMemories = append(newMemories, m)
+		} else {
+			existingMemories = append(existingMemories, m)
 		}
 	}
 
-	// Phase 2: Linking
-	linkResult, err := s.link(ctx, memories)
+	if len(newMemories) == 0 {
+		return nil
+	}
+
+	// Build compact corpus of existing memories for context
+	existingCorpus := serializeCompact(existingMemories)
+
+	// Phase 1: Triage
+	fmt.Fprintf(os.Stderr, "    phase 1: triaging %d new memories against %d existing...\n",
+		len(newMemories), len(existingMemories))
+
+	triageResult, err := s.triage(ctx, newMemories, existingCorpus)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "    triage failed: %v (accepting all)\n", err)
+		// On failure, accept everything so linking can still run
+	} else if triageResult != nil {
+		s.applyTriage(triageResult, newMemories)
+	}
+
+	// Reload in case triage deactivated some
+	allMemories, err = s.json.ReadAll()
+	if err != nil {
+		return fmt.Errorf("re-read memories after triage: %w", err)
+	}
+	var acceptedNew []*domain.Memory
+	for _, m := range allMemories {
+		if newIDSet[m.ID] && m.Active {
+			acceptedNew = append(acceptedNew, m)
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "    phase 1: %d accepted, %d rejected\n",
+		len(acceptedNew), len(newMemories)-len(acceptedNew))
+
+	if len(acceptedNew) == 0 {
+		return nil
+	}
+
+	// Phase 2: Linking — compare accepted new against full corpus
+	fullCorpus := serializeCompact(allMemories)
+	fmt.Fprintf(os.Stderr, "    phase 2: linking %d memories against corpus of %d...\n",
+		len(acceptedNew), len(allMemories))
+
+	linkResult, err := s.link(ctx, acceptedNew, fullCorpus)
 	if err != nil {
 		return fmt.Errorf("linking: %w", err)
 	}
 
-	return s.applyLinks(linkResult, memories)
+	return s.applyLinks(linkResult, allMemories)
 }
 
-func (s *SynthesisAgent) triage(ctx context.Context, memories []*domain.Memory) (map[string]any, error) {
-	// Build corpus of existing memories
-	corpus := buildCorpus(memories)
+// RunFull runs a full re-synthesis pass on ALL existing memories (--synthesis flag).
+// Skips triage (all memories are established). Only runs linking.
+func (s *SynthesisAgent) RunFull(ctx context.Context) error {
+	allMemories, err := s.json.ReadAll()
+	if err != nil {
+		return fmt.Errorf("read memories: %w", err)
+	}
+	if len(allMemories) == 0 {
+		fmt.Fprintln(os.Stderr, "  no memories to synthesize")
+		return nil
+	}
 
-	result, err := CallWithRetries(s.llm, func(caller domain.LLMCaller) (string, error) {
+	fmt.Fprintf(os.Stderr, "  re-synthesis: relinking %d memories...\n", len(allMemories))
+
+	corpus := serializeCompact(allMemories)
+	linkResult, err := s.link(ctx, allMemories, corpus)
+	if err != nil {
+		return fmt.Errorf("linking: %w", err)
+	}
+
+	return s.applyLinks(linkResult, allMemories)
+}
+
+func (s *SynthesisAgent) triage(ctx context.Context, newMemories []*domain.Memory, existingCorpus string) (map[string]any, error) {
+	newData := serializeFull(newMemories)
+
+	userMsg := fmt.Sprintf("NEW memories (%d):\n```json\n%s\n```\n\nEXISTING corpus:\n```json\n%s\n```",
+		len(newMemories), newData, existingCorpus)
+
+	result, err := CallWithRetries(ctx, s.llm, func(caller domain.LLMCaller) (string, error) {
 		return caller.Chat(
 			[]domain.Message{
 				{Role: "system", Content: config.SynthesisTriagePrompt()},
-				{Role: "user", Content: corpus},
+				{Role: "user", Content: userMsg},
 			},
 			domain.ChatOpts{
+				Ctx:            ctx,
 				ResponseSchema: config.SynthesisTriageSchema(),
 				Label:          "synthesis_triage",
 			},
@@ -82,21 +148,29 @@ func (s *SynthesisAgent) triage(ctx context.Context, memories []*domain.Memory) 
 
 	var parsed map[string]any
 	if err := json.Unmarshal([]byte(result), &parsed); err != nil {
-		return nil, fmt.Errorf("parse triage result: %w", err)
+		preview := result
+		if len(preview) > 200 {
+			preview = preview[:200] + "…"
+		}
+		return nil, fmt.Errorf("parse triage result: %w\nraw response: %s", err, preview)
 	}
 	return parsed, nil
 }
 
-func (s *SynthesisAgent) link(ctx context.Context, memories []*domain.Memory) (map[string]any, error) {
-	corpus := buildCorpus(memories)
+func (s *SynthesisAgent) link(ctx context.Context, memories []*domain.Memory, corpus string) (map[string]any, error) {
+	batchData := serializeFull(memories)
 
-	result, err := CallWithRetries(s.llm, func(caller domain.LLMCaller) (string, error) {
+	userMsg := fmt.Sprintf("BATCH memories (%d):\n```json\n%s\n```\n\nCORPUS:\n```json\n%s\n```",
+		len(memories), batchData, corpus)
+
+	result, err := CallWithRetries(ctx, s.llm, func(caller domain.LLMCaller) (string, error) {
 		return caller.Chat(
 			[]domain.Message{
 				{Role: "system", Content: config.SynthesisLinkingPrompt()},
-				{Role: "user", Content: corpus},
+				{Role: "user", Content: userMsg},
 			},
 			domain.ChatOpts{
+				Ctx:            ctx,
 				ResponseSchema: config.SynthesisLinkingSchema(),
 				Label:          "synthesis_linking",
 			},
@@ -113,10 +187,10 @@ func (s *SynthesisAgent) link(ctx context.Context, memories []*domain.Memory) (m
 	return parsed, nil
 }
 
-func (s *SynthesisAgent) applyTriage(result map[string]any, memories []*domain.Memory) error {
+func (s *SynthesisAgent) applyTriage(result map[string]any, memories []*domain.Memory) {
 	decisions, ok := result["decisions"].([]any)
 	if !ok {
-		return nil
+		return
 	}
 
 	memByID := make(map[string]*domain.Memory)
@@ -133,16 +207,16 @@ func (s *SynthesisAgent) applyTriage(result map[string]any, memories []*domain.M
 		action, _ := dec["action"].(string)
 
 		switch action {
-		case "deactivate":
+		case "deactivate", "reject":
 			if m, ok := memByID[id]; ok {
 				m.Active = false
-				s.json.Write(m, s.dataDir)
+				if err := s.json.Write(m); err != nil {
+					fmt.Fprintf(os.Stderr, "    warning: deactivate write %s: %v\n", id[:min(8, len(id))], err)
+				}
+				fmt.Fprintf(os.Stderr, "    deactivated memory %s\n", id[:min(8, len(id))])
 			}
-		case "accept":
-			// No-op for now
 		}
 	}
-	return nil
 }
 
 func (s *SynthesisAgent) applyLinks(result map[string]any, memories []*domain.Memory) error {
@@ -156,13 +230,21 @@ func (s *SynthesisAgent) applyLinks(result map[string]any, memories []*domain.Me
 		memByID[m.ID] = m
 	}
 
+	linkCount := 0
 	for _, l := range links {
 		link, ok := l.(map[string]any)
 		if !ok {
 			continue
 		}
+		// Support both field naming conventions
 		idA, _ := link["memory_id_a"].(string)
+		if idA == "" {
+			idA, _ = link["source"].(string)
+		}
 		idB, _ := link["memory_id_b"].(string)
+		if idB == "" {
+			idB, _ = link["target"].(string)
+		}
 		rel, _ := link["relationship"].(string)
 		strength, _ := link["strength"].(float64)
 
@@ -173,29 +255,75 @@ func (s *SynthesisAgent) applyLinks(result map[string]any, memories []*domain.Me
 			continue
 		}
 
-		// Add link to memory A's JSON
+		// Check for duplicate links
 		memA := memByID[idA]
+		duplicate := false
+		for _, existing := range memA.Links {
+			if t, _ := existing["target"].(string); t == idB {
+				if r, _ := existing["relationship"].(string); r == rel {
+					duplicate = true
+					break
+				}
+			}
+		}
+		if duplicate {
+			continue
+		}
+
 		memA.Links = append(memA.Links, map[string]any{
+			"source":       idA,
 			"target":       idB,
 			"relationship": rel,
 			"strength":     strength,
 		})
-		s.json.Write(memA, s.dataDir)
+		if err := s.json.Write(memA); err != nil {
+			fmt.Fprintf(os.Stderr, "    warning: link write %s: %v\n", idA[:min(8, len(idA))], err)
+		}
+		linkCount++
 	}
 
+	if linkCount > 0 {
+		fmt.Fprintf(os.Stderr, "    → %d new links created\n", linkCount)
+	}
 	return nil
 }
 
-func buildCorpus(memories []*domain.Memory) string {
-	var result string
+// serializeFull returns full JSON representation of memories for LLM prompts.
+func serializeFull(memories []*domain.Memory) string {
+	var items []map[string]any
 	for _, m := range memories {
-		result += fmt.Sprintf("## Memory %s [%s] (importance: %d, confidence: %d)\n",
-			m.ID, m.Type, m.Importance, m.Confidence)
-		result += m.Summary + "\n"
-		if len(m.Tags) > 0 {
-			result += fmt.Sprintf("Tags: %v\n", m.Tags)
-		}
-		result += "\n"
+		items = append(items, map[string]any{
+			"id":             m.ID,
+			"summary":        m.Summary,
+			"type":           m.Type,
+			"confidence":     m.Confidence,
+			"importance":     m.Importance,
+			"file_paths":     m.FilePaths,
+			"tags":           m.Tags,
+			"source_commits": m.SourceCommits,
+		})
 	}
-	return result
+	data, err := json.Marshal(items)
+	if err != nil {
+		return "[]"
+	}
+	return string(data)
+}
+
+// serializeCompact returns compact summary for corpus context (less tokens).
+func serializeCompact(memories []*domain.Memory) string {
+	var items []map[string]any
+	for _, m := range memories {
+		items = append(items, map[string]any{
+			"id":      m.ID,
+			"summary": m.Summary,
+			"type":    m.Type,
+			"tags":    m.Tags,
+		})
+	}
+	data, err := json.Marshal(items)
+	if err != nil {
+		return "[]"
+	}
+	return string(data)
 }

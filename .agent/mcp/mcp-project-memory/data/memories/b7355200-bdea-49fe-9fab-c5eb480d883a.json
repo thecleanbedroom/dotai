@@ -1,0 +1,22 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 12,
+  "created_at": "2026-03-14T16:12:41Z",
+  "file_paths": [],
+  "id": "b7355200-bdea-49fe-9fab-c5eb480d883a",
+  "importance": 15,
+  "source_commits": [
+    "7075ac4488581b7cd5a62c620033b4f677c461b4"
+  ],
+  "summary": "Changed the 429 rate-limit warning message in openrouter.py to a more discreet format with an hourglass emoji prefix, consolidating the two-line message into a single line.",
+  "tags": [
+    "openrouter",
+    "rate-limiting",
+    "logging",
+    "style",
+    "message-format"
+  ],
+  "type": "context"
+}

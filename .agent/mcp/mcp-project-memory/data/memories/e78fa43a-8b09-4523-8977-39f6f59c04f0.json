@@ -1,0 +1,25 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-14T16:12:41Z",
+  "file_paths": [],
+  "id": "e78fa43a-8b09-4523-8977-39f6f59c04f0",
+  "importance": 95,
+  "source_commits": [
+    "74ce2b2094c7c039d38538e071aed9cd23703982"
+  ],
+  "summary": "Replaced the Python gemini-gateway CLI script with a full Go MCP server implementation. The new Go binary supports dual transport (stdio for auto-launch by Antigravity, HTTP via --http flag for dev), 9 MCP tools (dispatch, batch, status, jobs, pacing, stats, errors, cancel, retry), adaptive rate-limiting with per-model pacing, SOLID architecture with 4 segregated store interfaces, 50+ tests across 8 files, and a Makefile for setup/dev/build/test/coverage/install-mcp. Air hot-reload is configured for development.",
+  "tags": [
+    "gemini-gateway",
+    "mcp-server",
+    "go",
+    "dual-transport",
+    "rate-limiting",
+    "batch-dispatch",
+    "solid-architecture",
+    "sqlite"
+  ],
+  "type": "context"
+}

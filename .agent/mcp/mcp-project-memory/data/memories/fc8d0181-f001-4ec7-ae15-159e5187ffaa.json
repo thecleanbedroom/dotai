@@ -1,0 +1,28 @@
+{
+  "id": "fc8d0181-f001-4ec7-ae15-159e5187ffaa",
+  "type": "refactor",
+  "summary": "Extracted config into config/ package with settings.py (user-facing), internal.py (operational constants), prompts/, and schemas/ to improve configuration management and maintainability.",
+  "confidence": 58,
+  "importance": 75,
+  "source_commits": [
+    "5f67ec0afc6aa5bf82218492b04f17be136a6023"
+  ],
+  "file_paths": [
+    "config/settings.py",
+    "config/internal.py",
+    "config/prompts/",
+    "config/schemas/"
+  ],
+  "tags": [
+    "config",
+    "refactor",
+    "modularity",
+    "settings",
+    "internal",
+    "prompts",
+    "schemas"
+  ],
+  "links": [],
+  "created_at": "2026-03-13 18:22:47 -0500",
+  "active": false
+}

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/dotai/mcp-project-memory/internal/domain"
 )
@@ -93,7 +92,8 @@ func (s *LinkStore) DeleteForMemory(memoryID string) error {
 // ListAll lists all links up to the given limit.
 func (s *LinkStore) ListAll(limit int) ([]*domain.MemoryLink, error) {
 	rows, err := s.db.DB().Query(
-		fmt.Sprintf("SELECT id, memory_id_a, memory_id_b, relationship, strength, created_at FROM memory_links LIMIT %d", limit),
+		"SELECT id, memory_id_a, memory_id_b, relationship, strength, created_at FROM memory_links LIMIT ?",
+		limit,
 	)
 	if err != nil {
 		return nil, err

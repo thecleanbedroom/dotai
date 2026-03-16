@@ -3,10 +3,10 @@ package build
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/dotai/mcp-project-memory/internal/config"
 	"github.com/dotai/mcp-project-memory/internal/domain"
-	"github.com/google/uuid"
 )
 
 // ValidateExtraction validates and parses LLM extraction output into memories.
@@ -29,37 +29,13 @@ func ValidateExtraction(raw string) ([]*domain.Memory, error) {
 		}
 		m, err := validateMemoryDict(mMap, i)
 		if err != nil {
-			fmt.Printf("  warning: skipping memory %d: %v\n", i, err)
+			fmt.Fprintf(os.Stderr, "  warning: skipping memory %d: %v\n", i, err)
 			continue
 		}
 		memories = append(memories, m)
 	}
 
 	return memories, nil
-}
-
-// ValidateTriage validates triage LLM output.
-func ValidateTriage(raw string) (map[string]any, error) {
-	var data map[string]any
-	if err := json.Unmarshal([]byte(raw), &data); err != nil {
-		return nil, fmt.Errorf("parse triage JSON: %w", err)
-	}
-	if _, ok := data["decisions"].([]any); !ok {
-		return nil, fmt.Errorf("triage output missing 'decisions' array")
-	}
-	return data, nil
-}
-
-// ValidateLinking validates linking LLM output.
-func ValidateLinking(raw string) (map[string]any, error) {
-	var data map[string]any
-	if err := json.Unmarshal([]byte(raw), &data); err != nil {
-		return nil, fmt.Errorf("parse linking JSON: %w", err)
-	}
-	if _, ok := data["links"].([]any); !ok {
-		return nil, fmt.Errorf("linking output missing 'links' array")
-	}
-	return data, nil
 }
 
 // validateMemoryDict validates a single memory dictionary from LLM output.
@@ -72,8 +48,8 @@ func validateMemoryDict(m map[string]any, idx int) (*domain.Memory, error) {
 	}
 
 	memType, _ := m["type"].(string)
-	if !domain.MemoryTypes[memType] {
-		return nil, fmt.Errorf("memory %d: invalid type %q", idx, memType)
+	if memType == "" {
+		memType = "context" // default if missing
 	}
 
 	// Importance validation
@@ -118,14 +94,13 @@ func validateMemoryDict(m map[string]any, idx int) (*domain.Memory, error) {
 	}
 
 	mem := &domain.Memory{
-		ID:            uuid.New().String(),
+		// ID and CreatedAt are assigned by factory.Score() — single source of truth.
 		Summary:       summary,
 		Type:          memType,
 		Importance:    importance,
 		SourceCommits: sourceCommits,
 		FilePaths:     filePaths,
 		Tags:          tags,
-		CreatedAt:     domain.NowUTC(),
 		Active:        true,
 	}
 

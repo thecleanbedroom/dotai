@@ -1,0 +1,24 @@
+{
+  "id": "8a563448-9631-4135-98fc-1ea952f321f5",
+  "type": "refactor",
+  "summary": "Decided to relocate the project memory system from .agent/memory/ to .agent/mcp/mcp-project-memory/ to establish a convention for MCP server placement under .agent/mcp/ for discoverability and consistency.",
+  "confidence": 47,
+  "importance": 85,
+  "source_commits": [
+    "5f67ec0afc6aa5bf82218492b04f17be136a6023"
+  ],
+  "file_paths": [
+    ".agent/memory/",
+    ".agent/mcp/mcp-project-memory/"
+  ],
+  "tags": [
+    "mcp",
+    "project-memory",
+    "relocation",
+    "convention",
+    "agent-mcp"
+  ],
+  "links": [],
+  "created_at": "2026-03-13 18:22:47 -0500",
+  "active": false
+}

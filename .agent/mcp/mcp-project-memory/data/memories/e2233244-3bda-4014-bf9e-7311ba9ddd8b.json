@@ -1,0 +1,22 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 12,
+  "created_at": "2026-03-14T16:12:41Z",
+  "file_paths": [],
+  "id": "e2233244-3bda-4014-bf9e-7311ba9ddd8b",
+  "importance": 50,
+  "source_commits": [
+    "4b2753d26021bb410d775c40b841c9523b3e5570"
+  ],
+  "summary": "Added rules to the commit workflow: never git push (user responsibility), and if all changes are already staged, commit directly without asking for confirmation.",
+  "tags": [
+    "commit-workflow",
+    "rules",
+    "git-push",
+    "staged-changes",
+    "automation"
+  ],
+  "type": "context"
+}

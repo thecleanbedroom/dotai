@@ -1,0 +1,21 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-14T16:12:41Z",
+  "file_paths": [],
+  "id": "f23a5962-87af-4a31-af67-ee5753f625db",
+  "importance": 35,
+  "source_commits": [
+    "7424e6bef1ee1b79a4b0b6f2d8009686b82b84a0"
+  ],
+  "summary": "Added review suggestion handling to the implement workflow. After reporting completion, the user is invited to describe adjustments if needed. Review feedback is applied as continuation of the current implementation with a Review row added to the Progress table, and tests/static analysis re-run for non-trivial changes.",
+  "tags": [
+    "implement-workflow",
+    "review-feedback",
+    "progress-tracking",
+    "iteration"
+  ],
+  "type": "context"
+}

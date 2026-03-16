@@ -1,0 +1,30 @@
+{
+  "id": "6d78bfb4-7dfd-4809-a077-d3f5f573df4d",
+  "type": "refactor",
+  "summary": "Split monolithic models/stores into memory/ package with models.py, stores.py, json.py (JSON persistence), and db_rebuild.py to improve maintainability and testability.",
+  "confidence": 58,
+  "importance": 80,
+  "source_commits": [
+    "5f67ec0afc6aa5bf82218492b04f17be136a6023"
+  ],
+  "file_paths": [
+    "models/",
+    "stores/",
+    "memory/models.py",
+    "memory/stores.py",
+    "memory/json.py",
+    "memory/db_rebuild.py"
+  ],
+  "tags": [
+    "models",
+    "stores",
+    "refactor",
+    "modularity",
+    "memory-package",
+    "json",
+    "db-rebuild"
+  ],
+  "links": [],
+  "created_at": "2026-03-13 18:22:47 -0500",
+  "active": false
+}

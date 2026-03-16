@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"cmp"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/dotai/mcp-project-memory/internal/domain"
@@ -23,8 +26,7 @@ func NewMemoryStore(db *Database, link *LinkStore) *MemoryStore {
 
 func rowToMemory(row interface {
 	Scan(dest ...any) error
-}, cols []string,
-) (*domain.Memory, error) {
+}) (*domain.Memory, error) {
 	var (
 		id, summary, memType, createdAt, accessedAt string
 		confidence, importance, accessCount          int
@@ -51,9 +53,15 @@ func rowToMemory(row interface {
 		Active:      active != 0,
 	}
 
-	_ = json.Unmarshal([]byte(sourceCommitsJSON), &m.SourceCommits)
-	_ = json.Unmarshal([]byte(filePathsJSON), &m.FilePaths)
-	_ = json.Unmarshal([]byte(tagsJSON), &m.Tags)
+	if err := json.Unmarshal([]byte(sourceCommitsJSON), &m.SourceCommits); err != nil {
+		slog.Warn("unmarshal source_commits", "id", id, "err", err)
+	}
+	if err := json.Unmarshal([]byte(filePathsJSON), &m.FilePaths); err != nil {
+		slog.Warn("unmarshal file_paths", "id", id, "err", err)
+	}
+	if err := json.Unmarshal([]byte(tagsJSON), &m.Tags); err != nil {
+		slog.Warn("unmarshal tags", "id", id, "err", err)
+	}
 
 	if m.SourceCommits == nil {
 		m.SourceCommits = []string{}
@@ -74,7 +82,7 @@ func scanMemories(rows *sql.Rows) ([]*domain.Memory, error) {
 	defer rows.Close()
 	var result []*domain.Memory
 	for rows.Next() {
-		m, err := rowToMemory(rows, nil)
+		m, err := rowToMemory(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -97,17 +105,22 @@ func (s *MemoryStore) enrichWithLinks(memories []*domain.Memory) []*domain.Memor
 	args := toAnySlice(ids)
 
 	// Outgoing
-	outRows, _ := s.db.DB().Query(
+	outRows, err := s.db.DB().Query(
 		fmt.Sprintf("SELECT memory_id_a, memory_id_b, relationship, strength FROM memory_links WHERE memory_id_a IN (%s)", ph),
 		args...,
 	)
 	linksByID := map[string][]map[string]any{}
-	if outRows != nil {
+	if err != nil {
+		slog.Warn("enrichWithLinks outgoing query", "err", err)
+	} else {
 		defer outRows.Close()
 		for outRows.Next() {
 			var a, b, rel string
 			var str float64
-			outRows.Scan(&a, &b, &rel, &str)
+			if err := outRows.Scan(&a, &b, &rel, &str); err != nil {
+				slog.Warn("enrichWithLinks outgoing scan", "err", err)
+				continue
+			}
 			linksByID[a] = append(linksByID[a], map[string]any{
 				"target": b, "relationship": rel, "strength": str,
 			})
@@ -115,16 +128,21 @@ func (s *MemoryStore) enrichWithLinks(memories []*domain.Memory) []*domain.Memor
 	}
 
 	// Incoming
-	inRows, _ := s.db.DB().Query(
+	inRows, err := s.db.DB().Query(
 		fmt.Sprintf("SELECT memory_id_a, memory_id_b, relationship, strength FROM memory_links WHERE memory_id_b IN (%s)", ph),
 		args...,
 	)
-	if inRows != nil {
+	if err != nil {
+		slog.Warn("enrichWithLinks incoming query", "err", err)
+	} else {
 		defer inRows.Close()
 		for inRows.Next() {
 			var a, b, rel string
 			var str float64
-			inRows.Scan(&a, &b, &rel, &str)
+			if err := inRows.Scan(&a, &b, &rel, &str); err != nil {
+				slog.Warn("enrichWithLinks incoming scan", "err", err)
+				continue
+			}
 			linksByID[b] = append(linksByID[b], map[string]any{
 				"target": a, "relationship": rel, "strength": str, "direction": "incoming",
 			})
@@ -142,11 +160,20 @@ func (s *MemoryStore) Create(m *domain.Memory) error {
 	if m.AccessedAt == "" {
 		m.AccessedAt = domain.NowUTC()
 	}
-	sc, _ := json.Marshal(m.SourceCommits)
-	fp, _ := json.Marshal(m.FilePaths)
-	tg, _ := json.Marshal(m.Tags)
+	sc, err := json.Marshal(m.SourceCommits)
+	if err != nil {
+		return fmt.Errorf("marshal source_commits: %w", err)
+	}
+	fp, err := json.Marshal(m.FilePaths)
+	if err != nil {
+		return fmt.Errorf("marshal file_paths: %w", err)
+	}
+	tg, err := json.Marshal(m.Tags)
+	if err != nil {
+		return fmt.Errorf("marshal tags: %w", err)
+	}
 
-	_, err := s.db.DB().Exec(
+	_, err = s.db.DB().Exec(
 		`INSERT INTO memories (id, summary, type, confidence, importance, source_commits,
 		 file_paths, tags, created_at, accessed_at, access_count, active)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -162,7 +189,7 @@ func (s *MemoryStore) Get(id string) (*domain.Memory, error) {
 	row := s.db.DB().QueryRow(
 		fmt.Sprintf("SELECT %s FROM memories WHERE id = ?", memoryCols), id,
 	)
-	m, err := rowToMemory(row, nil)
+	m, err := rowToMemory(row)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -191,11 +218,20 @@ func (s *MemoryStore) GetMany(ids []string) ([]*domain.Memory, error) {
 
 // Update overwrites an existing memory's fields.
 func (s *MemoryStore) Update(m *domain.Memory) error {
-	sc, _ := json.Marshal(m.SourceCommits)
-	fp, _ := json.Marshal(m.FilePaths)
-	tg, _ := json.Marshal(m.Tags)
+	sc, err := json.Marshal(m.SourceCommits)
+	if err != nil {
+		return fmt.Errorf("marshal source_commits: %w", err)
+	}
+	fp, err := json.Marshal(m.FilePaths)
+	if err != nil {
+		return fmt.Errorf("marshal file_paths: %w", err)
+	}
+	tg, err := json.Marshal(m.Tags)
+	if err != nil {
+		return fmt.Errorf("marshal tags: %w", err)
+	}
 
-	_, err := s.db.DB().Exec(
+	_, err = s.db.DB().Exec(
 		`UPDATE memories SET summary=?, type=?, confidence=?, importance=?,
 		 source_commits=?, file_paths=?, tags=?, accessed_at=?,
 		 access_count=?, active=? WHERE id=?`,
@@ -308,36 +344,55 @@ func (s *MemoryStore) Count(activeOnly bool) (int, error) {
 // Stats returns aggregate statistics.
 func (s *MemoryStore) Stats() (map[string]any, error) {
 	var total int
-	s.db.DB().QueryRow("SELECT COUNT(*) FROM memories WHERE active = 1").Scan(&total)
+	if err := s.db.DB().QueryRow("SELECT COUNT(*) FROM memories WHERE active = 1").Scan(&total); err != nil {
+		slog.Warn("stats: count query", "err", err)
+	}
 
 	byType := map[string]int{}
-	rows, _ := s.db.DB().Query("SELECT type, COUNT(*) FROM memories WHERE active = 1 GROUP BY type")
-	if rows != nil {
+	rows, err := s.db.DB().Query("SELECT type, COUNT(*) FROM memories WHERE active = 1 GROUP BY type")
+	if err != nil {
+		slog.Warn("stats: by_type query", "err", err)
+	} else {
 		defer rows.Close()
 		for rows.Next() {
 			var t string
 			var c int
-			rows.Scan(&t, &c)
+			if err := rows.Scan(&t, &c); err != nil {
+				slog.Warn("stats: by_type scan", "err", err)
+				continue
+			}
 			byType[t] = c
 		}
 	}
 
 	var avgConf, minConf, maxConf sql.NullFloat64
-	s.db.DB().QueryRow("SELECT AVG(confidence), MIN(confidence), MAX(confidence) FROM memories WHERE active = 1").Scan(&avgConf, &minConf, &maxConf)
+	if err := s.db.DB().QueryRow("SELECT AVG(confidence), MIN(confidence), MAX(confidence) FROM memories WHERE active = 1").Scan(&avgConf, &minConf, &maxConf); err != nil {
+		slog.Warn("stats: confidence query", "err", err)
+	}
 
 	var avgImp sql.NullFloat64
-	s.db.DB().QueryRow("SELECT AVG(importance) FROM memories WHERE active = 1").Scan(&avgImp)
+	if err := s.db.DB().QueryRow("SELECT AVG(importance) FROM memories WHERE active = 1").Scan(&avgImp); err != nil {
+		slog.Warn("stats: importance query", "err", err)
+	}
 
 	// Top files
 	topFiles := map[string]int{}
-	fileRows, _ := s.db.DB().Query("SELECT file_paths FROM memories WHERE active = 1")
-	if fileRows != nil {
+	fileRows, err := s.db.DB().Query("SELECT file_paths FROM memories WHERE active = 1")
+	if err != nil {
+		slog.Warn("stats: top_files query", "err", err)
+	} else {
 		defer fileRows.Close()
 		for fileRows.Next() {
 			var fp string
-			fileRows.Scan(&fp)
+			if err := fileRows.Scan(&fp); err != nil {
+				slog.Warn("stats: top_files scan", "err", err)
+				continue
+			}
 			var paths []string
-			json.Unmarshal([]byte(fp), &paths)
+			if err := json.Unmarshal([]byte(fp), &paths); err != nil {
+				slog.Warn("stats: unmarshal file_paths", "err", err)
+				continue
+			}
 			for _, p := range paths {
 				topFiles[p]++
 			}
@@ -352,13 +407,9 @@ func (s *MemoryStore) Stats() (map[string]any, error) {
 	for k, v := range topFiles {
 		sorted = append(sorted, kv{k, v})
 	}
-	for i := 0; i < len(sorted); i++ {
-		for j := i + 1; j < len(sorted); j++ {
-			if sorted[j].v > sorted[i].v {
-				sorted[i], sorted[j] = sorted[j], sorted[i]
-			}
-		}
-	}
+	slices.SortFunc(sorted, func(a, b kv) int {
+		return cmp.Compare(b.v, a.v) // descending
+	})
 	if len(sorted) > 10 {
 		sorted = sorted[:10]
 	}

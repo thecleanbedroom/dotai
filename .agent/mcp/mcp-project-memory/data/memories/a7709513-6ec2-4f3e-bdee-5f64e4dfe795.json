@@ -1,0 +1,22 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-14T16:12:41Z",
+  "file_paths": [],
+  "id": "a7709513-6ec2-4f3e-bdee-5f64e4dfe795",
+  "importance": 75,
+  "source_commits": [
+    "56f0aa1ca96de35ed1f9c9ef502c6cf0a9dd1e4e"
+  ],
+  "summary": "Fixed PROJECT_ROOT detection in the memory system to use git rev-parse --show-toplevel instead of __file__.resolve(), which follows symlinks back to the source repo and causes shared memory systems to write all DBs to the wrong location. Falls back to __file__-based resolution when git is unavailable.",
+  "tags": [
+    "project-memory",
+    "project-root",
+    "symlinks",
+    "git-detection",
+    "bugfix"
+  ],
+  "type": "context"
+}

@@ -1,0 +1,21 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 8,
+  "created_at": "2026-03-14T16:16:32Z",
+  "file_paths": [],
+  "id": "edd0356f-f64b-4406-be90-69c00bcd9ca2",
+  "importance": 60,
+  "source_commits": [
+    "cdd941dfad110f37eee3362fb756153ecb31e4b4"
+  ],
+  "summary": "Updated task management to remove explicit TODO.md reference and keep working notes in planning docs. Enforced naming conventions at write-time rather than deferring to creation-time.",
+  "tags": [
+    "task-management",
+    "planning",
+    "naming-conventions",
+    "context-management"
+  ],
+  "type": "context"
+}

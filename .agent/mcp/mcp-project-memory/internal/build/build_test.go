@@ -116,15 +116,18 @@ func TestValidateExtraction_Valid(t *testing.T) {
 	}
 }
 
-func TestValidateExtraction_InvalidType(t *testing.T) {
-	raw := `{"memories":[{"summary":"Test","type":"invalid_type","importance":50,"source_commits":["abc"],"file_paths":[],"tags":[]}]}`
+func TestValidateExtraction_AnyType(t *testing.T) {
+	raw := `{"memories":[{"summary":"Test","type":"custom_type","importance":50,"source_commits":["abcdef"],"file_paths":[],"tags":[]}]}`
 	memories, err := build.ValidateExtraction(raw)
 	if err != nil {
 		t.Fatalf("ValidateExtraction: %v", err)
 	}
-	// Invalid type should be skipped
-	if len(memories) != 0 {
-		t.Errorf("expected 0 memories (invalid type), got %d", len(memories))
+	// Any non-empty type should be accepted
+	if len(memories) != 1 {
+		t.Errorf("expected 1 memory (any type accepted), got %d", len(memories))
+	}
+	if memories[0].Type != "custom_type" {
+		t.Errorf("expected type 'custom_type', got %q", memories[0].Type)
 	}
 }
 

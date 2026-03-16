@@ -23,7 +23,12 @@ func setupTestServer(t *testing.T) (*server.McpServer, *storage.Database) {
 	linkStore := storage.NewLinkStore(db)
 	memStore := storage.NewMemoryStore(db, linkStore)
 	buildMeta := storage.NewBuildMetaStore(db)
-	jsonStore := storage.NewJSONStore()
+
+	tempDir := t.TempDir()
+	paths := storage.NewPaths(tempDir)
+	jsonStore := storage.NewJSONStore(paths)
+	rebuilder := storage.NewRebuilder(db, memStore, linkStore, jsonStore)
+
 	insp := inspector.New(memStore, linkStore, buildMeta, db, &testRawQuerier{db: db})
 
 	s := &server.McpServer{
@@ -35,7 +40,7 @@ func setupTestServer(t *testing.T) (*server.McpServer, *storage.Database) {
 		Inspector: insp,
 		DB:        db,
 		JSONStore:  jsonStore,
-		DataDir:   t.TempDir(),
+		Rebuilder: rebuilder,
 	}
 	return s, db
 }
@@ -92,9 +97,9 @@ func TestEnsureFresh_UpToDate(t *testing.T) {
 		SourceCommits: []string{}, FilePaths: []string{}, Tags: []string{},
 		CreatedAt: "2025-01-01T00:00:00Z", Active: true,
 	}
-	js.Write(m, s.DataDir)
+	js.Write(m)
 
-	fp, _ := js.ComputeFingerprint(s.DataDir)
+	fp, _ := js.ComputeFingerprint()
 	s.DB.SetFingerprint(fp)
 
 	rebuilt, err := s.EnsureFresh()
@@ -117,7 +122,7 @@ func TestEnsureFresh_Stale(t *testing.T) {
 		SourceCommits: []string{}, FilePaths: []string{}, Tags: []string{},
 		CreatedAt: "2025-01-01T00:00:00Z", Active: true,
 	}
-	js.Write(m, s.DataDir)
+	js.Write(m)
 
 	// Set a different fingerprint
 	s.DB.SetFingerprint("old-fingerprint")

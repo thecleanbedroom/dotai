@@ -1,0 +1,31 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 25,
+  "created_at": "2026-03-14T16:12:30Z",
+  "file_paths": [
+    ".agent/mcp/mcp-project-memory/internal/llm/openrouter.go",
+    ".agent/mcp/mcp-project-memory/internal/server/server.go",
+    ".agent/mcp/mcp-project-memory/internal/storage/sqlite.go",
+    ".agent/mcp/mcp-project-memory/pyproject.toml",
+    ".agent/mcp/mcp-project-memory/src/__init__.py"
+  ],
+  "id": "650d7db3-e4c0-4443-abe1-0ffdb2e37897",
+  "importance": 95,
+  "source_commits": [
+    "97f3cee5f689c506b4335b1d3ac5eaa68aaa9e68"
+  ],
+  "summary": "Ported the entire project-memory MCP server from Python to Go, adopting a Pure Go MCP gateway with dual transport support (stdio default, --http for dev). The new architecture follows SOLID/DRY principles with segregated Reader/Writer/Searcher interfaces, organized across 10 packages (domain, config, storage, server, inspector, git, llm, build). Uses modernc.org/sqlite for pure Go SQLite without CGO dependencies. Implements 5 MCP tools plus a briefing prompt via the mcp-go SDK, with a 6-phase build pipeline: discover, batch, extract, synthesize, score. Includes an OpenRouter LLM client with rate limiting and retry logic, achieving 70.5% statement coverage with 129 tests.",
+  "tags": [
+    "port",
+    "go",
+    "python",
+    "mcp",
+    "architecture",
+    "soli-d",
+    "sqlite",
+    "sdk"
+  ],
+  "type": "architecture"
+}

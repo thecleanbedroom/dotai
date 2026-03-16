@@ -1,18 +1,16 @@
-.PHONY: dev build run test coverage vet clean install setup install-mcp
+.PHONY: build run test coverage vet clean install setup install-mcp
 
-BINARY  := mcp-project-memory
-BUILD   := ./cmd/mcp-project-memory
-OUT     := ./$(BINARY)
+BINARY      := mcp-project-memory
+BUILD       := ./cmd/mcp-project-memory
+OUT         := ./$(BINARY)
+MCP_CONFIG  := $(HOME)/.gemini/antigravity/mcp_config.json
+BINARY_PATH := $(abspath $(OUT))
 
 # ── Development ──────────────────────────────────────────────
 
-## Start dev server with hot-reload
-dev:
-	go run github.com/air-verse/air@latest
-
-## Run the server directly (HTTP mode)
+## Run the server directly
 run: build
-	$(OUT) serve --http
+	$(OUT)
 
 # ── Build ────────────────────────────────────────────────────
 
@@ -32,7 +30,7 @@ test:
 
 ## Run tests with coverage report
 coverage:
-	go test ./internal/... -count=1 -coverprofile=coverage.out -covermode=count
+	go test ./... -count=1 -coverprofile=coverage.out -covermode=count
 	go tool cover -func=coverage.out
 	@echo "---"
 	@go tool cover -func=coverage.out | tail -1
@@ -65,6 +63,10 @@ build-synthesis:
 reset:
 	$(OUT) reset
 
+## List free models that meet minimum context requirements
+models:
+	$(OUT) models
+
 # ── Setup ────────────────────────────────────────────────────
 
 ## First-time setup: copy .env, tidy deps
@@ -72,10 +74,9 @@ setup:
 	@test -f .env || cp .env.example .env && echo "Created .env from .env.example"
 	go mod tidy
 	@mkdir -p data
-	@echo "Ready. Run 'make dev' to start."
+	@echo "Ready. Run 'make run' to start."
 
-MCP_CONFIG  := $(HOME)/.gemini/antigravity/mcp_config.json
-BINARY_PATH := $(shell cd . && pwd)/$(BINARY)
+
 
 ## Register project-memory in Antigravity mcp_config.json (stdio mode)
 install-mcp: build
@@ -90,12 +91,12 @@ install-mcp: build
 		echo "Added project-memory (command: $(BINARY_PATH)) to $(MCP_CONFIG)"; \
 	fi
 
+
 # ── Cleanup ──────────────────────────────────────────────────
 
 ## Remove build artifacts
 clean:
 	rm -f $(BINARY) coverage.out coverage.html
-	rm -rf tmp/
 
 # ── Help ─────────────────────────────────────────────────────
 

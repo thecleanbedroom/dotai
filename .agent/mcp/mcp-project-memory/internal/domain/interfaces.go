@@ -53,15 +53,20 @@ type BuildMetaStore interface {
 	ListBuilds(limit int) ([]*BuildMetaEntry, error)
 }
 
+// ProcessedTracker tracks which git commits have been processed.
+type ProcessedTracker interface {
+	ReadProcessed() (map[string]bool, error)
+	AddProcessed(hashes map[string]bool) error
+	ClearProcessed() error
+}
+
 // JSONStore handles JSON file I/O for the canonical memory store.
 type JSONStore interface {
-	ReadAll(dataDir string) ([]*Memory, error)
-	Read(id, dataDir string) (*Memory, error)
-	Write(m *Memory, dataDir string) error
-	Delete(id, dataDir string) (bool, error)
-	ComputeFingerprint(dataDir string) (string, error)
-	ReadProcessed(dataDir string) (map[string]bool, error)
-	AddProcessed(hashes map[string]bool, dataDir string) error
+	ReadAll() ([]*Memory, error)
+	Read(id string) (*Memory, error)
+	Write(m *Memory) error
+	Delete(id string) (bool, error)
+	ComputeFingerprint() (string, error)
 }
 
 // GitParser extracts commit data from a git repository.
@@ -75,15 +80,18 @@ type GitParser interface {
 type LLMCaller interface {
 	Chat(messages []Message, opts ChatOpts) (string, error)
 	GetModelInfo() (ModelInfo, error)
-	ValidateModel() error
 }
 
-// DatabaseManager provides low-level DB operations (schema, fingerprint, bulk).
+// DatabaseManager provides low-level DB operations (schema, fingerprint).
 type DatabaseManager interface {
-	Hold() error
-	Release() error
 	DropAll() error
 	InitSchema() error
 	GetFingerprint() (string, error)
 	SetFingerprint(fp string) error
+}
+
+// Rebuilder rebuilds the SQLite DB from canonical JSON memory files.
+// Used by the MCP server to refresh stale data without importing storage.
+type Rebuilder interface {
+	RebuildFromJSON(filterFn func(*Memory) bool) (int, error)
 }

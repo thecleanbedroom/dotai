@@ -1,0 +1,23 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-16T19:29:13Z",
+  "file_paths": [],
+  "id": "d3886306-2168-4061-878a-c2a81bac7d75",
+  "importance": 70,
+  "source_commits": [
+    "3d54cf40e70351339377edfd17321b0adae026d4",
+    "0db54d1b03268e6157b2494b35d99369d6c7736b"
+  ],
+  "summary": "Enhanced the '/personas' workflow with mandatory skill injection and perspective printing. After research, the workflow now scans available skills and builds a matched skills list that is injected into each persona's perspective preamble. A mandatory 'Print perspective' step outputs a formatted block showing the persona number, composed perspective text, applied skills, entry point, and driving question. This makes persona analysis visible and auditable. The inner workflow's own 'Evaluate skills' step is skipped since it's done once upfront.",
+  "tags": [
+    "personas",
+    "skills",
+    "perspective",
+    "auditability",
+    "multi-perspective"
+  ],
+  "type": "enhancement"
+}

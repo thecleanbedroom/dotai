@@ -1,0 +1,22 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-16T19:29:13Z",
+  "file_paths": [],
+  "id": "561ee4ca-c443-4c70-b793-b5e3de046bb6",
+  "importance": 82,
+  "source_commits": [
+    "b418db7324a01844bb7e9e6cf2e7b35ced559a90"
+  ],
+  "summary": "Updated the project memory MCP instructions across all rule and plugin files. Changed references from 'memory_stats' to 'project_memory_overview', from 'memory_query_file' to 'search_file_memory_by_path', from 'memory_search' to 'search_project_memory_by_topic', and from 'memory_get' to 'recall_memory'. Updated the database path pattern from 'project_memory.db' to 'mcp-project-memory.sqlite'. Changed link strength range from 0.0-1.0 to 0-100. Updated build commands from './project-memory rebuild' to 'make build-memories'.",
+  "tags": [
+    "project-memory",
+    "mcp",
+    "api-changes",
+    "convention",
+    "database"
+  ],
+  "type": "convention"
+}

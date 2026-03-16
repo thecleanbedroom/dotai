@@ -1,0 +1,22 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 12,
+  "created_at": "2026-03-14T16:12:41Z",
+  "file_paths": [],
+  "id": "aa661461-a645-40d1-b744-06cf08d6b003",
+  "importance": 80,
+  "source_commits": [
+    "598b9029b6eb94b409ae7efe632444b6dbb25262"
+  ],
+  "summary": "Fixed MCP server to override PROJECT_ROOT from the MCP client's roots URI at runtime in serve mode. This ensures the memory system uses the correct project's data directory when serving different projects, not where the server code is installed.",
+  "tags": [
+    "mcp-server",
+    "project-root",
+    "multi-project",
+    "serve-mode",
+    "bugfix"
+  ],
+  "type": "context"
+}

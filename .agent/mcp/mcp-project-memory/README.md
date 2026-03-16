@@ -31,13 +31,16 @@ Configuration uses env vars (`.env`). Priority: **env > default**.
 | ------- | ------- | ------- |
 | `PORT` | `8770` | HTTP port |
 | `OPENROUTER_API_KEY` | — | API key for LLM extraction/synthesis |
-| `MEMORY_EXTRACT_MODEL` | `nvidia/nemotron-3-super-120b-a12b:free` | Extraction model |
-| `MEMORY_EXTRACT_FALLBACK_MODEL` | `google/gemini-2.5-flash-lite` | Fallback extraction model |
-| `MEMORY_REASONING_MODEL` | `google/gemini-3.1-pro-preview` | Synthesis/reasoning model |
+| `MEMORY_BUILD_API_URL` | `https://openrouter.ai/api/v1/chat/completions` | LLM API endpoint |
+| `MEMORY_EXTRACT_MODEL` | `auto` | Extraction model (auto-selects from free models) |
+| `MEMORY_EXTRACT_FALLBACK_MODEL` | `auto` | Fallback extraction model |
+| `MEMORY_REASONING_MODEL` | `auto` | Synthesis/reasoning model |
 | `MEMORY_BATCH_TOKEN_BUDGET` | `100000` | Max tokens per extraction batch |
 | `MEMORY_BATCH_MAX_COMMITS` | `20` | Max commits per batch |
 | `MEMORY_COMMIT_LIMIT` | `0` (all) | Max commits to process per build |
-| `MEMORY_IGNORE_PATHS` | `.agent/memory/data/*` | Comma-separated globs to ignore |
+| `MEMORY_IGNORE_PATHS` | `.agent/mcp/mcp-project-memory/data/*` | Comma-separated globs to ignore |
+| `MEMORY_EXTRACT_CONCURRENCY` | `10` | Max parallel extraction batches |
+| `MIN_CONTEXT_LENGTH` | `32000` | Minimum model context length for auto-selection |
 
 ```bash
 # .env
@@ -157,9 +160,10 @@ make reset
 
 ```
 data/
-├── project_memory.db    # SQLite index (rebuilt from JSON)
-├── memories/            # Individual memory JSON files (source of truth)
+├── mcp-project-memory.sqlite  # SQLite index (rebuilt from JSON)
+├── memories/                  # Individual memory JSON files (source of truth)
 │   ├── <uuid>.json
 │   └── ...
-└── processed.json       # Tracking which commits have been processed
+└── llm_logs/                  # LLM request/response logs
 ```
+

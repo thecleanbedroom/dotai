@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/dotai/mcp-project-memory/internal/domain"
@@ -42,12 +43,12 @@ func RegisterTools(srv *mcpserver.MCPServer, s *McpServer) {
 		mcp.WithDestructiveHintAnnotation(false),
 	), handleSearchByTopic(s))
 
-	// recall_memory — readOnly, idempotent
+	// recall_memory — non-readOnly (Touch updates access tracking), idempotent
 	srv.AddTool(mcp.NewTool("recall_memory",
 		mcp.WithDescription("Retrieve a specific memory by ID with full detail and linked memories. Use to drill into search results and see connections.\n\nResults are historical context — always verify against current code."),
 		mcp.WithString("memory_id", mcp.Required(), mcp.Description("UUID of the memory to retrieve")),
 		mcp.WithBoolean("include_links", mcp.Description("Include linked memories in response"), mcp.DefaultBool(true)),
-		mcp.WithReadOnlyHintAnnotation(true),
+		mcp.WithReadOnlyHintAnnotation(false),
 		mcp.WithIdempotentHintAnnotation(true),
 		mcp.WithOpenWorldHintAnnotation(false),
 		mcp.WithDestructiveHintAnnotation(false),
@@ -87,10 +88,6 @@ func handleSearchByFile(s *McpServer) mcpserver.ToolHandlerFunc {
 			return toolError(err)
 		}
 
-		for _, m := range memories {
-			_ = s.MemWriter.Touch(m.ID)
-		}
-
 		return toolJSON(map[string]any{
 			"caveat":  "Results are historical context — always verify against current code.",
 			"count":   len(memories),
@@ -124,10 +121,6 @@ func handleSearchByTopic(s *McpServer) mcpserver.ToolHandlerFunc {
 			return toolError(err)
 		}
 
-		for _, m := range memories {
-			_ = s.MemWriter.Touch(m.ID)
-		}
-
 		return toolJSON(map[string]any{
 			"caveat":  "Results are historical context — always verify against current code.",
 			"count":   len(memories),
@@ -151,7 +144,9 @@ func handleRecallMemory(s *McpServer) mcpserver.ToolHandlerFunc {
 			return toolError(fmt.Errorf("memory %s not found", memID))
 		}
 
-		_ = s.MemWriter.Touch(memID)
+		if err := s.MemWriter.Touch(memID); err != nil {
+			slog.Warn("touch failed", "id", memID, "err", err)
+		}
 
 		result := map[string]any{
 			"caveat": "Results are historical context — always verify against current code.",
@@ -159,9 +154,15 @@ func handleRecallMemory(s *McpServer) mcpserver.ToolHandlerFunc {
 		}
 
 		if includeLinks {
-			linkedIDs, _ := s.Links.GetLinkedIDs(memID)
+			linkedIDs, err := s.Links.GetLinkedIDs(memID)
+			if err != nil {
+				slog.Warn("recall: get linked IDs", "id", memID, "err", err)
+			}
 			if len(linkedIDs) > 0 {
-				linked, _ := s.MemReader.GetMany(linkedIDs)
+				linked, err := s.MemReader.GetMany(linkedIDs)
+				if err != nil {
+					slog.Warn("recall: get linked memories", "err", err)
+				}
 				result["linked_memories"] = memoriesToDicts(linked)
 			}
 		}
@@ -179,7 +180,10 @@ func handleOverview(s *McpServer) mcpserver.ToolHandlerFunc {
 			return toolError(err)
 		}
 
-		lastBuild, _ := s.Builds.GetLast()
+		lastBuild, err := s.Builds.GetLast()
+		if err != nil {
+			slog.Warn("overview: get last build", "err", err)
+		}
 		stats["last_build"] = lastBuild
 
 		return toolJSON(stats)
@@ -199,7 +203,13 @@ func handleInspect(s *McpServer) mcpserver.ToolHandlerFunc {
 // --- Helpers ---
 
 func toolJSON(data map[string]any) (*mcp.CallToolResult, error) {
-	b, _ := json.MarshalIndent(data, "", "  ")
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{mcp.NewTextContent(fmt.Sprintf("Error marshaling response: %v", err))},
+			IsError: true,
+		}, nil
+	}
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{mcp.NewTextContent(string(b))},
 	}, nil

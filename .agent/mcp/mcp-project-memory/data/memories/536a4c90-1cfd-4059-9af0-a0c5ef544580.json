@@ -1,0 +1,23 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-14T16:11:45Z",
+  "file_paths": [],
+  "id": "536a4c90-1cfd-4059-9af0-a0c5ef544580",
+  "importance": 70,
+  "source_commits": [
+    "4aa39cb1d5d7edae8b7ec53d0e3373fa13e362f0"
+  ],
+  "summary": "Removed the .agent/vendor directory and all its Composer-managed dependencies in favor of a clone-and-copy approach. This includes deleting the Composer autoloader, installed versions, class loader, and the sickn33/antigravity-awesome-skills package. The commit message indicates a shift away from Composer dependency management for vendor files.",
+  "tags": [
+    "composer",
+    "vendor",
+    "dependency-management",
+    "clone-copy",
+    "package-removal",
+    "cleanup"
+  ],
+  "type": "dependency_change"
+}

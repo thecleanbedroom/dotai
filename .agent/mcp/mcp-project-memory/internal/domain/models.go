@@ -4,6 +4,7 @@
 package domain
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 )
@@ -12,11 +13,17 @@ import (
 
 // MemoryTypes enumerates valid memory type values.
 var MemoryTypes = map[string]bool{
-	"decision":   true,
-	"pattern":    true,
-	"convention": true,
-	"context":    true,
-	"debt":       true,
+	"decision":     true,
+	"pattern":      true,
+	"convention":   true,
+	"context":      true,
+	"debt":         true,
+	"bug_fix":      true,
+	"refactor":     true,
+	"fix":          true,
+	"feature":      true,
+	"architecture": true,
+	"style":        true,
 }
 
 // RelationshipTypes enumerates valid link relationship values.
@@ -232,6 +239,7 @@ type Message struct {
 
 // ChatOpts holds parameters for an LLM chat call.
 type ChatOpts struct {
+	Ctx            context.Context `json:"-"`
 	MaxTokens      int
 	ResponseSchema json.RawMessage
 	Label          string
@@ -240,12 +248,13 @@ type ChatOpts struct {
 
 // ModelInfo holds information about an LLM model.
 type ModelInfo struct {
-	ContextLength      int                `json:"context_length"`
-	MaxCompletionTokens int              `json:"max_completion_tokens"`
-	Name               string             `json:"name"`
-	SupportedParams    []string           `json:"supported_parameters"`
-	Pricing            map[string]float64 `json:"pricing"`
-	IsFree             bool               `json:"is_free"`
+	ID                  string             `json:"id"`
+	ContextLength       int                `json:"context_length"`
+	MaxCompletionTokens int                `json:"max_completion_tokens"`
+	Name                string             `json:"name"`
+	SupportedParams     []string           `json:"supported_parameters"`
+	Pricing             map[string]float64 `json:"pricing"`
+	IsFree              bool               `json:"is_free"`
 }
 
 // --- Time helper ---

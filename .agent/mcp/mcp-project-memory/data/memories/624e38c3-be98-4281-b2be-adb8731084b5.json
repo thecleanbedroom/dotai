@@ -1,0 +1,21 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 8,
+  "created_at": "2026-03-14T16:16:32Z",
+  "file_paths": [],
+  "id": "624e38c3-be98-4281-b2be-adb8731084b5",
+  "importance": 50,
+  "source_commits": [
+    "cdd941dfad110f37eee3362fb756153ecb31e4b4"
+  ],
+  "summary": "Corrected plugin configuration paths in audit-policy workflow to use proper .agent/plugins/ prefix for all plugin config files.",
+  "tags": [
+    "plugin-sync",
+    "paths",
+    "configuration",
+    "audit"
+  ],
+  "type": "context"
+}

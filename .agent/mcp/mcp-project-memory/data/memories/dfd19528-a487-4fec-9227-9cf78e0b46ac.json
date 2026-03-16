@@ -1,0 +1,22 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 12,
+  "created_at": "2026-03-14T16:11:45Z",
+  "file_paths": [],
+  "id": "dfd19528-a487-4fec-9227-9cf78e0b46ac",
+  "importance": 40,
+  "source_commits": [
+    "4aa39cb1d5d7edae8b7ec53d0e3373fa13e362f0"
+  ],
+  "summary": "Updated the .agent/workflows/init.md file to append 'No real response needed' to the instruction about loading AI governance rules. This clarifies that the initialization step does not require a substantive response from the agent.",
+  "tags": [
+    "workflow",
+    "initialization",
+    "ai-policy",
+    "documentation",
+    "instruction-clarification"
+  ],
+  "type": "workflow_config"
+}

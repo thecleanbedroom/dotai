@@ -1,0 +1,23 @@
+{
+  "access_count": 0,
+  "accessed_at": "",
+  "active": true,
+  "confidence": 20,
+  "created_at": "2026-03-14T16:12:41Z",
+  "file_paths": [],
+  "id": "aae0c0e8-d3e9-4674-812f-3f9f403de320",
+  "importance": 45,
+  "source_commits": [
+    "d3d86e8c79cfcedbdf4c68f717cc80ff28922fe2"
+  ],
+  "summary": "Extended SDLC audit with 5 new checks: named cross-references (step numbers to named refs), debt status guard, link rebasing on move to finished, DRY pointer vs redefinition, test/analysis failure policy, and platform-agnostic language. Also replaced step numbers with named step references across capture, close, hotfix, implement, and plan workflows.",
+  "tags": [
+    "audit-sdlc",
+    "named-references",
+    "dry",
+    "platform-agnostic",
+    "failure-policy",
+    "debt-status"
+  ],
+  "type": "context"
+}

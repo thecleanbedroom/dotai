@@ -71,17 +71,17 @@ func (s *Settings) APIURL() string {
 // --- Extraction (Pass 1) ---
 
 func (s *Settings) ExtractionModel() string {
-	return s.env("MEMORY_EXTRACT_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
+	return s.env("MEMORY_EXTRACT_MODEL", "auto")
 }
 
 func (s *Settings) ExtractionFallbackModel() string {
-	return s.env("MEMORY_EXTRACT_FALLBACK_MODEL", "google/gemini-2.5-flash-lite")
+	return s.env("MEMORY_EXTRACT_FALLBACK_MODEL", "auto")
 }
 
 // --- Synthesis (Pass 2) ---
 
 func (s *Settings) SynthesisModel() string {
-	return s.env("MEMORY_REASONING_MODEL", "google/gemini-3.1-pro-preview")
+	return s.env("MEMORY_REASONING_MODEL", "auto")
 }
 
 // --- Batching ---
@@ -107,5 +107,12 @@ func (s *Settings) ModelMinContextLength() int {
 // --- Path filtering ---
 
 func (s *Settings) FilterIgnorePaths() string {
-	return s.env("MEMORY_IGNORE_PATHS", ".agent/memory/data/*")
+	return s.env("MEMORY_IGNORE_PATHS", ".agent/mcp/mcp-project-memory/data/*")
 }
+
+// --- Concurrency ---
+
+func (s *Settings) ExtractConcurrency() int {
+	return s.envInt("MEMORY_EXTRACT_CONCURRENCY", 10)
+}
+
