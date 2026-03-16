@@ -19,26 +19,26 @@ Research the codebase, reconcile intent against reality, surface questions, and 
 
 ## Canonical Document Format
 
-See `/lib`'s _Canonical Document Format_.
+See /lib:#Canonical Document Format#.
 
 ## Resolve Input
 
-See `/lib`'s _Resolve Input_.
+See /lib:#Resolve Input#.
 
 ## Steps
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Consolidate multi-doc inputs (if applicable)
 
 // turbo
 
-When multiple source docs are provided, **combine them into a single doc using the _Canonical Document Format_ and delete the originals** before doing anything else:
+When multiple source docs are provided, **combine them into a single doc using /lib:#Canonical Document Format# and delete the originals** before doing anything else:
 
 1. Read all input docs
-2. Create a new consolidated doc with its own slug describing the combined scope, using the _Canonical Document Format_. Merge all requirement items under `## Requirement`.
+2. Create a new consolidated doc with its own slug describing the combined scope, using /lib:#Canonical Document Format#. Merge all requirement items under `## Requirement`.
 3. Delete the original source docs — their content is absorbed into the new one
 4. Continue the remaining steps using the consolidated doc as the single input
 
@@ -46,7 +46,7 @@ If only one doc (or a chat description) is provided, skip this step.
 
 ### Resolve input
 
-Follow _Resolve Input_ to obtain the source doc path.
+Follow /lib:#Resolve Input# to obtain the source doc path.
 
 ### Capture the intent
 
@@ -69,10 +69,10 @@ Identify: **Goal**, **Scope**, **Constraints**, **Referenced code**. If intent i
 
 // turbo
 
-Follow `/lib`'s _Research Standard_ level for the areas the plan touches. Then:
+Follow /lib:#Research#(level=standard) for the areas the plan touches. Then:
 
-- Follow `/lib`'s _Trace construction sites_, _Trace internal dependencies_, and _Trace affected tests_ for modified classes
-- **Sniff while you research**: apply `/sniff`'s _Smell checklist_ to files you read. Log findings to the source doc's `## Debt` section using `/sniff`'s _Logging format_.
+- Follow /lib:#Tracing# — run `trace_construction_sites`, `trace_internal_dependencies`, and `trace_affected_tests` for modified classes
+- **Sniff while you research**: apply /sniff:#Smell Checklist# to files you read. Log findings to the source doc's `## Debt` section using /sniff:#Logging Format#.
 
 ### Create the implementation plan artifact
 

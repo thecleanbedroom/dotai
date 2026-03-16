@@ -20,7 +20,7 @@ After reading, list each filename and a one-line summary of what it requires.
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Check parallelism gateway
 

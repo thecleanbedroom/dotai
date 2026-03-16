@@ -131,7 +131,7 @@ When observing smells (embedded or standalone), log each finding as a one-liner 
 | `PaymentGateway.php` | Complex+untested | 80-line method, 6 nesting levels, no test file             | High   |
 ```
 
-Keep entries terse. The debt doc created at `/close` time will expand them.
+Keep entries terse. **Debt documents are mandatory**: for every smell classified as debt (not immediately fixed), follow /lib:#Create Debt Document#(source=/sniff). Unfiled debt is invisible debt.
 
 ### Standalone mode
 
@@ -139,19 +139,19 @@ When invoked directly (`/sniff path/to/area`):
 
 #### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 #### Scan the target area
 
 // turbo
 
-Follow `/lib`'s _Research Deep_ level for the specified path. Apply every category in the _Smell checklist_ above.
+Follow /lib:#Research#(level=deep) for the specified path. Apply every category in the _Smell checklist_ above.
 
 #### Write findings
 
 // turbo
 
-Follow `/close`'s _Create debt doc_ step. Use the findings table as the `## Evidence` section and translate top items into `## Requirement` entries.
+Follow /lib:#Create Debt Document#(source=/sniff). Use the findings table as the `## Evidence` section and translate top items into `## Requirement` entries.
 
 #### Present for review
 

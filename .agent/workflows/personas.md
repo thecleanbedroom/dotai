@@ -4,7 +4,7 @@ description: "Run any sweep workflow through 10 personas with iteration. Usage: 
 
 # /personas — Multi-Perspective Orchestrator
 
-Run any workflow through `/lib`'s 10 personas with mandatory iteration until clean. Two modes control output format.
+Run any workflow through /lib:#Persona Definitions# with mandatory iteration until clean. Two modes control output format.
 
 **Input**: `<workflow> [--work] @<target>` — e.g., `sweep @src/` or `sweep --work @src/`
 **Output**: Clean codebase + report (both modes iterate until clean)
@@ -25,10 +25,10 @@ Both modes use the **same iteration loop**, the **same exit condition**, and run
 
 ### Research & Skills
 
-Follow `/lib`'s _Research Deep_ level for the target path. Run **once** before the persona loop — all personas share the same loaded context.
+Follow /lib:#Research#(level=deep) for the target path. Run **once** before the persona loop — all personas share the same loaded context.
 
 > [!IMPORTANT]
-> **Skills are MANDATORY.** After research, follow `/skills` to scan available skills and `view_file` on every SKILL.md that matches the target codebase's language, platform, or the sweep type being performed. Build a **matched skills list** (e.g., `clean-code`, `golang-pro`, `uncle-bob-craft`). This list is injected into each persona's perspective preamble below. The inner workflow's own "Evaluate skills" step is skipped (already done here).
+> **Skills are MANDATORY.** After research, follow /lib:#Evaluate Skills# to scan available skills and `view_file` on every SKILL.md that matches the target codebase's language, platform, or the sweep type being performed. Build a **matched skills list** (e.g., `clean-code`, `golang-pro`, `uncle-bob-craft`). This list is injected into each persona's perspective preamble below. The inner workflow's own "Evaluate skills" step is skipped (already done here).
 
 **Print matched skills** immediately after building the list:
 
@@ -72,7 +72,7 @@ loop:
 
 #### Compose perspective
 
-Follow `/lib`'s _Perspective Composition_ to compose a context-aware preamble for this persona. Use `/lib`'s _Context Reordering_ to direct attention based on the persona's Reading Order dimension.
+Follow /lib:#Perspective Composition# to compose a context-aware preamble for this persona. Use /lib:#Context Reordering# to direct attention based on the persona's Reading Order dimension.
 
 **Inject matched skills**: Include the matched skills list from Research in the preamble. Reference each skill by name (e.g., "Apply `/clean-code` naming rules, `/golang-pro` idioms, and `/uncle-bob-craft` design principles"). This ensures skill guidance is actively part of every persona's analysis context.
 
@@ -112,19 +112,19 @@ After each persona completes, record to the running totals:
 
 #### Classify
 
-Classify findings using `/lib`'s _Classification_.
+Classify findings using /lib:#Classification#.
 
 #### Fix actionable findings
 
 For all actionable findings:
-- Follow `/skills` to identify relevant skills
+- Follow /lib:#Evaluate Skills# to identify relevant skills
 - Implement changes — parallelize across files where possible
 - Re-read every modified file and its neighbors for introduced issues
 - Do NOT stop for user approval between changes within an iteration
 
 #### Verify
 
-- Follow `/lib`'s _QA Verification_
+- Follow /lib:#QA Verification#
 - If verification finds new issues, address them before proceeding
 - Add the fixes to `iteration_changes`
 

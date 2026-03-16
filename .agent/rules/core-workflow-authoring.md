@@ -5,16 +5,15 @@ Rules for writing and modifying `.agent/workflows/` files.
 ## Conventions
 
 - **No step numbers in headings**: Use descriptive names (`### Run tests`), not numbered names (`### 3. Run tests`). Document order defines execution order. Numbers create maintenance overhead when steps are inserted or reordered.
-- **Named step references, not numbers**: Cross-reference steps by name (e.g., "Follow `/close`'s _Move to finished_ step"), never by step number.
-- **Cross-references must resolve**: Every named reference (e.g., `/close`'s _Move to finished_) must point to an actual heading in the target workflow. Dangling references cause agent confusion.
-- **DRY — reference, don't redefine**: If a step already exists in another workflow, reference it instead of duplicating the instructions. One-liner references like "Follow `/skillsfinder`'s _Clone skills repo to tmp_ step" are preferred over inline code blocks that repeat the same logic.
+- **Named step references, not numbers**: Cross-reference steps using the colon-hash syntax: `/workflow:#Section Title#`. Never reference by step number.
+- **Cross-references must resolve**: Every named reference (e.g., /close:#Move to Finished#) must point to an actual heading in the target workflow. Dangling references cause agent confusion.
+- **DRY — reference, don't redefine**: If a step already exists in another workflow, reference it instead of duplicating the instructions. One-liner references like "Follow /skillsfinder:#Clone Skills Repo to Tmp#" are preferred over inline code blocks that repeat the same logic.
 - **Canonical ownership**: Each shared concern has one canonical workflow that owns its definition. Other workflows reference it. If you need to override behavior, say "Follow X with these overrides:" and list only the differences. Known owners:
-  - Evaluate skills → `/skills`
-  - Append walkthrough, Finalize, Move to finished, Create debt doc, Report → `/close`
-  - Clone skills repo, Extract catalog → `/skillsfinder`
-  - Smell checklist, Logging format → `/sniff`
-  - Document format, Resolve input, Requirement item format, Research, Tracing, Classification, QA Verification, Risk Analysis, Persona definitions → `/lib`
-  - Commit message format, Git trailers → `/commit`
+  - Append Walkthrough, Finalize, Move to Finished, Create Debt Doc, Report → `/close`
+  - Clone Skills Repo, Extract Catalog → `/skillsfinder`
+  - Smell Checklist, Logging Format → `/sniff`
+  - Evaluate Skills, Canonical Document Format, Resolve Input, Research, Tracing, Classification, QA Verification, Risk Analysis, Persona Definitions, Create Debt Document → `/lib`
+  - Commit Message Format, Git Trailers → `/commit`
 - **Platform-agnostic language**: Workflows must not contain hardcoded commands, language-specific patterns, or tool-specific names. Use generic terms ("run the test suite", "run static analysis") and let `.agent/rules/platform-*.md` or `language-*.md` supply the specifics.
 - **Unique step names**: Every step heading within a workflow must be unique. Duplicate names make references ambiguous.
 - **Globally unique referenced headings**: If a step heading is cross-referenced by other workflows, it must be unique across all workflow files. Two workflows defining the same heading name creates ambiguous references. Generic headings never used as cross-reference targets (e.g., "Summary", "Report") are exempt.

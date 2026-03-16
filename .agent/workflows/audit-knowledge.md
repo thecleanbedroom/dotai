@@ -13,7 +13,7 @@ Systematically validate every Knowledge Item (KI) in the Antigravity knowledge s
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Inventory all KIs
 

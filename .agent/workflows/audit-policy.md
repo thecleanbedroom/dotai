@@ -27,7 +27,7 @@ Load all rule and workflow files so you have full context before evaluating.
 
 ### Promote retrospective entries
 
-Follow `/retro`'s _Promote entries_ step. Do this BEFORE evaluating so evaluation checks the final state.
+Follow /retro:#Promote Entries#. Do this BEFORE evaluating so evaluation checks the final state.
 
 ### Evaluate
 

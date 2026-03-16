@@ -7,21 +7,21 @@ description: "Comprehensive codebase sweep — proposes ideal architecture, eval
 Two-phase analysis: first propose how a best-in-class project would organize this code (design), then evaluate what exists against quality standards (eval). Not just "find smells" — design better, then diff against reality.
 
 **Input**: Target path, optional `--work` modifier, optional checklist from caller.
-**Output**: Findings using `/lib`'s _Canonical Document Format_ item fields.
+**Output**: Findings using /lib:#Canonical Document Format# item fields.
 
 ## Steps
 
 ### Resolve input
 
-Follow `/lib`'s _Resolve Input_ step.
+Follow /lib:#Resolve Input#.
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Research
 
-Follow `/lib`'s _Research Deep_ level for the target path. When called by `/personas`, this step is skipped (already done).
+Follow /lib:#Research#(level=deep) for the target path. When called by `/personas`, this step is skipped (already done).
 
 ### Consult project memory
 
@@ -140,7 +140,7 @@ When no gaps are found, note as **verified** with evidence. Use diagrams for com
 
 ## Phase 2 — Code Quality Evaluation
 
-Walk custom code (not framework/vendor). Apply `/sniff`'s _Smell checklist_ systematically.
+Walk custom code (not framework/vendor). Apply /sniff:#Smell Checklist# systematically.
 
 #### Standard checks
 
@@ -199,7 +199,7 @@ Record each finding:
 
 ### Execute checklist
 
-If a checklist is provided by caller, work through each item against actual code with a pass/fail/n-a verdict and evidence. When no external checklist, use `/sniff`'s _Smell checklist_.
+If a checklist is provided by caller, work through each item against actual code with a pass/fail/n-a verdict and evidence. When no external checklist, use /sniff:#Smell Checklist#.
 
 > [!IMPORTANT]
 > Every checklist item needs evidence. "Looks fine" is not a verdict — cite file, line, and pattern.
@@ -208,18 +208,19 @@ If a checklist is provided by caller, work through each item against actual code
 
 - Fix actionable findings directly
 - Follow skills guidance for clean, idiomatic changes
-- Classify non-fixable items using `/lib`'s _Classification_
+- Classify non-fixable items using /lib:#Classification#
+- **Debt documents are mandatory**: for every finding classified as debt, follow /lib:#Create Debt Document#(source=/sweep). Do not skip this — unfiled debt is invisible debt.
 - Record what changed and what remains
 
-When in doc mode: report findings only.
+When in doc mode: report findings only, but still create debt documents for debt-classified items.
 
 ### QA verification
 
-Follow `/lib`'s _QA Verification_ step.
+Follow /lib:#QA Verification#.
 
 ### Risk analysis
 
-Follow `/lib`'s _Risk Analysis_ step.
+Follow /lib:#Risk Analysis#.
 
 ---
 

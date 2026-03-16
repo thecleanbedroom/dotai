@@ -212,4 +212,4 @@ Report to the user:
 
 ### Load installed skills
 
-After reporting, run `/skills` to read and evaluate the newly installed skills for the current task.
+After reporting, follow /lib:#Evaluate Skills# to read and evaluate the newly installed skills for the current task.

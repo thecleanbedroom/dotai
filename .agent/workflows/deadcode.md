@@ -16,7 +16,7 @@ Find and safely remove unreferenced code. Uses multi-signal validation (static a
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Purge previously quarantined files (if `--purge`)
 
@@ -177,7 +177,7 @@ After each successful quarantine, run static analysis. If new errors appear refe
 
 #### Commit each quarantine
 
-After each successful quarantine (tests green, static analysis clean), follow `/commit`'s _Generate the commit message_ step.
+After each successful quarantine (tests green, static analysis clean), follow /commit:#Generate the Commit Message#.
 
 ---
 
@@ -185,7 +185,7 @@ After each successful quarantine (tests green, static analysis clean), follow `/
 
 #### File debt for uncertain cases
 
-For any 🔴 candidates, follow `/close`'s _Create debt doc_ step. Set source to `/deadcode sweep`. Include the signal data and the reason for uncertainty.
+For any 🔴 candidates, follow /lib:#Create Debt Document#(source=/deadcode sweep). Include the signal data and the reason for uncertainty.
 
 #### Present results
 

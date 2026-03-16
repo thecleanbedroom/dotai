@@ -38,7 +38,7 @@ for fn in sorted(f for f in os.listdir('.') if f.endswith('.md')):
   nc=re.sub(r'\x60[^\x60]+\x60','',nc)
   data[fn]={'desc':desc,'headings':hd,'has_turbo_all':'// turbo-all' in c,
     'turbo_lines':[i for i,l in enumerate(c.splitlines(),1) if l.strip()=='// turbo'],
-    'named_refs':[{'wf':r[0],'step':r[1]} for r in re.findall(r'\x60/(\w[\w-]*)\x60(?:\'s|\u2019s)?\s+_([^_]+)_',c)],
+    'named_refs':[{'wf':r[0],'step':r[1]} for r in re.findall(r'/([\w][\w-]*):#([^#]+)#',c)],
     'step_nums':re.findall(r'\bsteps?\s+(\d[\d,-]*)\b',nc,re.I),
     'numbered_headings':[h for h in hd if re.match(r'^\d+\.',h)]}
 print(json.dumps(data,indent=2))
@@ -95,7 +95,7 @@ From `numbered_headings`. Non-empty = violation — use descriptive names.
 
 #### Skills loading (M)
 
-Every applicable workflow references `/skills`'s _Evaluate skills_ as a one-liner before substantive work. Flag inline copies or late placement.
+Every applicable workflow references /lib:#Evaluate Skills# as a one-liner before substantive work. Flag inline copies or late placement.
 
 #### Circular dependencies (M)
 
@@ -122,19 +122,19 @@ Verify referencing workflows don't inline canonical logic. Owners:
 
 | Concern | Owner |
 |---------|-------|
-| Evaluate skills | `/skills` |
-| Walkthrough, Finalize, Move to finished, Debt doc, Report | `/close` |
-| Clone skills repo, Extract catalog | `/skillsfinder` |
-| Smell checklist, Logging format | `/sniff` |
-| Document format, Resolve input, Requirement item format, Research, Tracing, Classification, QA Verification, Risk Analysis, Persona definitions | `/lib` |
+| Evaluate Skills | `/lib` |
+| Walkthrough, Finalize, Move to Finished, Debt Doc, Report | `/close` |
+| Clone Skills Repo, Extract Catalog | `/skillsfinder` |
+| Smell Checklist, Logging Format | `/sniff` |
+| Canonical Document Format, Resolve Input, Research, Tracing, Classification, QA Verification, Risk Analysis, Persona Definitions, Create Debt Document | `/lib` |
 
 #### Document format and input resolution (AI)
 
-All doc-creating workflows must use `/lib`'s _Canonical Document Format_. Entry-point workflows must reference _Resolve Input_. Verify:
+All doc-creating workflows must use /lib:#Canonical Document Format#. Entry-point workflows must reference /lib:#Resolve Input#. Verify:
 
 - No inline templates (only `/lib` defines the template)
 - Requirement items use standard fields (What, Where, Why, How, Priority, Effort)
-- Debt docs reference `/close`'s _Create debt doc_, use `> Status: Debt`
+- Debt docs reference /lib:#Create Debt Document#, use `> Status: Debt`
 - Source docs include `> Status:` and `> Created:` frontmatter
 - Every status value written is accepted by a downstream routing table
 - No format mismatches between doc creators and consumers
@@ -148,14 +148,14 @@ All doc-creating workflows must use `/lib`'s _Canonical Document Format_. Entry-
 | `/plan` | Draft, Debt, Planned, none | `Approved` | `/implement` ✅ |
 | `/implement` | Approved, In Progress | `In Progress` | `/close` ✅ |
 | `/close` | In Progress, Done (unfiled) | `Done` | (terminal) |
-| `/capture` | any (via _Resolve Input_) | `Done` | (terminal) |
-| `/hotfix` | any (via _Resolve Input_) | `Done` | (terminal) |
+| `/capture` | any (via /lib:#Resolve Input#) | `Done` | (terminal) |
+| `/hotfix` | any (via /lib:#Resolve Input#) | `Done` | (terminal) |
 
 Verify: outputs match next accepts, redirects name exact commands, every SDLC workflow has `## SDLC Pipeline` with "You are here".
 
 #### Link rebasing and test policy (AI)
 
-- Workflows moving to `finished/` must rebase relative links. `/capture` and `/hotfix` reference `/close`'s step.
+- Workflows moving to `finished/` must rebase relative links. `/capture` and `/hotfix` reference /close:#Move to Finished#.
 - Test/analysis gates require **all failures fixed**. Flag "note but don't fix" language.
 
 ---
@@ -176,13 +176,13 @@ Simulate full SDLC path verifying each handoff:
 
 | Step | Check |
 |------|-------|
-| `/plan` _Resolve input_ → doc with `Draft` | Doc created using canonical format? |
-| `/plan` _Create the implementation plan artifact_ | Has all sections `/implement` needs? |
-| `/plan` _Present for review_ → _Iterate until approved_ → _Write the source document_ → _Mark as approved_ | Status = `Approved`, `/implement` accepts? |
-| `/implement` _Resolve input_ → _Load the document and plan_ | Reads doc + artifact correctly? |
-| `/implement` _Mark the source document and initialize progress tracking_ → _Report completion_ | `/close` accepts `In Progress`? |
-| `/close` _Resolve input_ → _Load and verify_ | Progress all terminal? |
-| `/close` _Append walkthrough to the source document_ → _Move to finished_ | Links rebased? |
+| `/plan` /lib:#Resolve Input# → doc with `Draft` | Doc created using canonical format? |
+| /plan:#Create the Implementation Plan Artifact# | Has all sections `/implement` needs? |
+| /plan:#Present for Review# → /plan:#Iterate Until Approved# → /plan:#Write the Source Document# → /plan:#Mark as Approved# | Status = `Approved`, `/implement` accepts? |
+| `/implement` /lib:#Resolve Input# → /implement:#Load the Document and Plan# | Reads doc + artifact correctly? |
+| /implement:#Mark the Source Document and Initialize Progress Tracking# → /implement:#Report Completion# | `/close` accepts `In Progress`? |
+| `/close` /lib:#Resolve Input# → /close:#Load and Verify# | Progress all terminal? |
+| /close:#Append Walkthrough to the Source Document# → /close:#Move to Finished# | Links rebased? |
 
 **Edge cases**: mid-plan interrupt (stub + artifact, `Draft`), resume `/implement` (`In Progress`, scans `⬜ Ready`), debt flow (`Debt` → `/plan`), `/capture` bypass (finished-ready?), **sweep→hotfix→close** (standard doc throughout, no orphan).
 

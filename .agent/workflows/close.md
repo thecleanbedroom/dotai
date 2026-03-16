@@ -6,7 +6,7 @@ description: "SDLC Step 3/3 — Close a completed planning document by appending
 
 Finalize a completed planning document: append walkthrough, create debt doc for parked items, and move to `finished/` with a finish-time filename.
 
-**Input**: Planning doc path, description, or conversation context (via _Resolve Input_)
+**Input**: Planning doc path, description, or conversation context (via /lib:#Resolve Input#)
 **Output**: Walkthrough appended, debt doc if needed, source doc moved to `finished/`
 
 ## SDLC Pipeline
@@ -20,11 +20,11 @@ Finalize a completed planning document: append walkthrough, create debt doc for 
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Resolve input
 
-Follow `/lib`'s _Resolve Input_ step.
+Follow /lib:#Resolve Input#.
 
 ### Load and verify
 
@@ -80,7 +80,7 @@ Repeat until green — zero failures required.
 **Hard gate** — do not proceed until clean.
 
 > [!TIP]
-> **Skip if already green**: If static analysis passed during `/implement`'s _Run static analysis (mandatory gate)_ step **and no code changes since**, skip. Note in walkthrough.
+> **Skip if already green**: If static analysis passed during /implement:#Run Static Analysis (Mandatory Gate)# **and no code changes since**, skip. Note in walkthrough.
 
 // turbo
 
@@ -108,54 +108,17 @@ Check whether new files/methods created during implementation lack test coverage
 
 ### Code smell sweep
 
-Review the `## Debt` section accumulated during `/plan` and `/implement` (via `/sniff`'s _Smell checklist_). Quick-scan any touched files not yet covered. For each new finding, append to the debt table.
+Review the `## Debt` section accumulated during `/plan` and `/implement` (via /sniff:#Smell Checklist#). Quick-scan any touched files not yet covered. For each new finding, append to the debt table.
 
 > [!IMPORTANT]
 > **Do NOT fix smells inline during close** — that's scope creep. File as debt, announce to user, move on.
-> **Recursion guard**: When running `/sniff` from `/close`, do NOT invoke `/sniff`'s _Standalone mode_ (which calls back to _Create debt doc_). Append findings to the existing debt table only.
+> **Recursion guard**: When running `/sniff` from `/close`, do NOT invoke /sniff:#Standalone Mode# (which calls /lib:#Create Debt Document#). Append findings to the existing debt table only.
 
 If no debt section exists (older docs), run a focused `/sniff` on the files listed in the Progress table.
 
 ### Create debt doc
 
-Canonical step for creating debt documents. Referenced by other workflows that discover debt.
-
-// turbo
-
-Create a doc in `docs/` using datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`
-
-When called from `/close`, use the parent doc's slug + `-debt` suffix.
-
-```markdown
-# <Title>
-
-> Created: YYYY-MM-DD HH:MM (local)
-> Status: Debt
-> Source: <where this debt was discovered — e.g., /close of <parent doc>, /sniff scan, /testcoverage triage>
-
-## Requirement
-
-### <Item Name>
-
-- **What**: <what needs to change>
-- **Why**: <why it's debt — smell category, risk, or reason it was parked>
-- **Needed**: <what must happen to resolve>
-- **Priority**: High | Medium | Low
-- **Effort**: Low | Medium | High
-
-### <Additional items...>
-
-## Evidence
-
-<Optional: supporting data — sniff findings table, coverage stats, code excerpts, CRAP scores>
-```
-
-**Key rules:**
-
-- Status is always `Debt` — this signals `/plan` and `/hotfix` that it's ready for action
-- Each item in `## Requirement` must be self-contained — enough context to plan without re-researching
-- `## Evidence` is optional supporting data, not a substitute for clear requirements
-- Debt docs stay in active `docs/` — ready for `/plan` or `/hotfix`
+Follow /lib:#Create Debt Document#(source=/close, slug_suffix=-debt). Use the parent doc's slug for naming.
 
 ### Append walkthrough to the source document
 
@@ -227,4 +190,4 @@ Summarize: items completed, items as debt, decisions, file paths, test results, 
 
 #### Git commit message
 
-Follow `/commit`'s _Generate the commit message_ step.
+Follow /commit:#Generate the Commit Message#.

@@ -4,7 +4,21 @@ description: "Canonical building blocks referenced by all workflows. Not a workf
 
 # /lib — Workflow Building Blocks
 
-This file is a reference library. It is **not callable** — running `/lib` does nothing. Workflows reference specific sections by name: `Follow /lib's _Section Name_ step.`
+This file is a reference library. It is **not callable** — running `/lib` does nothing.
+
+**Calling convention**: Workflows reference sections as `/workflow:#Section Title#`. The colon separates workflow from section; `#` delimiters mark the heading name being referenced. Parameterized calls append args outside the closing `#`: `/lib:#Create Debt Document#(source=/sweep)`. This syntax is used consistently across all workflow cross-references, not just `/lib`.
+
+---
+
+## Evaluate Skills
+
+Scan installed skills and identify which ones are relevant to the current task.
+
+```bash
+for d in .agent/skills/*/; do echo "=== $(basename $d) ==="; head -5 "$d/SKILL.md" 2>/dev/null; echo ""; done
+```
+
+For each skill, decide: **relevant** or **not relevant** to this specific task. For every relevant skill, read its full `SKILL.md` and apply its guidance throughout the workflow. Briefly report which skills are active before proceeding.
 
 ---
 
@@ -49,7 +63,7 @@ Universal first step for workflows that operate on docs. Determines the source d
 | Input | Action |
 |-------|--------|
 | **Existing doc** | Validate frontmatter, use as source doc. If filename doesn't follow `YYYY-MM-DDTHHMM--<slug>.md`, rename using `> Created:` datetime. |
-| **Description** | Create new doc using _Canonical Document Format_ with description as `## Requirement` items. |
+| **Description** | Create new doc using /lib:#Canonical Document Format# with description as `## Requirement` items. |
 | **No explicit input** | Scan conversation context (files edited, commands run, topics discussed). Create doc or locate existing in-progress doc in `docs/`. |
 
 Result: **a resolved doc path.** All subsequent steps use this path.
@@ -58,9 +72,9 @@ Result: **a resolved doc path.** All subsequent steps use this path.
 
 ## Research
 
-Context-loading step with three depth levels. Loads project context — does NOT produce artifacts or run QA. If QA is needed, the consumer runs _QA Verification_ separately.
+Context-loading step with three depth levels. Loads project context — does NOT produce artifacts or run QA. If QA is needed, the consumer runs /lib:#QA Verification# separately.
 
-### Quick
+### quick
 
 Fast orientation. Use for workflows that need basic context.
 
@@ -72,27 +86,27 @@ Fast orientation. Use for workflows that need basic context.
 4. Identify platform, language, and conventions
 5. Query project memory (`search_project_memory_by_topic`, `project_memory_overview`) if MCP available — gracefully skip if not
 
-### Standard
+### standard
 
 Key files and history. Use for planning and review.
 
 // turbo
 
-Everything in _Quick_, plus:
+Everything in `quick`, plus:
 
 1. Read key files: entry points, config files, interfaces, public API definitions
 2. Check knowledge items for relevant context
 3. Scan `docs/finished/` for known debt, past decisions, and recurring friction
 4. Read conversation history if relevant
 
-### Deep
+### deep
 
 Every source file. Use for sweeps, audits, and thorough analysis.
 
 > [!CAUTION]
 > You MUST `view_file` on **every source file** in the target path. Do not skip files, do not summarize from memory, do not sample. Complete file-by-file reading is mandatory.
 
-Everything in _Standard_, plus:
+Everything in `standard`, plus:
 
 1. `view_file` on every source file in scope
 2. Full knowledge and history review
@@ -104,19 +118,19 @@ Everything in _Standard_, plus:
 
 Investigate code paths for specific concerns. Use when planning changes or assessing impact.
 
-### Trace construction sites
+### trace_construction_sites
 
 Find all instantiation and injection points for modified classes or interfaces.
 
-### Trace internal dependencies
+### trace_internal_dependencies
 
 For moved or refactored methods, verify dependencies exist at the destination. Check import graphs.
 
-### Trace affected tests
+### trace_affected_tests
 
 Search for tests that mock, instantiate, or assert on changed classes or interfaces. Identify tests that need updating.
 
-### Trace entry point
+### trace_entry_point
 
 Follow a specific entry point through its full call chain:
 
@@ -272,6 +286,50 @@ Classify findings into three categories:
 
 ---
 
+## Create Debt Document
+
+Canonical step for filing technical debt. Every workflow that discovers debt references this section. **Unfiled debt is invisible debt — always create the document.**
+
+// turbo
+
+Create a doc in the target's `docs/` directory using datetime-prefixed naming: `docs/YYYY-MM-DDTHHMM--<slug>.md`
+
+```markdown
+# <Title>
+
+> Created: YYYY-MM-DD HH:MM (local)
+> Status: Debt
+> Source: <where this debt was discovered — e.g., /sweep of <path>, /sniff scan, /close of <parent doc>, /testcoverage triage>
+
+## Requirement
+
+### <Item Name>
+
+- **What**: <what needs to change>
+- **Where**: <file(s) or area affected>
+- **Why**: <why it's debt — smell category, risk, or reason it was parked>
+- **How**: <concrete, actionable suggestion>
+- **Priority**: High | Medium | Low
+- **Effort**: Low | Medium | High
+
+### <Additional items...>
+
+## Evidence
+
+<Optional: supporting data — sniff findings table, coverage stats, code excerpts, CRAP scores>
+```
+
+**Key rules:**
+
+- Status is always `Debt` — this signals `/plan` and `/hotfix` that it's ready for action
+- One doc per finding or tightly related cluster — do not lump unrelated debt into one doc
+- Each item in `## Requirement` must be self-contained — enough context to plan without re-researching
+- `## Evidence` is optional supporting data, not a substitute for clear requirements
+- Debt docs stay in active `docs/` — ready for `/plan` or `/hotfix`
+- When called from `/close`, use the parent doc's slug + `-debt` suffix
+
+---
+
 ## QA Verification
 
 Run the project's verification tooling. Use repo-standard commands (check Makefile, package.json scripts, or framework conventions).
@@ -337,7 +395,7 @@ Threshold for "needs attention": risk score ≥ 30 (or project-defined threshold
 
 ## Context Reordering
 
-When files are already loaded in context (e.g., after _Research Deep_), use a **reordering directive** instead of re-reading files. This costs zero extra tokens.
+When files are already loaded in context (e.g., after /lib:#Research#(level=deep)), use a **reordering directive** instead of re-reading files. This costs zero extra tokens.
 
 Include a directive in the perspective preamble or workflow step:
 

@@ -20,11 +20,11 @@ Execute an approved planning document item by item. Supports resuming across con
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Resolve input
 
-Follow `/lib`'s _Resolve Input_ step.
+Follow /lib:#Resolve Input#.
 
 ### Load the document and plan
 
@@ -37,7 +37,7 @@ Read the resolved source doc and check the frontmatter `> Status:` line:
 - **`Done`**: Tell user: "This doc is already done. Run `/close` to file it."
 - **Anything else**: Tell user: "Unknown status. Check the `> Status:` line."
 
-If an implementation plan artifact exists in the brain directory, load it to understand the reconciliation and work plan. If not, create one using the same structure as `/plan`'s _Create the implementation plan artifact_ step.
+If an implementation plan artifact exists in the brain directory, load it to understand the reconciliation and work plan. If not, create one using the same structure as /plan:#Create the Implementation Plan Artifact#.
 
 // turbo
 
@@ -106,7 +106,7 @@ If any dispatch returns exit code 2 (`QUEUE_FULL`): do that work yourself.
 > [!IMPORTANT]
 > **Update progress after each item** — mark the source doc Progress table `✅ Done`, update the brain task artifact checklist `[x]`, and update the task boundary summary. This is part of the item's work, not a batch operation at the end.
 >
-> **Sniff while you implement**: apply `/sniff`'s _Smell checklist_ to files you touched and their neighbors. Append any findings to the source doc's `## Debt` section using `/sniff`'s _Logging format_.
+> **Sniff while you implement**: apply /sniff:#Smell Checklist# to files you touched and their neighbors. Append any findings to the source doc's `## Debt` section using /sniff:#Logging Format#.
 
 ### Handle test failures
 
@@ -126,9 +126,8 @@ When an item cannot be completed (missing dependency, undecided architecture, ou
 
 Encountered code that looks wrong but is unrelated to your task:
 
-1. Create a debt doc in `docs/` with `> Status: Draft` and datetime-prefixed naming
-2. Describe problem, impact, suggested fix. Link to parent doc if applicable.
-3. Continue current work — do NOT fix inline.
+1. Follow /lib:#Create Debt Document#(source=/implement) — link to the current implementation doc
+2. Continue current work — do NOT fix inline.
 
 > [!CAUTION]
 > **Never fix discovered issues inline** (scope creep). **Never just mention them in chat** (gets lost). One debt doc per issue, filed immediately.

@@ -20,7 +20,7 @@ Raise code coverage to a target percentage by analyzing the coverage report, tri
 
 ### Evaluate skills
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Run tests and parse coverage report
 
@@ -50,12 +50,12 @@ Create a prioritized list of files to test, sorted by **uncovered statements** (
 
 ### Triage each file for code smells (BEFORE writing tests)
 
-For each file in the priority queue, **read it first** and apply `/sniff`'s _Smell checklist_ (structural smells only — security, performance, and risk categories are not relevant here).
+For each file in the priority queue, **read it first** and apply /sniff:#Smell Checklist# (structural smells only — security, performance, and risk categories are not relevant here).
 
 **If smells are found:**
 
 1. **Skip testing the file** — don't write tests for smelly code
-2. Follow `/close`'s _Create debt doc_ step — set source to `/testcoverage triage` and describe the smell in the Requirement
+2. Follow /lib:#Create Debt Document#(source=/testcoverage triage) — describe the smell in `## Requirement`
 3. Log the skip with reason in the progress table
 4. Move to next file
 
@@ -139,4 +139,4 @@ Summarize:
 - **Remaining gap**: What would be needed to close the remaining gap (if any)
 - **True blockers**: Any files that are genuinely untestable (external deps, etc.)
 
-Follow `/commit`'s _Generate the commit message_ step.
+Follow /commit:#Generate the Commit Message#.

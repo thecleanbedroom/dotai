@@ -24,11 +24,11 @@ Lightweight workflow for reactive work: bug fixes, hotfixes, and small follow-up
 
 // turbo
 
-Follow `/skills`'s _Evaluate skills_ step.
+Follow /lib:#Evaluate Skills#.
 
 ### Resolve input
 
-Follow `/lib`'s _Resolve Input_ step with this override:
+Follow /lib:#Resolve Input# with this override:
 
 - **Initial status**: `In Progress` (capture documents work that is already done or about to be done)
 
@@ -36,10 +36,10 @@ Follow `/lib`'s _Resolve Input_ step with this override:
 
 // turbo
 
-Using `/lib`'s _Canonical Document Format_, populate the resolved doc with:
+Using /lib:#Canonical Document Format#, populate the resolved doc with:
 
 - **`## Requirement` items**: what was broken or needed changing — each item follows the standard fields (What, Where, Why, How, Priority, Effort — include what's known)
-- Apply `/sniff`'s _Smell checklist_ to touched files; log findings to a `## Debt` section using `/sniff`'s _Logging format_
+- Apply /sniff:#Smell Checklist# to touched files; log findings to a `## Debt` section using /sniff:#Logging Format#
 
 In retroactive mode, populate from conversation context (files edited, commands run, decisions made). In proactive mode, fill `## Requirement` first and update as you go.
 
@@ -58,7 +58,7 @@ If the fix hasn't been applied yet, do it now:
 
 // turbo
 
-- **Walkthrough**: Follow `/close`'s _Append walkthrough to the source document_ step
-- **Finalize**: Follow `/close`'s _Finalize the original document_ step
-- **Move + rebase**: Follow `/close`'s _Move to finished_ step
-- **Report**: Follow `/close`'s _Report_ step — include a copy-paste commit message
+- **Walkthrough**: Follow /close:#Append Walkthrough to the Source Document#
+- **Finalize**: Follow /close:#Finalize the Original Document#
+- **Move + rebase**: Follow /close:#Move to Finished#
+- **Report**: Follow /close:#Report# — include a copy-paste commit message
