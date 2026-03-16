@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
 )
 
 type mockPacingStore struct {
@@ -53,7 +53,7 @@ func (m *mockPacingStore) UpdatePacing(_ context.Context, model string, fields m
 
 func TestOnSuccess(t *testing.T) {
 	t.Parallel()
-	model := "gemini-3-flash-preview"
+	model := "gemini-2.5-flash"
 	cfg := config.Default()
 	registry := domain.NewModelRegistry(cfg.Models)
 
@@ -98,7 +98,7 @@ func TestOnSuccess(t *testing.T) {
 func TestOnSuccess_BackoffDrains(t *testing.T) {
 	t.Parallel()
 
-	model := "gemini-3-flash-preview"
+	model := "gemini-2.5-flash"
 	cfg := config.Default()
 	registry := domain.NewModelRegistry(cfg.Models)
 
@@ -118,7 +118,7 @@ func TestOnSuccess_BackoffDrains(t *testing.T) {
 
 func TestOnRateLimit(t *testing.T) {
 	t.Parallel()
-	model := "gemini-3-flash-preview"
+	model := "gemini-2.5-flash"
 	cfg := config.Default()
 	registry := domain.NewModelRegistry(cfg.Models)
 

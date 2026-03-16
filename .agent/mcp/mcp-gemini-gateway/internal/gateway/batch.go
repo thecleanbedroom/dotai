@@ -3,10 +3,11 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"sync"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
 )
 
 // FindBucketForModel returns the bucket containing the given alias, or nil.
@@ -29,7 +30,10 @@ type Assignment struct {
 
 // AssignModelsForBatch assigns concrete model aliases to batch jobs for max parallelism.
 func (g *Gateway) AssignModelsForBatch(ctx context.Context, jobs []DispatchRequest) []Assignment {
-	runningModels, _ := g.store.RunningModels(ctx)
+	runningModels, err := g.store.RunningModels(ctx)
+	if err != nil {
+		g.logger.Warn("batch: running models", "error", err)
+	}
 	runningSet := make(map[string]bool)
 	for _, m := range runningModels {
 		runningSet[g.registry.AliasFor(m)] = true
@@ -55,29 +59,11 @@ func (g *Gateway) AssignModelsForBatch(ctx context.Context, jobs []DispatchReque
 		}
 
 		if bucket != nil {
-			reqIdx := indexOf(bucket, requested)
-			found := false
-
-			// Try smarter first (higher index), then lesser
-			for _, m := range bucket {
-				if indexOf(bucket, m) > reqIdx && !assigned[m] {
-					assigned[m] = true
-					result = append(result, Assignment{i, m})
-					found = true
-					break
-				}
-			}
-			if !found {
-				for _, m := range bucket {
-					if indexOf(bucket, m) < reqIdx && !assigned[m] {
-						assigned[m] = true
-						result = append(result, Assignment{i, m})
-						found = true
-						break
-					}
-				}
-			}
-			if !found {
+			alt := pickBucketAlternative(bucket, requested, assigned)
+			if alt != "" {
+				assigned[alt] = true
+				result = append(result, Assignment{i, alt})
+			} else {
 				result = append(result, Assignment{i, requested})
 			}
 		} else {
@@ -103,7 +89,7 @@ func (g *Gateway) RunBatch(ctx context.Context, jobs []DispatchRequest) ([]domai
 		modelGroups[a.Alias] = append(modelGroups[a.Alias], indexedJob{a.Index, jobs[a.Index]})
 	}
 
-	batchID := fmt.Sprintf("%08x", uint32(len(jobs)))
+	batchID := fmt.Sprintf("batch-%08x", rand.Int31())
 
 	// Results collected concurrently
 	results := make([]domain.BatchResult, len(jobs))
@@ -143,13 +129,4 @@ func (g *Gateway) RunBatch(ctx context.Context, jobs []DispatchRequest) ([]domai
 
 	wg.Wait()
 	return results, nil
-}
-
-func indexOf(slice []string, item string) int {
-	for i, s := range slice {
-		if s == item {
-			return i
-		}
-	}
-	return -1
 }

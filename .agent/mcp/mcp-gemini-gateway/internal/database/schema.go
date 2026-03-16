@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS requests (
     tokens_thoughts INTEGER,
     tool_calls INTEGER,
     api_latency_ms INTEGER,
-    batch_id TEXT
+    batch_id TEXT,
+    response_text TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_requests_active

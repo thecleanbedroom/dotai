@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/database"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/pacing"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/database"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/pacing"
 )
 
 // mockExecutor implements Executor for testing dispatch flow.
@@ -33,6 +33,7 @@ func newFullTestGateway(t *testing.T, exec Executor) (*Gateway, *database.Store)
 	t.Helper()
 	cfg := config.Default()
 	cfg.DBPath = ":memory:"
+	cfg.ProjectRoot = "/tmp"
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
 
 	store, err := database.NewStore(cfg, ":memory:", logger)
@@ -92,18 +93,12 @@ func TestDispatch_UnknownModel(t *testing.T) {
 }
 
 func TestDispatch_RateLimit_Retries(t *testing.T) {
-	callCount := 0
-	exec := &mockExecutor{}
-	origRun := exec.Run
-	_ = origRun
-
 	// First call returns rate limit, second succeeds
 	customExec := &rateLimitThenSuccessExecutor{
 		rateLimitCalls: 1,
 	}
 
 	gw, _ := newFullTestGateway(t, customExec)
-	_ = callCount
 
 	result, err := gw.Dispatch(context.Background(), DispatchRequest{
 		Model:  "fast",
@@ -293,9 +288,11 @@ func TestFindBucketAlternative(t *testing.T) {
 	exec := &mockExecutor{}
 	gw, _ := newFullTestGateway(t, exec)
 
-	// No running models → should return empty (requested model is free)
+	// No running models → returns a bucket peer since nothing is marked unavailable
 	alt := gw.findBucketAlternative(context.Background(), "fast")
-	// When nothing is running, it's tricky — the function checks runningModels
-	// which should be empty, so no alternative needed
-	_ = alt // Just exercise the code path
+	// "fast" is in the ["lite", "quick", "fast"] bucket — should get a peer
+	validPeers := map[string]bool{"lite": true, "quick": true}
+	if !validPeers[alt] {
+		t.Errorf("findBucketAlternative('fast') = %q, want one of lite/quick", alt)
+	}
 }

@@ -2,14 +2,10 @@ package gateway
 
 import (
 	"context"
-	"log/slog"
-	"os"
+	"sync/atomic"
 	"testing"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/database"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/pacing"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
 )
 
 func TestFindBucket(t *testing.T) {
@@ -72,27 +68,8 @@ func TestIndexOf(t *testing.T) {
 	}
 }
 
-func newBatchGateway(t *testing.T, exec Executor) (*Gateway, *database.Store) {
-	t.Helper()
-	cfg := config.Default()
-	cfg.DBPath = ":memory:"
-	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
-
-	store, err := database.NewStore(cfg, ":memory:", logger)
-	if err != nil {
-		t.Fatalf("NewStore: %v", err)
-	}
-	t.Cleanup(func() { store.Close() })
-
-	registry := domain.NewModelRegistry(cfg.Models)
-	if err := store.SeedPacing(context.Background(), registry, cfg); err != nil {
-		t.Fatalf("SeedPacing: %v", err)
-	}
-
-	pacer := pacing.NewManager(store, cfg, registry)
-	gw := NewGateway(store, pacer, exec, cfg, registry, logger)
-	return gw, store
-}
+// newBatchGateway delegates to newFullTestGateway (dispatch_test.go) — same package.
+var newBatchGateway = newFullTestGateway
 
 func TestAssignModelsForBatch(t *testing.T) {
 	exec := &mockExecutor{}
@@ -125,10 +102,9 @@ func TestAssignModelsForBatch(t *testing.T) {
 				if len(assignments) != 2 {
 					t.Fatalf("len=%d, want 2", len(assignments))
 				}
-				// First should get fast, second should get alternative
+				// With 3 models in the flash bucket, second job should get a different alias
 				if assignments[0].Alias == assignments[1].Alias {
-					// Both got same, which is ok if bucket is exhausted
-					// but with 3 models in bucket, second should differ
+					t.Errorf("expected different aliases for spreading, both got %q", assignments[0].Alias)
 				}
 			},
 		},
@@ -203,9 +179,7 @@ func TestRunBatch(t *testing.T) {
 
 func TestRunBatch_MixedResults(t *testing.T) {
 	// Alternating success/failure
-	callCount := 0
 	exec := &alternatingExecutor{}
-	_ = callCount
 	gw, _ := newBatchGateway(t, exec)
 
 	jobs := []DispatchRequest{
@@ -223,13 +197,14 @@ func TestRunBatch_MixedResults(t *testing.T) {
 }
 
 // alternatingExecutor returns success on odd calls, failure on even.
+// Uses atomic counter because RunBatch dispatches goroutines per model.
 type alternatingExecutor struct {
-	calls int
+	calls atomic.Int32
 }
 
 func (e *alternatingExecutor) Run(_ context.Context, args []string, cwd string, stdin string) (string, string, int, error) {
-	e.calls++
-	if e.calls%2 == 1 {
+	n := e.calls.Add(1)
+	if n%2 == 1 {
 		return `{"response": "ok", "stats": {}}`, "", 0, nil
 	}
 	return "", "error", 1, nil

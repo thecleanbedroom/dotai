@@ -26,3 +26,15 @@ func TestFormatTimeShort(t *testing.T) {
 		t.Error("FormatTimeShort returned empty string")
 	}
 }
+
+func TestNowUnix(t *testing.T) {
+	t.Parallel()
+
+	before := float64(time.Now().Unix())
+	got := NowUnix()
+	after := float64(time.Now().Unix())
+
+	if got < before || got > after {
+		t.Errorf("NowUnix()=%f, want between %f and %f", got, before, after)
+	}
+}

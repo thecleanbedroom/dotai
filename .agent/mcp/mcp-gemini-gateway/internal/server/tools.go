@@ -2,16 +2,17 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/gateway"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/gateway"
 )
 
 func (s *MCPServer) registerTools() {
 	// ── gateway_dispatch ──
 	s.mcp.AddTool(
 		mcp.NewTool("gateway_dispatch",
-			mcp.WithDescription("Execute a single Gemini CLI job via stdin pipe"),
+			mcp.WithDescription("Execute a single Gemini CLI job via stdin pipe. Returns the agent's response summary."),
 			mcp.WithToolAnnotation(mcp.ToolAnnotation{
 				ReadOnlyHint:    boolPtr(false),
 				DestructiveHint: boolPtr(false),
@@ -20,8 +21,8 @@ func (s *MCPServer) registerTools() {
 			}),
 			mcp.WithString("model",
 				mcp.Required(),
-				mcp.Description("Model alias: lite, quick, fast, think, deep"),
-				mcp.Enum("lite", "quick", "fast", "think", "deep"),
+				mcp.Description("Model alias: fast, deep"),
+				mcp.Enum("fast", "deep"),
 			),
 			mcp.WithString("prompt",
 				mcp.Required(),
@@ -80,10 +81,12 @@ func (s *MCPServer) registerTools() {
 			}
 
 			jobs := make([]gateway.DispatchRequest, 0, len(jobsRaw))
-			for _, j := range jobsRaw {
+			for i, j := range jobsRaw {
 				jm, ok := j.(map[string]any)
 				if !ok {
-					continue
+					return mcp.NewToolResultError(
+						fmt.Sprintf("jobs[%d] must be an object with {model, prompt, ...}, got %T", i, j),
+					), nil
 				}
 				dr := gateway.DispatchRequest{
 					Model:  argStr(jm, "model"),
@@ -264,10 +267,47 @@ func (s *MCPServer) registerTools() {
 		),
 		func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			args := req.GetArguments()
-			id := int64(args["id"].(float64))
+			idVal, ok := args["id"].(float64)
+			if !ok {
+				return mcp.NewToolResultError("id must be a numeric job ID. Use gateway_errors to see failed jobs."), nil
+			}
+			id := int64(idVal)
 			result, err := s.gateway.Retry(ctx, id)
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
+			}
+			return mcp.NewToolResultText(toJSON(result)), nil
+		},
+	)
+
+	// ── gateway_result ──
+	s.mcp.AddTool(
+		mcp.NewTool("gateway_result",
+			mcp.WithDescription("Get full details of a job by ID, including its response_text if completed"),
+			mcp.WithToolAnnotation(mcp.ToolAnnotation{
+				ReadOnlyHint:    boolPtr(true),
+				DestructiveHint: boolPtr(false),
+				IdempotentHint:  boolPtr(true),
+				OpenWorldHint:   boolPtr(false),
+			}),
+			mcp.WithNumber("id",
+				mcp.Required(),
+				mcp.Description("Job ID to retrieve"),
+			),
+		),
+		func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			args := req.GetArguments()
+			idVal, ok := args["id"].(float64)
+			if !ok {
+				return mcp.NewToolResultError("id must be a numeric job ID. Use gateway_jobs to see active jobs."), nil
+			}
+			id := int64(idVal)
+			result, err := s.gateway.Result(ctx, id)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
+			if result == nil {
+				return mcp.NewToolResultError("Job not found"), nil
 			}
 			return mcp.NewToolResultText(toJSON(result)), nil
 		},

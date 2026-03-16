@@ -8,8 +8,39 @@ POLICY_REPO_URL="git@github.com:thecleanbedroom/dotai.git"
 REFERENCE="main"
 SYNC_DIRS=".agent"
 
-command -v git >/dev/null 2>&1 || { echo "Error: git not found." >&2; exit 1; }
-command -v rsync >/dev/null 2>&1 || { echo "Error: rsync not found." >&2; exit 1; }
+# ── Platform detection ───────────────────────────────────────
+install_hint() {
+    case "$(uname -s)" in
+        Darwin) echo "  brew install $1" ;;
+        Linux)
+            if command -v apt >/dev/null 2>&1; then
+                echo "  sudo apt install $1"
+            elif command -v dnf >/dev/null 2>&1; then
+                echo "  sudo dnf install $1"
+            elif command -v pacman >/dev/null 2>&1; then
+                echo "  sudo pacman -S $1"
+            else
+                echo "  Install '$1' using your package manager"
+            fi
+            ;;
+        *)  echo "  Install '$1' for your platform" ;;
+    esac
+}
+
+require_cmd() {
+    local cmd="$1"
+    local pkg="${2:-$1}"  # package name may differ from command
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Error: '$cmd' is required but not found." >&2
+        echo "$(install_hint "$pkg")" >&2
+        exit 1
+    fi
+}
+
+# ── Dependency checks ────────────────────────────────────────
+require_cmd git
+require_cmd rsync
+require_cmd go golang  # needed to build MCP servers
 
 cat <<INFO
 This script will clone the dotai policy repository and sync rules/config into:
@@ -44,7 +75,7 @@ for dir in $SYNC_DIRS; do
         mkdir -p "$TARGET_DIR/$dir"
         rsync -av \
             --exclude '.agent/skills' \
-            --exclude '.agent/mcp/mcp-project-memory/data' \
+            --exclude '.agent/mcp/*/data' \
             "$temp_dir/policy/$dir/" "$TARGET_DIR/$dir/"
     fi
 done
@@ -57,5 +88,21 @@ for file in AGENTS.sh AGENTS.md; do
     fi
 done
 
-echo 'Policy files synchronized. Review changes and commit as needed.'
+# ── Build Go MCP servers for this platform ───────────────────
+printf '\nBuilding MCP servers for %s/%s...\n' "$(uname -s | tr '[:upper:]' '[:lower:]')" "$(uname -m)"
+for gomod in "$TARGET_DIR/.agent/mcp"/*/go.mod; do
+    [ -f "$gomod" ] || continue
+    dir="$(dirname "$gomod")"
+    name="$(basename "$dir")"
+    if [ -f "$dir/Makefile" ]; then
+        printf '  Building %s...\n' "$name"
+        make -C "$dir" build 2>&1 | sed 's/^/    /'
+    else
+        printf '  Building %s (go build)...\n' "$name"
+        (cd "$dir" && go build -o "$name" ./cmd/"$name") 2>&1 | sed 's/^/    /'
+    fi
+done
+
+echo ''
+echo 'Policy files synchronized and MCP servers built.'
 echo 'Run /add-skills to install project-specific skills.'

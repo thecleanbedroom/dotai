@@ -1,14 +1,12 @@
-.PHONY: dev build run test coverage vet clean install setup install-mcp
+.PHONY: build run test coverage vet clean install setup install-mcp
 
-BINARY  := mcp-gemini-gateway
-BUILD   := ./cmd/mcp-gemini-gateway
-OUT     := ./$(BINARY)
+BINARY     := mcp-gemini-gateway
+BUILD      := ./cmd/mcp-gemini-gateway
+OUT        := ./$(BINARY)
+MCP_CONFIG := $(HOME)/.gemini/antigravity/mcp_config.json
+GW_BIN     := $(abspath $(OUT))
 
 # ── Development ──────────────────────────────────────────────
-
-## Start dev server with hot-reload
-dev:
-	go run github.com/air-verse/air@latest
 
 ## Run the server directly
 run: build
@@ -58,10 +56,8 @@ setup:
 	@test -f .env || cp .env.example .env && echo "Created .env from .env.example"
 	go mod tidy
 	@mkdir -p data
-	@echo "Ready. Run 'make dev' to start."
+	@echo "Ready. Run 'make run' to start."
 
-MCP_CONFIG := $(HOME)/.gemini/antigravity/mcp_config.json
-GW_BIN     := $(abspath $(OUT))
 
 ## Register gateway in Antigravity mcp_config.json
 install-mcp: build
@@ -81,7 +77,6 @@ install-mcp: build
 ## Remove build artifacts
 clean:
 	rm -f $(BINARY) coverage.out coverage.html
-	rm -rf tmp/
 
 # ── Help ─────────────────────────────────────────────────────
 

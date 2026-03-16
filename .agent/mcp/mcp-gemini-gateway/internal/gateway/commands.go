@@ -9,7 +9,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
+)
+
+const (
+	// maxErrorLen caps error messages stored in the database.
+	maxErrorLen = 500
+	// gracefulShutdownDelay is the time between SIGTERM and SIGKILL in killProcess.
+	gracefulShutdownDelay = 500 * time.Millisecond
 )
 
 // Status returns queue status per model with health indicator.
@@ -20,13 +27,13 @@ func (g *Gateway) Status(ctx context.Context) (map[string]domain.ModelStatus, er
 		maxC := g.cfg.MaxConcurrent[alias]
 		maxQ := g.cfg.MaxQueue[alias]
 
-		running, _ := g.store.CountByStatus(ctx, model, "running")
-		// Get proper counts
-		queuedCount, _ := g.store.CountByStatus(ctx, model, "waiting")
-		queuedCount2, _ := g.store.CountByStatus(ctx, model, "queued")
-		retrying, _ := g.store.CountByStatus(ctx, model, "retrying")
-
-		totalQueued := queuedCount + queuedCount2
+		counts, err := g.store.StatusCounts(ctx, model)
+		if err != nil {
+			g.logger.Warn("status: counts", "model", model, "error", err)
+		}
+		running := counts["running"]
+		totalQueued := counts["waiting"] + counts["queued"]
+		retrying := counts["retrying"]
 		totalPending := running + totalQueued + retrying
 
 		pacingState, _ := g.store.GetPacing(ctx, model)
@@ -64,7 +71,7 @@ func (g *Gateway) Jobs(ctx context.Context) ([]domain.JobStatus, error) {
 		return nil, err
 	}
 
-	now := float64(time.Now().Unix())
+	now := domain.NowUnix()
 	jobs := make([]domain.JobStatus, 0, len(requests))
 	for _, r := range requests {
 		var runningTime *float64
@@ -92,7 +99,11 @@ func (g *Gateway) Pacing(ctx context.Context) (map[string]domain.PacingInfo, err
 
 	g.registry.ForEach(func(alias, model string) {
 		state, err := g.store.GetPacing(ctx, model)
-		if err != nil || state == nil {
+		if err != nil {
+			g.logger.Warn("pacing: get state", "model", model, "error", err)
+			return
+		}
+		if state == nil {
 			return
 		}
 		result[alias] = domain.PacingInfo{
@@ -108,22 +119,26 @@ func (g *Gateway) Pacing(ctx context.Context) (map[string]domain.PacingInfo, err
 }
 
 // Stats returns historical performance stats per model.
-func (g *Gateway) Stats(ctx context.Context, last string) (map[string]any, error) {
+func (g *Gateway) Stats(ctx context.Context, last string) (*domain.StatsResult, error) {
 	window := ParseDuration(last)
 	var since time.Time
 	if window > 0 {
 		since = time.Now().Add(-window)
 	}
 
-	result := map[string]any{"period": last}
-	if last == "" {
-		result["period"] = "lifetime"
+	period := last
+	if period == "" {
+		period = "lifetime"
+	}
+	result := &domain.StatsResult{
+		Period: period,
+		Models: make(map[string]domain.ModelStats),
 	}
 
 	g.registry.ForEach(func(alias, model string) {
 		rows, err := g.store.ListCompleted(ctx, model, since)
 		if err != nil || len(rows) == 0 {
-			result[alias] = domain.ModelStats{TotalJobs: 0}
+			result.Models[alias] = domain.ModelStats{TotalJobs: 0}
 			return
 		}
 
@@ -153,55 +168,6 @@ func (g *Gateway) Stats(ctx context.Context, last string) (map[string]any, error
 			}
 		}
 
-		// p95
-		var p95 *float64
-		if len(execTimes) > 0 {
-			sort.Float64s(execTimes)
-			idx := min(int(float64(len(execTimes))*0.95), len(execTimes)-1)
-			v := math.Round(execTimes[idx]*10) / 10
-			p95 = &v
-		}
-
-		// Averages
-		var avgExec, avgWait *float64
-		if len(execTimes) > 0 {
-			s := 0.0
-			for _, t := range execTimes {
-				s += t
-			}
-			v := math.Round(s/float64(len(execTimes))*10) / 10
-			avgExec = &v
-		}
-		if len(waitTimes) > 0 {
-			s := 0.0
-			for _, t := range waitTimes {
-				s += t
-			}
-			v := math.Round(s/float64(len(waitTimes))*10) / 10
-			avgWait = &v
-		}
-
-		// Peak concurrent
-		type window struct{ start, end float64 }
-		var windows []window
-		for _, r := range rows {
-			if r.StartedAt != nil && r.FinishedAt != nil {
-				windows = append(windows, window{*r.StartedAt, *r.FinishedAt})
-			}
-		}
-		peak := 0
-		for i, w1 := range windows {
-			concurrent := 1
-			for j, w2 := range windows {
-				if i != j && w2.start < w1.end && w2.end > w1.start {
-					concurrent++
-				}
-			}
-			if concurrent > peak {
-				peak = concurrent
-			}
-		}
-
 		var currentGap *int
 		if ps, _ := g.store.GetPacing(ctx, model); ps != nil {
 			currentGap = &ps.MinGapMs
@@ -212,18 +178,18 @@ func (g *Gateway) Stats(ctx context.Context, last string) (map[string]any, error
 			successRate = math.Round(float64(succeeded)/float64(total)*100) / 100
 		}
 
-		result[alias] = domain.ModelStats{
+		result.Models[alias] = domain.ModelStats{
 			TotalJobs:           total,
 			Succeeded:           succeeded,
 			Failed:              failed,
 			Cancelled:           cancelled,
 			RateLimitedAttempts: rateLimitedAttempts,
 			SuccessRate:         successRate,
-			AvgExecutionS:       avgExec,
-			AvgWaitS:            avgWait,
+			AvgExecutionS:       averageOf(execTimes),
+			AvgWaitS:            averageOf(waitTimes),
 			AvgRetries:          math.Round(float64(rateLimitedAttempts)/float64(total)*10) / 10,
-			P95ExecutionS:       p95,
-			PeakConcurrent:      peak,
+			P95ExecutionS:       p95Of(execTimes),
+			PeakConcurrent:      peakConcurrent(rows),
 			Timeouts:            timeouts,
 			CurrentMinGapMs:     currentGap,
 		}
@@ -232,8 +198,62 @@ func (g *Gateway) Stats(ctx context.Context, last string) (map[string]any, error
 	return result, nil
 }
 
+// averageOf returns the rounded average of a float64 slice, or nil if empty.
+func averageOf(vals []float64) *float64 {
+	if len(vals) == 0 {
+		return nil
+	}
+	sum := 0.0
+	for _, v := range vals {
+		sum += v
+	}
+	avg := math.Round(sum/float64(len(vals))*10) / 10
+	return &avg
+}
+
+// p95Of returns the 95th percentile of a float64 slice, or nil if empty.
+func p95Of(vals []float64) *float64 {
+	if len(vals) == 0 {
+		return nil
+	}
+	sort.Float64s(vals)
+	idx := min(int(float64(len(vals))*0.95), len(vals)-1)
+	v := math.Round(vals[idx]*10) / 10
+	return &v
+}
+
+// peakConcurrent computes the peak number of simultaneously running requests
+// using a sweep-line algorithm over start/finish timestamps.
+func peakConcurrent(rows []domain.Request) int {
+	type event struct {
+		t     float64
+		delta int // +1 start, -1 end
+	}
+	var events []event
+	for _, r := range rows {
+		if r.StartedAt != nil && r.FinishedAt != nil {
+			events = append(events, event{*r.StartedAt, 1}, event{*r.FinishedAt, -1})
+		}
+	}
+	sort.Slice(events, func(i, j int) bool {
+		if events[i].t == events[j].t {
+			return events[i].delta < events[j].delta // ends before starts at same time
+		}
+		return events[i].t < events[j].t
+	})
+	peak := 0
+	concurrent := 0
+	for _, e := range events {
+		concurrent += e.delta
+		if concurrent > peak {
+			peak = concurrent
+		}
+	}
+	return peak
+}
+
 // Errors returns recent failed jobs.
-func (g *Gateway) Errors(ctx context.Context, last string) (map[string]any, error) {
+func (g *Gateway) Errors(ctx context.Context, last string) (*domain.ErrorsResult, error) {
 	window := ParseDuration(last)
 	var since time.Time
 	if window > 0 {
@@ -270,7 +290,7 @@ func (g *Gateway) Errors(ctx context.Context, last string) (map[string]any, erro
 		})
 	}
 
-	return map[string]any{"count": len(errors), "errors": errors}, nil
+	return &domain.ErrorsResult{Count: len(errors), Errors: errors}, nil
 }
 
 // Cancel cancels jobs by ID, batch ID, or model.
@@ -309,10 +329,10 @@ func (g *Gateway) Cancel(ctx context.Context, jobID string, modelAlias string, b
 		if r.Status == "running" && r.PID > 0 {
 			killProcess(r.PID)
 		}
-		_ = g.store.UpdateStatus(ctx, r.ID, "failed", map[string]any{
-			"error":       "cancelled",
-			"finished_at": float64(time.Now().Unix()),
-			"exit_code":   -2,
+		_ = g.store.UpdateStatus(ctx, r.ID, "cancelled", map[string]any{
+			"error":       "cancelled by user",
+			"finished_at": domain.NowUnix(),
+			"exit_code":   -9,
 		})
 		cancelled = append(cancelled, r.ID)
 	}
@@ -351,12 +371,23 @@ func (g *Gateway) Retry(ctx context.Context, jobID int64) (*domain.DispatchResul
 	})
 }
 
+// Result returns the full request details for a job ID.
+func (g *Gateway) Result(ctx context.Context, jobID int64) (*domain.Request, error) {
+	return g.store.GetRequest(ctx, jobID)
+}
+
 func killProcess(pid int) {
 	proc, err := os.FindProcess(pid)
 	if err != nil {
 		return
 	}
-	_ = proc.Signal(syscall.SIGTERM)
-	time.Sleep(500 * time.Millisecond)
-	_ = proc.Signal(syscall.SIGKILL)
+	_ = proc.Signal(syscall.SIGTERM) // best-effort
+
+	// Escalate to SIGKILL after grace period without blocking the caller.
+	go func() {
+		timer := time.NewTimer(gracefulShutdownDelay)
+		defer timer.Stop()
+		<-timer.C
+		_ = proc.Signal(syscall.SIGKILL) // best-effort
+	}()
 }

@@ -8,16 +8,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/database"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/pacing"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/database"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/pacing"
 )
 
 func newTestGateway(t *testing.T) (*Gateway, *database.Store) {
 	t.Helper()
 	cfg := config.Default()
 	cfg.DBPath = ":memory:"
+	cfg.ProjectRoot = "/tmp"
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
 
 	store, err := database.NewStore(cfg, ":memory:", logger)
@@ -209,15 +210,15 @@ func TestStats(t *testing.T) {
 		name  string
 		setup func(t *testing.T, gw *Gateway, store *database.Store)
 		last  string
-		check func(t *testing.T, result map[string]any)
+		check func(t *testing.T, result *domain.StatsResult)
 	}{
 		{
 			name:  "Empty",
 			setup: func(t *testing.T, gw *Gateway, store *database.Store) {},
 			last:  "",
-			check: func(t *testing.T, result map[string]any) {
-				if result["period"] != "lifetime" {
-					t.Errorf("period=%v, want 'lifetime'", result["period"])
+			check: func(t *testing.T, result *domain.StatsResult) {
+				if result.Period != "lifetime" {
+					t.Errorf("period=%v, want 'lifetime'", result.Period)
 				}
 			},
 		},
@@ -248,14 +249,10 @@ func TestStats(t *testing.T) {
 				})
 			},
 			last: "1h",
-			check: func(t *testing.T, result map[string]any) {
-				fastStats, ok := result["fast"]
+			check: func(t *testing.T, result *domain.StatsResult) {
+				ms, ok := result.Models["fast"]
 				if !ok {
 					t.Fatal("missing 'fast' in stats")
-				}
-				ms, ok := fastStats.(domain.ModelStats)
-				if !ok {
-					t.Fatalf("unexpected type %T", fastStats)
 				}
 				if ms.TotalJobs != 4 {
 					t.Errorf("total_jobs=%d, want 4", ms.TotalJobs)
@@ -303,8 +300,8 @@ func TestErrors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Errors: %v", err)
 	}
-	if result["count"].(int) != 1 {
-		t.Errorf("error count=%v, want 1", result["count"])
+	if result.Count != 1 {
+		t.Errorf("error count=%v, want 1", result.Count)
 	}
 }
 
@@ -323,8 +320,8 @@ func TestErrors_WithTimeWindow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Errors: %v", err)
 	}
-	if result["count"].(int) != 1 {
-		t.Errorf("count=%v, want 1", result["count"])
+	if result.Count != 1 {
+		t.Errorf("count=%v, want 1", result.Count)
 	}
 }
 
@@ -406,6 +403,7 @@ func TestRetry_Success(t *testing.T) {
 	}
 	cfg := config.Default()
 	cfg.DBPath = ":memory:"
+	cfg.ProjectRoot = "/tmp"
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
 
 	store, err := database.NewStore(cfg, ":memory:", logger)
@@ -436,5 +434,58 @@ func TestRetry_Success(t *testing.T) {
 	}
 	if result.ExitCode != 0 {
 		t.Errorf("exit_code=%d, want 0", result.ExitCode)
+	}
+}
+
+func TestResult(t *testing.T) {
+	t.Parallel()
+	gw, store := newTestGateway(t)
+	ctx := context.Background()
+
+	// Insert a request
+	req := &domain.Request{
+		Model: "gemini-2.5-flash", Status: "done", PromptHash: "hash",
+		PID: 0, Cwd: "/tmp", CreatedAt: float64(time.Now().Unix()),
+		ResponseText: "hello world",
+	}
+	id, _ := store.InsertRequest(ctx, req)
+
+	// Test retrieving it
+	result, err := gw.Result(ctx, id)
+	if err != nil {
+		t.Fatalf("Result: %v", err)
+	}
+	if result == nil {
+		t.Fatal("Result returned nil")
+	}
+	if result.ResponseText != "hello world" {
+		t.Errorf("ResponseText=%q, want 'hello world'", result.ResponseText)
+	}
+
+	// Test non-existent job returns error
+	_, err = gw.Result(ctx, 99999)
+	if err == nil {
+		t.Error("Expected error for non-existent job")
+	}
+}
+
+func TestPacingCommand(t *testing.T) {
+	t.Parallel()
+	gw, _ := newTestGateway(t)
+	ctx := context.Background()
+
+	result, err := gw.Pacing(ctx)
+	if err != nil {
+		t.Fatalf("Pacing: %v", err)
+	}
+	// Should have entries for all models
+	if len(result) == 0 {
+		t.Error("Pacing returned empty map")
+	}
+	// Each entry should have non-negative values
+	for alias, info := range result {
+		if info.MinGapMs < 0 {
+			t.Errorf("Pacing[%s].MinGapMs=%d, want >= 0", alias, info.MinGapMs)
+		}
 	}
 }

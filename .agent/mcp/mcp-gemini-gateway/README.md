@@ -100,7 +100,7 @@ If using a custom port (e.g. `PORT=9090`), update the URL accordingly:
     },
     "project-memory": {
       "command": "/path/to/.agent/mcp/mcp-project-memory/mcp-project-memory",
-      "args": ["serve"]
+      "args": []
     },
     "gemini-gateway": {
       "serverURL": "http://127.0.0.1:8670/mcp"
@@ -128,8 +128,8 @@ If using a custom port (e.g. `PORT=9090`), update the URL accordingly:
 | Alias | Model |
 | ----- | ----- |
 | `lite` | gemini-2.5-flash-lite |
-| `quick` | gemini-2.5-flash |
-| `fast` | gemini-3-flash-preview |
+| `quick` | gemini-2.5-flash-lite |
+| `fast` | gemini-2.5-flash |
 | `think` | gemini-2.5-pro |
 | `deep` | gemini-3.1-pro-preview |
 

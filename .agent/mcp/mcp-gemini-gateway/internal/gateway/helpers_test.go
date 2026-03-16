@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
 )
 
 func TestPromptHash(t *testing.T) {

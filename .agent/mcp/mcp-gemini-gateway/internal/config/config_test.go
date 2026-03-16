@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -136,5 +138,56 @@ func TestInitialGapForAlias(t *testing.T) {
 				t.Errorf("InitialGapForAlias(%q)=%d, want %d", tt.alias, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestResolveProjectRoot_EnvVar(t *testing.T) {
+	// PROJECT_ROOT env var takes priority
+	t.Setenv("PROJECT_ROOT", "/tmp/fake-project")
+	root := ResolveProjectRoot()
+	if root != "/tmp/fake-project" {
+		t.Errorf("ResolveProjectRoot()=%q, want /tmp/fake-project", root)
+	}
+}
+
+func TestResolveProjectRoot_GitFallback(t *testing.T) {
+	// Without PROJECT_ROOT, should find a git root (we're in a git repo)
+	t.Setenv("PROJECT_ROOT", "")
+	root := ResolveProjectRoot()
+	if root == "" {
+		t.Error("ResolveProjectRoot() returned empty string")
+	}
+	// Should be an absolute path
+	if !filepath.IsAbs(root) {
+		t.Errorf("ResolveProjectRoot()=%q, want absolute path", root)
+	}
+}
+
+func TestNewPaths(t *testing.T) {
+	t.Parallel()
+	root := "/tmp/test-project"
+	p := NewPaths(root)
+
+	if p.ProjectRoot != root {
+		t.Errorf("ProjectRoot=%q, want %q", p.ProjectRoot, root)
+	}
+	if p.DataDir != filepath.Join(root, ".agent", "mcp", "mcp-gemini-gateway", "data") {
+		t.Errorf("DataDir=%q, unexpected", p.DataDir)
+	}
+	if p.DBFile != filepath.Join(p.DataDir, "mcp-gemini-gateway.sqlite") {
+		t.Errorf("DBFile=%q, unexpected", p.DBFile)
+	}
+	if p.EnvFile != filepath.Join(root, ".agent", "mcp", "mcp-gemini-gateway", ".env") {
+		t.Errorf("EnvFile=%q, unexpected", p.EnvFile)
+	}
+}
+
+func TestEnsureDirs(t *testing.T) {
+	dir := t.TempDir()
+	p := NewPaths(dir)
+	p.EnsureDirs()
+
+	if _, err := os.Stat(p.DataDir); os.IsNotExist(err) {
+		t.Errorf("DataDir %q was not created", p.DataDir)
 	}
 }

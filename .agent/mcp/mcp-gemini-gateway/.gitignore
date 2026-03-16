@@ -1,9 +1,8 @@
 # Binary
-mcp-gemini-gateway
+/mcp-gemini-gateway
 
 # Runtime data
 data/
-tmp/
 
 # Environment
 .env

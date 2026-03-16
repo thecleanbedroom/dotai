@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 
 	"github.com/mark3labs/mcp-go/server"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/gateway"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/gateway"
 )
 
 // MCPServer wraps the MCP server and gateway.
@@ -26,6 +25,39 @@ func New(gw *gateway.Gateway, logger *slog.Logger) *MCPServer {
 			"mcp-gemini-gateway",
 			"1.0.0",
 			server.WithToolCapabilities(true),
+			server.WithInstructions(`Gateway for parallel agent dispatch via Gemini CLI.
+
+PARALLELISM RULES:
+- Evaluate EVERY task for parallelism before starting. If work can be split into independent tasks (different files, no output dependency, no shared state), it MUST be split.
+- Parallel: edit different files, write impl + tests from spec, research topic A + B, spot-check N items.
+- Sequential: edit same file, task B depends on A's output, update interface + consumers.
+
+MODEL TIERS:
+- fast: code generation, tests, refactoring, config edits, spot-checks, log analysis (auto-rebalances across flash-class models)
+- deep: architecture review, complex reasoning, multi-file refactors, complex validation (auto-rebalances across pro-class models)
+
+ORCHESTRATOR ROLE:
+1. Evaluate parallelism graph before work starts
+2. Dispatch independent tasks via gateway_dispatch or gateway_batch_dispatch
+3. Work on your own tasks — never idle-wait
+4. Dispatch results include the agent's response_text. For completed jobs, use gateway_result(id) to retrieve the full response later.
+5. Fix minor issues inline; on retry, improve the prompt first (max 2 retries, then do it yourself)
+6. Never cancel a running job — wait for completion
+
+PROMPT TIPS:
+- Specify exact file paths to read and write
+- Be explicit about namespace, conventions, and what NOT to modify
+- For convention-sensitive work, tell the agent to read existing examples first rather than describing conventions in the prompt
+- Agents write files directly — response summaries are stored in DB and returned with dispatch results
+
+RESPONSE RETRIEVAL:
+- gateway_dispatch returns response_text in the "output" field immediately
+- gateway_result(id) retrieves a completed job's full details including response_text
+- gateway_errors shows recent failures with error details
+
+HEALTH: Call gateway_status(). ok = dispatch freely, slow = limit to 1, saturated = do it yourself.
+
+REPORTING: Always report to user — on dispatch (count, tasks, tier), on complete (pass/fail, git diff), on skip (why).`),
 		),
 		gateway: gw,
 		logger:  logger,
@@ -33,28 +65,6 @@ func New(gw *gateway.Gateway, logger *slog.Logger) *MCPServer {
 
 	s.registerTools()
 	return s
-}
-
-// Start begins serving MCP over streamable HTTP.
-func (s *MCPServer) Start(ctx context.Context, addr string) error {
-	httpServer := server.NewStreamableHTTPServer(s.mcp)
-
-	srv := &http.Server{
-		Addr:    addr,
-		Handler: httpServer,
-	}
-
-	go func() {
-		<-ctx.Done()
-		s.logger.Info("shutting down MCP server")
-		srv.Shutdown(context.Background())
-	}()
-
-	s.logger.Info("starting MCP server (http)", "addr", addr)
-	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-		return fmt.Errorf("server error: %w", err)
-	}
-	return nil
 }
 
 // StartStdio begins serving MCP over stdin/stdout.

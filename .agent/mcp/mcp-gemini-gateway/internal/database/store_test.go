@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
 )
 
 func newTestStore(t *testing.T) *Store {
@@ -234,6 +234,30 @@ func TestGetRequest(t *testing.T) {
 	}
 	if req.PromptText != "test prompt" {
 		t.Errorf("prompt_text=%q, want 'test prompt'", req.PromptText)
+	}
+}
+
+func TestResponseStorage(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+
+	id := insertReqFull(t, s, "test-model", "running", "label", "batch-1")
+	resp := "This is a test response from Gemini."
+
+	err := s.UpdateStatus(ctx, id, "done", map[string]any{
+		"response_text": resp,
+		"finished_at":   float64(time.Now().Unix()),
+	})
+	if err != nil {
+		t.Fatalf("UpdateStatus: %v", err)
+	}
+
+	req, err := s.GetRequest(ctx, id)
+	if err != nil {
+		t.Fatalf("GetRequest: %v", err)
+	}
+	if req.ResponseText != resp {
+		t.Errorf("ResponseText=%q, want %q", req.ResponseText, resp)
 	}
 }
 
@@ -466,12 +490,6 @@ func TestNewStore_FileDB(t *testing.T) {
 	if _, statErr := os.Stat(dbPath); statErr != nil {
 		t.Errorf("db file not created: %v", statErr)
 	}
-
-	// Should create output directory
-	outputDir := dir + "/gateway-output"
-	if _, statErr := os.Stat(outputDir); statErr != nil {
-		t.Errorf("output directory not created: %v", statErr)
-	}
 }
 
 func TestNewStore_DefaultPath(t *testing.T) {
@@ -486,4 +504,47 @@ func TestNewStore_DefaultPath(t *testing.T) {
 		t.Fatalf("NewStore default: %v", err)
 	}
 	defer store.Close()
+}
+
+func TestStatusCounts(t *testing.T) {
+	t.Parallel()
+	s := newTestStore(t)
+	ctx := context.Background()
+	model := "gemini-2.5-flash"
+	now := float64(time.Now().Unix())
+
+	// Insert requests with various statuses
+	insertReq(t, s, model, "running", 1, now)
+	insertReq(t, s, model, "running", 2, now)
+	insertReq(t, s, model, "waiting", 3, now)
+	insertReq(t, s, model, "queued", 4, now)
+	insertReq(t, s, model, "retrying", 5, now)
+	insertReq(t, s, model, "done", 6, now) // done should not be counted
+
+	counts, err := s.StatusCounts(ctx, model)
+	if err != nil {
+		t.Fatalf("StatusCounts: %v", err)
+	}
+
+	if counts["running"] != 2 {
+		t.Errorf("running=%d, want 2", counts["running"])
+	}
+	if counts["waiting"] != 1 {
+		t.Errorf("waiting=%d, want 1", counts["waiting"])
+	}
+	if counts["queued"] != 1 {
+		t.Errorf("queued=%d, want 1", counts["queued"])
+	}
+	if counts["retrying"] != 1 {
+		t.Errorf("retrying=%d, want 1", counts["retrying"])
+	}
+
+	// Different model should return zeros
+	counts2, err := s.StatusCounts(ctx, "other-model")
+	if err != nil {
+		t.Fatalf("StatusCounts other: %v", err)
+	}
+	if counts2["running"] != 0 {
+		t.Errorf("other running=%d, want 0", counts2["running"])
+	}
 }

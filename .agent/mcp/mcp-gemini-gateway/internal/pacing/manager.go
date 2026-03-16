@@ -4,8 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
+)
+
+const (
+	// backoffDecrementMs is subtracted from backoff on each success.
+	backoffDecrementMs = 500
 )
 
 // Pacer defines the adaptive rate-limit interface.
@@ -53,7 +58,7 @@ func (m *Manager) OnSuccess(ctx context.Context, model string) error {
 		gap = max(floor, int(float64(gap)*m.cfg.SpeedupFactor))
 	}
 
-	backoff := max(0, state.BackoffMs-500)
+	backoff := max(0, state.BackoffMs-backoffDecrementMs)
 
 	return m.store.UpdatePacing(ctx, model, map[string]any{
 		"min_gap_ms":     gap,

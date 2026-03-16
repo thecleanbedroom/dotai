@@ -4,11 +4,10 @@ import (
 	"log/slog"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/database"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/database"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
 )
 
 // NewTestConfig returns a Config with defaults for testing.
@@ -51,7 +50,7 @@ func InsertRequest(t *testing.T, store *database.Store, model, status string, op
 		PromptHash: "testhash",
 		PID:        os.Getpid(),
 		Cwd:        "/tmp",
-		CreatedAt:  float64(time.Now().Unix()),
+		CreatedAt:  domain.NowUnix(),
 	}
 	for _, opt := range opts {
 		opt(req)
@@ -86,4 +85,9 @@ func WithCreatedAt(ts float64) func(*domain.Request) {
 // WithError sets the error field.
 func WithError(errMsg string) func(*domain.Request) {
 	return func(r *domain.Request) { r.Error = errMsg }
+}
+
+// WithPromptText sets the prompt text field.
+func WithPromptText(text string) func(*domain.Request) {
+	return func(r *domain.Request) { r.PromptText = text }
 }

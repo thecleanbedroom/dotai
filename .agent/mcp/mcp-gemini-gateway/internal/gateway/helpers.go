@@ -2,12 +2,13 @@ package gateway
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"math"
 	"strings"
 	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
 )
 
 // PromptHash returns the first 12 hex chars of the SHA256 of a prompt.
@@ -76,4 +77,92 @@ func parseFloat(s string) (float64, error) {
 		return 0, fmt.Errorf("invalid number: %s", s)
 	}
 	return v, nil
+}
+
+// pickBucketAlternative finds an unused alias in the bucket, preferring higher
+// index ("smarter") over lower. Returns "" if nothing available.
+// Used by both single-dispatch (findBucketAlternative) and batch assignment.
+func pickBucketAlternative(bucket []string, requested string, unavailable map[string]bool) string {
+	reqIdx := indexOf(bucket, requested)
+	if reqIdx < 0 {
+		return ""
+	}
+
+	// Try smarter (higher index) first
+	for i, m := range bucket {
+		if i > reqIdx && !unavailable[m] {
+			return m
+		}
+	}
+	// Then lesser (lower index)
+	for i, m := range bucket {
+		if i < reqIdx && !unavailable[m] {
+			return m
+		}
+	}
+	return ""
+}
+
+// indexOf returns the index of item in slice, or -1.
+func indexOf(slice []string, item string) int {
+	for i, s := range slice {
+		if s == item {
+			return i
+		}
+	}
+	return -1
+}
+
+// parseGeminiOutput extracts the response text and token statistics from
+// Gemini CLI JSON output.
+func parseGeminiOutput(stdout string) (string, map[string]any) {
+	stats := make(map[string]any)
+
+	var data struct {
+		Response string `json:"response"`
+		Stats    struct {
+			Models map[string]struct {
+				Tokens struct {
+					Input      *int `json:"input"`
+					Candidates *int `json:"candidates"`
+					Cached     *int `json:"cached"`
+					Thoughts   *int `json:"thoughts"`
+				} `json:"tokens"`
+				API struct {
+					TotalLatencyMs *int `json:"totalLatencyMs"`
+				} `json:"api"`
+			} `json:"models"`
+			Tools struct {
+				TotalCalls *int `json:"totalCalls"`
+			} `json:"tools"`
+		} `json:"stats"`
+	}
+
+	if err := json.Unmarshal([]byte(stdout), &data); err != nil {
+		return stdout, stats
+	}
+
+	for _, modelStats := range data.Stats.Models {
+		if modelStats.Tokens.Input != nil {
+			stats["tokens_in"] = *modelStats.Tokens.Input
+		}
+		if modelStats.Tokens.Candidates != nil {
+			stats["tokens_out"] = *modelStats.Tokens.Candidates
+		}
+		if modelStats.Tokens.Cached != nil {
+			stats["tokens_cached"] = *modelStats.Tokens.Cached
+		}
+		if modelStats.Tokens.Thoughts != nil {
+			stats["tokens_thoughts"] = *modelStats.Tokens.Thoughts
+		}
+		if modelStats.API.TotalLatencyMs != nil {
+			stats["api_latency_ms"] = *modelStats.API.TotalLatencyMs
+		}
+		break // Only first model
+	}
+	if data.Stats.Tools.TotalCalls != nil {
+		stats["tool_calls"] = *data.Stats.Tools.TotalCalls
+	}
+
+	return data.Response, stats
 }

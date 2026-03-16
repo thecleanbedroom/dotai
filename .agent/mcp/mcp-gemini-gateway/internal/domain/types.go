@@ -4,38 +4,39 @@ import "time"
 
 // Request represents a gateway job request stored in SQLite.
 type Request struct {
-	ID            int64
-	Model         string
-	Status        string
-	Label         string
-	PromptHash    string
-	PromptText    string
-	PID           int
-	Cwd           string
-	CreatedAt     float64
-	StartedAt     *float64
-	FinishedAt    *float64
-	ExitCode      *int
-	RetryCount    int
-	Error         string
-	TokensIn      *int
-	TokensOut     *int
-	TokensCached  *int
-	TokensThoughts *int
-	ToolCalls     *int
-	APILatencyMs  *int
-	BatchID       string
+	ID             int64    `json:"id"`
+	Model          string   `json:"model"`
+	Status         string   `json:"status"`
+	Label          string   `json:"label,omitempty"`
+	PromptHash     string   `json:"prompt_hash"`
+	PromptText     string   `json:"prompt_text,omitempty"`
+	PID            int      `json:"pid"`
+	Cwd            string   `json:"cwd"`
+	CreatedAt      float64  `json:"created_at"`
+	StartedAt      *float64 `json:"started_at,omitempty"`
+	FinishedAt     *float64 `json:"finished_at,omitempty"`
+	ExitCode       *int     `json:"exit_code,omitempty"`
+	RetryCount     int      `json:"retry_count"`
+	Error          string   `json:"error,omitempty"`
+	TokensIn       *int     `json:"tokens_in,omitempty"`
+	TokensOut      *int     `json:"tokens_out,omitempty"`
+	TokensCached   *int     `json:"tokens_cached,omitempty"`
+	TokensThoughts *int     `json:"tokens_thoughts,omitempty"`
+	ToolCalls      *int     `json:"tool_calls,omitempty"`
+	APILatencyMs   *int     `json:"api_latency_ms,omitempty"`
+	BatchID        string   `json:"batch_id,omitempty"`
+	ResponseText   string   `json:"response_text,omitempty"`
 }
 
 // PacingState represents the adaptive pacing state for a model.
 type PacingState struct {
-	Model            string
-	MinGapMs         int
-	LastRequestAt    float64
-	BackoffMs        int
-	ConsecutiveOK    int
-	TotalOK          int
-	TotalRateLimited int
+	Model            string  `json:"model"`
+	MinGapMs         int     `json:"min_gap_ms"`
+	LastRequestAt    float64 `json:"last_request_at"`
+	BackoffMs        int     `json:"backoff_ms"`
+	ConsecutiveOK    int     `json:"consecutive_ok"`
+	TotalOK          int     `json:"total_ok"`
+	TotalRateLimited int     `json:"total_rate_limited"`
 }
 
 // JobStatus represents an active job for the jobs command.
@@ -85,6 +86,12 @@ type ModelStats struct {
 	CurrentMinGapMs     *int     `json:"current_min_gap_ms,omitempty"`
 }
 
+// StatsResult represents the typed response from the Stats command.
+type StatsResult struct {
+	Period string                `json:"period"`
+	Models map[string]ModelStats `json:"models"`
+}
+
 // ErrorInfo represents a failed job for the errors command.
 type ErrorInfo struct {
 	ID       int64   `json:"id"`
@@ -95,6 +102,12 @@ type ErrorInfo struct {
 	Retries  int     `json:"retries"`
 	ExecS    *float64 `json:"exec_s,omitempty"`
 	Finished string  `json:"finished"`
+}
+
+// ErrorsResult represents the typed response from the Errors command.
+type ErrorsResult struct {
+	Count  int         `json:"count"`
+	Errors []ErrorInfo `json:"errors"`
 }
 
 // CancelResult represents the result of a cancel operation.
@@ -129,4 +142,10 @@ func FormatTime(ts float64) string {
 // FormatTimeShort formats a Unix timestamp with time only.
 func FormatTimeShort(ts float64) string {
 	return time.Unix(int64(ts), 0).Format("15:04:05")
+}
+
+// NowUnix returns the current time as a float64 Unix timestamp.
+// Used throughout gateway, database, and test code.
+func NowUnix() float64 {
+	return float64(time.Now().Unix())
 }

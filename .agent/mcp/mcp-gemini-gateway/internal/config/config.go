@@ -9,7 +9,19 @@ type Config struct {
 	// Use tiers: lite, quick, fast, think, deep.
 	Models map[string]string
 
-	// ModelBuckets groups models that can substitute for each other in batch dispatch.
+	// ModelBuckets groups models into substitution tiers for automatic load-balancing.
+	//
+	// Each bucket is a slice of model aliases ordered from least to most capable.
+	// When a requested model is busy (single dispatch) or when multiple jobs target
+	// the same model (batch), the gateway picks an alternative from the same bucket.
+	//
+	// Preference order: smarter (higher index) alternatives are tried first,
+	// then lesser (lower index) ones.  Example: ["lite","quick","fast"] — if "fast"
+	// is busy, the gateway tries "quick" first, then "lite".
+	//
+	// Used by:
+	//   - Dispatch:  findBucketAlternative → pickBucketAlternative
+	//   - Batch:     AssignModelsForBatch → pickBucketAlternative
 	ModelBuckets [][]string
 
 	// MaxConcurrent is the max simultaneous execution slots per model alias.
@@ -69,6 +81,10 @@ type Config struct {
 	// DBPath is the SQLite database path (relative to binary or absolute).
 	DBPath string
 
+	// ProjectRoot is the resolved project root — all dispatched agents are
+	// confined to this directory. NEVER use os.Getwd() as a fallback.
+	ProjectRoot string
+
 	// SystemPrefix is prepended to every user prompt sent to Gemini CLI.
 	SystemPrefix string
 }
@@ -78,8 +94,8 @@ func Default() *Config {
 	return &Config{
 		Models: map[string]string{
 			"lite":  "gemini-2.5-flash-lite",
-			"quick": "gemini-2.5-flash",
-			"fast":  "gemini-3-flash-preview",
+			"quick": "gemini-2.5-flash-lite",
+			"fast":  "gemini-2.5-flash",
 			"think": "gemini-2.5-pro",
 			"deep":  "gemini-3.1-pro-preview",
 		},
@@ -119,7 +135,7 @@ func Default() *Config {
 		},
 		RateLimitExitCode: 130,
 		CleanupDays:       7,
-		DBPath:            "data/gateway.sqlite",
+		DBPath:            "data/mcp-gemini-gateway.sqlite",
 		SystemPrefix: "You are a code generation subagent dispatched by an orchestrating agent. " +
 			"The orchestrator will review your work via `git diff` after you finish.\n\n" +
 			"Tool usage:\n" +

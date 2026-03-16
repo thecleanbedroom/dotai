@@ -10,10 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/config"
-	"github.com/midweste/dotai/mcp-gemini-gateway/internal/domain"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/config"
+	"github.com/thecleanbedroom/dotai/mcp-gemini-gateway/internal/domain"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 // Store implements all database interfaces using SQLite.
@@ -38,12 +39,31 @@ func NewStore(cfg *config.Config, dbPath string, logger *slog.Logger) (*Store, e
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return nil, fmt.Errorf("create db directory %s: %w", dir, err)
 		}
-		dsn = dbPath + "?_journal_mode=WAL&_busy_timeout=10000&_synchronous=NORMAL"
+		dsn = "file:" + dbPath
 	}
 
-	db, err := sql.Open("sqlite", dsn)
+	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
+	}
+
+	// Pin to one connection: ensures PRAGMAs persist and avoids SQLITE_BUSY.
+	// SQLite is single-writer; one connection is fine for this workload.
+	db.SetMaxOpenConns(1)
+
+	// Apply PRAGMAs explicitly (DSN _pragma= syntax is silently ignored by both
+	// modernc.org/sqlite and ncruces/go-sqlite3 drivers).
+	if dbPath != ":memory:" {
+		for _, pragma := range []string{
+			"PRAGMA journal_mode=WAL",
+			"PRAGMA busy_timeout=10000",
+			"PRAGMA synchronous=NORMAL",
+		} {
+			if _, err := db.Exec(pragma); err != nil {
+				db.Close()
+				return nil, fmt.Errorf("exec %s: %w", pragma, err)
+			}
+		}
 	}
 
 	s := &Store{db: db, cfg: cfg, logger: logger}
@@ -56,13 +76,6 @@ func NewStore(cfg *config.Config, dbPath string, logger *slog.Logger) (*Store, e
 	if err := s.runMigrations(); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("run migrations: %w", err)
-	}
-
-	if dbPath != ":memory:" {
-		outputDir := filepath.Join(filepath.Dir(dbPath), "gateway-output")
-		if err := os.MkdirAll(outputDir, 0o755); err != nil {
-			logger.Warn("failed to create output directory", "dir", outputDir, "error", err)
-		}
 	}
 
 	return s, nil
@@ -110,17 +123,31 @@ func (s *Store) runMigrations() error {
 		}
 	}
 
+	// Migration: add response_text column if missing
+	if !s.columnExists("requests", "response_text") {
+		if _, err := s.db.Exec("ALTER TABLE requests ADD COLUMN response_text TEXT"); err != nil {
+			return fmt.Errorf("add response_text: %w", err)
+		}
+	}
+
 	return nil
 }
 
 func (s *Store) columnExists(table, column string) bool {
-	rows, err := s.db.Query("SELECT " + column + " FROM " + table + " LIMIT 0")
+	rows, err := s.db.Query("SELECT name FROM pragma_table_info(?) WHERE name=?", table, column)
 	if err != nil {
 		return false
 	}
-	rows.Close()
-	return true
+	defer rows.Close()
+	return rows.Next()
 }
+
+// selectColumns is the canonical column list for all request queries.
+// Single source of truth — add new columns here only.
+const selectColumns = `id, model, status, label, prompt_hash, prompt_text, pid, cwd,
+		created_at, started_at, finished_at, exit_code, retry_count, error,
+		tokens_in, tokens_out, tokens_cached, tokens_thoughts, tool_calls,
+		api_latency_ms, batch_id, response_text`
 
 // ── RequestReader implementation ──
 
@@ -151,14 +178,34 @@ func (s *Store) CountByStatus(ctx context.Context, model, status string) (int, e
 	return count, err
 }
 
+// StatusCounts returns counts for all active statuses for a model in a single query.
+// Keys: "running", "waiting", "queued", "retrying".
+func (s *Store) StatusCounts(ctx context.Context, model string) (map[string]int, error) {
+	counts := map[string]int{"running": 0, "waiting": 0, "queued": 0, "retrying": 0}
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT status, COUNT(*) FROM requests
+		 WHERE model=? AND status IN ('running','waiting','queued','retrying')
+		 GROUP BY status`, model,
+	)
+	if err != nil {
+		return counts, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var status string
+		var count int
+		if err := rows.Scan(&status, &count); err != nil {
+			return counts, err
+		}
+		counts[status] = count
+	}
+	return counts, rows.Err()
+}
+
 // GetRequest returns a single request by ID.
 func (s *Store) GetRequest(ctx context.Context, id int64) (*domain.Request, error) {
 	row := s.db.QueryRowContext(ctx,
-		`SELECT id, model, status, label, prompt_hash, prompt_text, pid, cwd,
-		        created_at, started_at, finished_at, exit_code, retry_count, error,
-		        tokens_in, tokens_out, tokens_cached, tokens_thoughts, tool_calls,
-		        api_latency_ms, batch_id
-		 FROM requests WHERE id=?`, id,
+		`SELECT `+selectColumns+` FROM requests WHERE id=?`, id,
 	)
 	return scanRequest(row)
 }
@@ -166,11 +213,7 @@ func (s *Store) GetRequest(ctx context.Context, id int64) (*domain.Request, erro
 // ListActive returns all requests in active states (queued, waiting, running, retrying).
 func (s *Store) ListActive(ctx context.Context) ([]domain.Request, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, model, status, label, prompt_hash, prompt_text, pid, cwd,
-		        created_at, started_at, finished_at, exit_code, retry_count, error,
-		        tokens_in, tokens_out, tokens_cached, tokens_thoughts, tool_calls,
-		        api_latency_ms, batch_id
-		 FROM requests
+		`SELECT `+selectColumns+` FROM requests
 		 WHERE status IN ('queued','waiting','running','retrying')
 		 ORDER BY created_at`,
 	)
@@ -185,11 +228,7 @@ func (s *Store) ListActive(ctx context.Context) ([]domain.Request, error) {
 func (s *Store) ListFailed(ctx context.Context, since time.Time, limit int) ([]domain.Request, error) {
 	cutoff := float64(since.Unix())
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, model, status, label, prompt_hash, prompt_text, pid, cwd,
-		        created_at, started_at, finished_at, exit_code, retry_count, error,
-		        tokens_in, tokens_out, tokens_cached, tokens_thoughts, tool_calls,
-		        api_latency_ms, batch_id
-		 FROM requests
+		`SELECT `+selectColumns+` FROM requests
 		 WHERE status='failed' AND finished_at IS NOT NULL AND finished_at > ?
 		 ORDER BY finished_at DESC LIMIT ?`, cutoff, limit,
 	)
@@ -204,11 +243,7 @@ func (s *Store) ListFailed(ctx context.Context, since time.Time, limit int) ([]d
 func (s *Store) ListCompleted(ctx context.Context, model string, since time.Time) ([]domain.Request, error) {
 	cutoff := float64(since.Unix())
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, model, status, label, prompt_hash, prompt_text, pid, cwd,
-		        created_at, started_at, finished_at, exit_code, retry_count, error,
-		        tokens_in, tokens_out, tokens_cached, tokens_thoughts, tool_calls,
-		        api_latency_ms, batch_id
-		 FROM requests
+		`SELECT `+selectColumns+` FROM requests
 		 WHERE model=? AND finished_at IS NOT NULL AND finished_at > ?`, model, cutoff,
 	)
 	if err != nil {
@@ -221,11 +256,7 @@ func (s *Store) ListCompleted(ctx context.Context, model string, since time.Time
 // ListActiveByBatchID returns active requests for a batch.
 func (s *Store) ListActiveByBatchID(ctx context.Context, batchID string) ([]domain.Request, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, model, status, label, prompt_hash, prompt_text, pid, cwd,
-		        created_at, started_at, finished_at, exit_code, retry_count, error,
-		        tokens_in, tokens_out, tokens_cached, tokens_thoughts, tool_calls,
-		        api_latency_ms, batch_id
-		 FROM requests
+		`SELECT `+selectColumns+` FROM requests
 		 WHERE batch_id=? AND status IN ('waiting','running','retrying')`, batchID,
 	)
 	if err != nil {
@@ -238,11 +269,7 @@ func (s *Store) ListActiveByBatchID(ctx context.Context, batchID string) ([]doma
 // ListActiveByModel returns active requests for a model.
 func (s *Store) ListActiveByModel(ctx context.Context, model string) ([]domain.Request, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, model, status, label, prompt_hash, prompt_text, pid, cwd,
-		        created_at, started_at, finished_at, exit_code, retry_count, error,
-		        tokens_in, tokens_out, tokens_cached, tokens_thoughts, tool_calls,
-		        api_latency_ms, batch_id
-		 FROM requests
+		`SELECT `+selectColumns+` FROM requests
 		 WHERE model=? AND status IN ('waiting','running','retrying')`, model,
 	)
 	if err != nil {
@@ -279,15 +306,35 @@ func (s *Store) RunningModels(ctx context.Context) ([]string, error) {
 func (s *Store) InsertRequest(ctx context.Context, req *domain.Request) (int64, error) {
 	result, err := s.db.ExecContext(ctx,
 		`INSERT INTO requests (model, status, label, prompt_hash, prompt_text, pid, cwd,
-		                       created_at, retry_count, batch_id)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		                       created_at, retry_count, batch_id, response_text)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		req.Model, req.Status, req.Label, req.PromptHash, req.PromptText,
-		req.PID, req.Cwd, req.CreatedAt, req.RetryCount, req.BatchID,
+		req.PID, req.Cwd, req.CreatedAt, req.RetryCount, req.BatchID, req.ResponseText,
 	)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
+}
+
+// validRequestColumns defines the set of columns that may be passed to
+// UpdateStatus via the fields map. This prevents accidental SQL injection
+// through column name concatenation.
+var validRequestColumns = map[string]bool{
+	"started_at":       true,
+	"finished_at":      true,
+	"exit_code":        true,
+	"error":            true,
+	"response_text":    true,
+	"retry_count":      true,
+	"pid":              true,
+	"prompt_text":      true,
+	"tokens_in":        true,
+	"tokens_out":       true,
+	"tokens_cached":    true,
+	"tokens_thoughts":  true,
+	"tool_calls":       true,
+	"api_latency_ms":   true,
 }
 
 // UpdateStatus updates a request's status and optional fields.
@@ -296,6 +343,9 @@ func (s *Store) UpdateStatus(ctx context.Context, id int64, status string, field
 	args := []any{status}
 
 	for col, val := range fields {
+		if !validRequestColumns[col] {
+			return fmt.Errorf("UpdateStatus: unknown column %q", col)
+		}
 		setClauses += ", " + col + "=?"
 		args = append(args, val)
 	}
@@ -327,12 +377,26 @@ func (s *Store) GetPacing(ctx context.Context, model string) (*domain.PacingStat
 	return &p, nil
 }
 
+// validPacingColumns defines the set of columns that may be passed to
+// UpdatePacing via the fields map.
+var validPacingColumns = map[string]bool{
+	"min_gap_ms":        true,
+	"last_request_at":   true,
+	"backoff_ms":        true,
+	"consecutive_ok":    true,
+	"total_ok":          true,
+	"total_rate_limited": true,
+}
+
 // UpdatePacing updates pacing fields for a model.
 func (s *Store) UpdatePacing(ctx context.Context, model string, fields map[string]any) error {
 	setClauses := ""
 	args := make([]any, 0, len(fields)+1)
 	first := true
 	for col, val := range fields {
+		if !validPacingColumns[col] {
+			return fmt.Errorf("UpdatePacing: unknown column %q", col)
+		}
 		if !first {
 			setClauses += ", "
 		}
@@ -394,7 +458,7 @@ func (s *Store) CleanStalePIDs(ctx context.Context) error {
 		return err
 	}
 
-	now := float64(time.Now().Unix())
+	now := domain.NowUnix()
 	for _, id := range staleIDs {
 		if _, err := s.db.ExecContext(ctx,
 			"UPDATE requests SET status='failed', error='process died (stale PID)', finished_at=? WHERE id=?",
@@ -406,9 +470,12 @@ func (s *Store) CleanStalePIDs(ctx context.Context) error {
 	return nil
 }
 
+// secondsPerDay is the number of seconds in a day, used for cleanup cutoff calculation.
+const secondsPerDay = 86400
+
 // CleanupOldRequests deletes completed/failed requests older than the configured days.
 func (s *Store) CleanupOldRequests(ctx context.Context) error {
-	cutoff := float64(time.Now().Unix()) - float64(s.cfg.CleanupDays)*86400
+	cutoff := domain.NowUnix() - float64(s.cfg.CleanupDays)*secondsPerDay
 	_, err := s.db.ExecContext(ctx,
 		"DELETE FROM requests WHERE status IN ('done','failed') AND finished_at < ?", cutoff,
 	)
@@ -433,13 +500,13 @@ type scannable interface {
 
 func scanRequest(row scannable) (*domain.Request, error) {
 	var r domain.Request
-	var label, promptText, errStr, batchID sql.NullString
+	var label, promptText, errStr, batchID, responseText sql.NullString
 	err := row.Scan(
 		&r.ID, &r.Model, &r.Status, &label, &r.PromptHash, &promptText,
 		&r.PID, &r.Cwd, &r.CreatedAt, &r.StartedAt, &r.FinishedAt,
 		&r.ExitCode, &r.RetryCount, &errStr,
 		&r.TokensIn, &r.TokensOut, &r.TokensCached, &r.TokensThoughts,
-		&r.ToolCalls, &r.APILatencyMs, &batchID,
+		&r.ToolCalls, &r.APILatencyMs, &batchID, &responseText,
 	)
 	if err != nil {
 		return nil, err
@@ -448,6 +515,7 @@ func scanRequest(row scannable) (*domain.Request, error) {
 	r.PromptText = promptText.String
 	r.Error = errStr.String
 	r.BatchID = batchID.String
+	r.ResponseText = responseText.String
 	return &r, nil
 }
 
