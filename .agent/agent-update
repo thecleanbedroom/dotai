@@ -74,8 +74,8 @@ for dir in $SYNC_DIRS; do
     if [ -d "$temp_dir/policy/$dir" ]; then
         mkdir -p "$TARGET_DIR/$dir"
         rsync -av \
-            --exclude '.agent/skills' \
-            --exclude '.agent/mcp/*/data' \
+            --exclude 'skills' \
+            --exclude 'mcp/*/data' \
             "$temp_dir/policy/$dir/" "$TARGET_DIR/$dir/"
     fi
 done
